@@ -104,3 +104,7 @@ target_include_directories(blockwave_tests PRIVATE src)
 target_compile_definitions(blockwave_tests PRIVATE
     BLOCKWAVE_TEST_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests")
 add_test(NAME blockwave_render_tests COMMAND blockwave_tests)
+if(MSVC)
+    # Tests use portable fopen deliberately; silence MSVC's C4996 under /WX.
+    target_compile_definitions(blockwave_tests PRIVATE _CRT_SECURE_NO_WARNINGS)
+endif()
