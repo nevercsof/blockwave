@@ -1,7 +1,7 @@
 Started validating: /Users/kirillboyko/Library/Audio/Plug-Ins/Components/BLOCKWAVE.component
-Random seed: 0x6df518b
+Random seed: 0x48bc647
 Validation started
-	1 Aug 2026 9:43:54pm
+	1 Aug 2026 10:21:53pm
 
 Strictness level: 10
 -----------------------------------------------------------------
@@ -19,7 +19,7 @@ Completed tests in pluginval / Open plugin (cold)
 -----------------------------------------------------------------
 Starting tests in: pluginval / Open plugin (warm)...
 
-Time taken to open plugin (warm): 2 ms
+Time taken to open plugin (warm): 1 ms
 Running tests 1 times
 Completed tests in pluginval / Open plugin (warm)
 -----------------------------------------------------------------
@@ -52,15 +52,15 @@ Completed tests in pluginval / Plugin programs
 -----------------------------------------------------------------
 Starting tests in: pluginval / Editor...
 
-Time taken to open editor (cold): 228 ms
-Time taken to open editor (warm): 204 ms
+Time taken to open editor (cold): 231 ms
+Time taken to open editor (warm): 203 ms
 
-Time taken to run test: 450 ms
+Time taken to run test: 454 ms
 Completed tests in pluginval / Editor
 -----------------------------------------------------------------
 Starting tests in: pluginval / Open editor whilst processing...
 
-Time taken to run test: 208 ms
+Time taken to run test: 206 ms
 Completed tests in pluginval / Open editor whilst processing
 -----------------------------------------------------------------
 Starting tests in: pluginval / Audio processing...
@@ -80,7 +80,7 @@ Testing with sample rate [96000] and block size [256]
 Testing with sample rate [96000] and block size [512]
 Testing with sample rate [96000] and block size [1024]
 
-Time taken to run test: 0
+Time taken to run test: 2 ms
 Completed tests in pluginval / Audio processing
 -----------------------------------------------------------------
 Starting tests in: pluginval / Non-releasing audio processing...
@@ -135,7 +135,7 @@ Completed tests in pluginval / Automation
 -----------------------------------------------------------------
 Starting tests in: pluginval / Editor Automation...
 
-Time taken to run test: 13 secs
+Time taken to run test: 12 secs
 Completed tests in pluginval / Editor Automation
 -----------------------------------------------------------------
 Starting tests in: pluginval / Automatable Parameters...
@@ -155,7 +155,7 @@ Completed tests in pluginval / Background thread state
 -----------------------------------------------------------------
 Starting tests in: pluginval / Parameter thread safety...
 
-Time taken to run test: 0
+Time taken to run test: 1 ms
 Completed tests in pluginval / Parameter thread safety
 -----------------------------------------------------------------
 Starting tests in: pluginval / auval...
@@ -176,12 +176,12 @@ Component Version: 0.1.0 (0x100)
 --------------------------------------------------
 TESTING OPEN TIMES:
 COLD:
-Time to open AudioUnit:         3.207 ms
+Time to open AudioUnit:         3.718 ms
 WARM:
-Time to open AudioUnit:         0.179  ms
+Time to open AudioUnit:         0.216  ms
 This AudioUnit is a version 2 implementation.
 FIRST TIME:
-Time for initialization:        0.004 ms
+Time for initialization:        0.006 ms
 
 * * PASS
 --------------------------------------------------
@@ -221,7 +221,7 @@ VERIFYING SPECIAL PROPERTIES:
 
 VERIFYING CUSTOM UI
 Cocoa Views Available: 1
-  JUCE_AUCocoaViewClass_e3fcbda9a88636d2
+  JUCE_AUCocoaViewClass_2b6266196623f6e8
     PASS
 
 HAS FACTORY PRESETS
@@ -308,7 +308,7 @@ AU VALIDATION SUCCEEDED.
 
 auval exited with code: 0
 
-Time taken to run test: 290 ms
+Time taken to run test: 343 ms
 Completed tests in pluginval / auval
 -----------------------------------------------------------------
 Starting tests in: pluginval / vst3 validator...
@@ -347,6 +347,6 @@ Starting tests in: pluginval / Fuzz parameters...
 
 Time taken to run test: 0
 
-Time taken to run all tests: 16 secs
+Time taken to run all tests: 15 secs
 Completed tests in pluginval / Fuzz parameters
 SUCCESS

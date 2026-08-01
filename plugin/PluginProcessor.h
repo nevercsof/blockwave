@@ -19,6 +19,7 @@
 #pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
+#include "BlockwaveEngine.h"
 
 class BlockwaveAudioProcessor final : public juce::AudioProcessor
 {
@@ -50,5 +51,11 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
 private:
+    blockwave::BlockwaveEngine engine;
+
+    // Stereo scratch the engine renders into; sized in prepareToPlay only
+    // (real-time rules: no allocation in processBlock).
+    juce::AudioBuffer<float> scratch;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BlockwaveAudioProcessor)
 };

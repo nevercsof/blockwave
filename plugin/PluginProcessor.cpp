@@ -26,9 +26,15 @@ BlockwaveAudioProcessor::BlockwaveAudioProcessor()
 
 void BlockwaveAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    // Phase 0 shell: nothing to allocate yet. All future engine buffers are
-    // allocated here and only here (real-time rules, CLAUDE.md).
-    juce::ignoreUnused (sampleRate, samplesPerBlock);
+    // All allocation happens here and only here (real-time rules, CLAUDE.md).
+    // Hosts may exceed the declared block size; give ourselves headroom and
+    // chunk in processBlock if a larger block still arrives.
+    scratch.setSize (2, juce::jmax (samplesPerBlock, 4096), false, true, true);
+
+    // Phase 1: default internal patch = ParamSnapshot defaults (SPEC table).
+    // Phase 2 replaces this with the APVTS-driven snapshot.
+    engine.setParams (blockwave::ParamSnapshot {});
+    engine.prepare (sampleRate, samplesPerBlock);
 }
 
 void BlockwaveAudioProcessor::releaseResources() {}
@@ -43,10 +49,61 @@ void BlockwaveAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                                             juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
-    juce::ignoreUnused (midiMessages);
 
-    // Phase 0 shell: a synth with no engine yet outputs clean silence.
+    // Host tempo (offline render safe: getPlayHead may be null).
+    if (auto* ph = getPlayHead())
+        if (auto pos = ph->getPosition())
+            if (auto bpm = pos->getBpm())
+                engine.setTempo (*bpm);
+
+    const int numSamples  = buffer.getNumSamples();
+    const int numChannels = buffer.getNumChannels();
+    const int scratchMax  = scratch.getNumSamples();
+
     buffer.clear();
+    if (scratchMax == 0)
+        return;
+
+    // Sample-accurate MIDI: render up to each event, then apply it.
+    // Chunk to the scratch capacity so oversized host blocks still work.
+    int pos = 0;
+    auto midiIt = midiMessages.begin();
+
+    while (pos < numSamples)
+    {
+        int segmentEnd = juce::jmin (numSamples, pos + scratchMax);
+        while (midiIt != midiMessages.end() && (*midiIt).samplePosition <= pos)
+        {
+            const auto msg = (*midiIt).getMessage();
+            if (msg.isNoteOn())
+                engine.noteOn (msg.getNoteNumber(), msg.getFloatVelocity());
+            else if (msg.isNoteOff())
+                engine.noteOff (msg.getNoteNumber());
+            else if (msg.isAllNotesOff() || msg.isAllSoundOff())
+                engine.allNotesOff();
+            ++midiIt;
+        }
+        if (midiIt != midiMessages.end())
+            segmentEnd = juce::jmin (segmentEnd, (*midiIt).samplePosition);
+        if (segmentEnd <= pos)
+            segmentEnd = juce::jmin (numSamples, pos + 1);
+
+        const int n = segmentEnd - pos;
+        engine.process (scratch.getWritePointer (0), scratch.getWritePointer (1), n);
+
+        if (numChannels >= 2)
+        {
+            buffer.copyFrom (0, pos, scratch, 0, 0, n);
+            buffer.copyFrom (1, pos, scratch, 1, 0, n);
+        }
+        else if (numChannels == 1)
+        {
+            buffer.copyFrom (0, pos, scratch, 0, 0, n);
+            buffer.addFrom (0, pos, scratch, 1, 0, n);
+            buffer.applyGain (0, pos, n, 0.5f);
+        }
+        pos = segmentEnd;
+    }
 }
 
 juce::AudioProcessorEditor* BlockwaveAudioProcessor::createEditor()

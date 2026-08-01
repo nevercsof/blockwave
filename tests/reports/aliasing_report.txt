@@ -1,0 +1,5 @@
+BLOCKWAVE aliasing report — C7 (MIDI 96, ~2093 Hz) @ 44100 Hz, FFT 32768 Hann
+Worst non-harmonic partial relative to fundamental:
+  RAW (naive)  :  -24.19 dBc
+  polyBLEP     :  -50.17 dBc
+  improvement  :   25.98 dB

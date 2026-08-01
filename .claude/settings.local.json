@@ -29,7 +29,29 @@
       "Bash(/Applications/pluginval.app/Contents/MacOS/pluginval --strictness-level 10 --verbose --output-dir /Users/kirillboyko/Downloads/blockwave-kickoff/CHECKPOINTS/logs --validate ~/Library/Audio/Plug-Ins/Components/BLOCKWAVE.component)",
       "Bash(echo \"AU_EXIT=$?\")",
       "Bash(cmake --build --preset release --parallel)",
-      "Bash(git commit -m 'Phase 0: JUCE 8 skeleton — VST3+AU+Standalone build, pluginval s10 green, CI workflow *)"
+      "Bash(git commit -m 'Phase 0: JUCE 8 skeleton — VST3+AU+Standalone build, pluginval s10 green, CI workflow *)",
+      "Bash(cmake --preset release)",
+      "Bash(cmake --build --preset release --parallel --target blockwave_tests render)",
+      "Bash(./build/release/blockwave_tests)",
+      "Bash(cmake --build --preset release --parallel --target blockwave_tests)",
+      "Bash(bash scripts/build.sh)",
+      "Bash(./build/release/render_artefacts/Release/render /private/tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/syncrip.json note:C4:2s /private/tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/syncrip.wav --sr 48000)",
+      "Bash(./build/release/render_artefacts/Release/render - note:A3:1s /private/tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/default.wav)",
+      "Bash(cmake --preset debug)",
+      "Bash(cmake --build --preset debug --parallel --target blockwave_tests)",
+      "Bash(ctest --output-on-failure)",
+      "Bash(python3 -c ' *)",
+      "Bash(echo \"rebuild exit=$?\")",
+      "Bash(tee /private/tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/tests-release.log)",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(cmake --build --preset debug --target blockwave_tests --parallel)",
+      "Bash(/Users/kirillboyko/Downloads/blockwave-kickoff/build/release/render_artefacts/Release/render --help)",
+      "Bash(python3 -)",
+      "Bash(bash scripts/validate.sh CHECKPOINTS/logs)",
+      "Bash(clang++ -std=c++20 -O3 -I /Users/kirillboyko/Downloads/blockwave-kickoff/src /private/tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/cpu8x8.cpp -o /private/tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/cpu8x8)",
+      "Bash(/private/tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/cpu8x8)",
+      "Bash(mkdir -p CHECKPOINTS/artifacts && cp /private/tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/c4_*.wav CHECKPOINTS/artifacts/ 2>/dev/null; ls CHECKPOINTS/artifacts/ CHECKPOINTS/logs/ | head -20)",
+      "Bash(git commit -m 'Phase 1: DSP core \\(polyBLEP osc, LFSR, SVF, ADSR, LFO, voices, unison\\) + tools/render + 38 render tests; checkpoint PHASE-1 *)"
     ]
   }
 }

@@ -1,7 +1,7 @@
 Started validating: /Users/kirillboyko/Downloads/blockwave-kickoff/build/release/BLOCKWAVE_artefacts/Release/VST3/BLOCKWAVE.vst3
-Random seed: 0x5930c1c
+Random seed: 0x6e9e66
 Validation started
-	1 Aug 2026 9:43:37pm
+	1 Aug 2026 10:21:38pm
 
 Strictness level: 10
 -----------------------------------------------------------------
@@ -14,12 +14,12 @@ Completed tests in pluginval / Scan for plugins located in: /Users/kirillboyko/D
 -----------------------------------------------------------------
 Starting tests in: pluginval / Open plugin (cold)...
 
-Time taken to open plugin (cold): 158 ms
+Time taken to open plugin (cold): 157 ms
 Completed tests in pluginval / Open plugin (cold)
 -----------------------------------------------------------------
 Starting tests in: pluginval / Open plugin (warm)...
 
-Time taken to open plugin (warm): 1 ms
+Time taken to open plugin (warm): 2 ms
 Running tests 1 times
 Completed tests in pluginval / Open plugin (warm)
 -----------------------------------------------------------------
@@ -43,15 +43,15 @@ Completed tests in pluginval / Plugin programs
 -----------------------------------------------------------------
 Starting tests in: pluginval / Editor...
 
-Time taken to open editor (cold): 226 ms
+Time taken to open editor (cold): 225 ms
 Time taken to open editor (warm): 205 ms
 
-Time taken to run test: 438 ms
+Time taken to run test: 432 ms
 Completed tests in pluginval / Editor
 -----------------------------------------------------------------
 Starting tests in: pluginval / Open editor whilst processing...
 
-Time taken to run test: 207 ms
+Time taken to run test: 205 ms
 Completed tests in pluginval / Open editor whilst processing
 -----------------------------------------------------------------
 Starting tests in: pluginval / Audio processing...
@@ -91,12 +91,12 @@ Testing with sample rate [96000] and block size [256]
 Testing with sample rate [96000] and block size [512]
 Testing with sample rate [96000] and block size [1024]
 
-Time taken to run test: 1 ms
+Time taken to run test: 2 ms
 Completed tests in pluginval / Non-releasing audio processing
 -----------------------------------------------------------------
 Starting tests in: pluginval / Plugin state...
 
-Time taken to run test: 1 ms
+Time taken to run test: 0
 Completed tests in pluginval / Plugin state
 -----------------------------------------------------------------
 Starting tests in: pluginval / Plugin state restoration...
@@ -121,12 +121,12 @@ Testing with sample rate [96000] and block size [256] and sub-block size [32]
 Testing with sample rate [96000] and block size [512] and sub-block size [32]
 Testing with sample rate [96000] and block size [1024] and sub-block size [32]
 
-Time taken to run test: 1 ms
+Time taken to run test: 2 ms
 Completed tests in pluginval / Automation
 -----------------------------------------------------------------
 Starting tests in: pluginval / Editor Automation...
 
-Time taken to run test: 13 secs
+Time taken to run test: 12 secs
 Completed tests in pluginval / Editor Automation
 -----------------------------------------------------------------
 Starting tests in: pluginval / Automatable Parameters...
@@ -146,7 +146,7 @@ Completed tests in pluginval / Background thread state
 -----------------------------------------------------------------
 Starting tests in: pluginval / Parameter thread safety...
 
-Time taken to run test: 7 ms
+Time taken to run test: 5 ms
 Completed tests in pluginval / Parameter thread safety
 -----------------------------------------------------------------
 Starting tests in: pluginval / auval...
@@ -191,6 +191,6 @@ Starting tests in: pluginval / Fuzz parameters...
 
 Time taken to run test: 0
 
-Time taken to run all tests: 16 secs
+Time taken to run all tests: 15 secs
 Completed tests in pluginval / Fuzz parameters
 SUCCESS

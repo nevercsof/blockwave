@@ -81,3 +81,26 @@ target_link_libraries(${PROJECT_NAME}
     PUBLIC
         juce::juce_recommended_config_flags
 )
+
+# --- Headless renderer: render <preset.json> <input.mid|note:C4:2s> <out.wav>
+juce_add_console_app(render PRODUCT_NAME "render")
+set(BLOCKWAVE_RENDER_SOURCES tools/render/RenderMain.cpp)
+target_sources(render PRIVATE ${BLOCKWAVE_RENDER_SOURCES})
+blockwave_strict_warnings(${BLOCKWAVE_RENDER_SOURCES})
+target_include_directories(render PRIVATE src)
+target_compile_definitions(render PRIVATE JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0)
+target_link_libraries(render PRIVATE
+    juce::juce_audio_basics
+    juce::juce_audio_formats
+    juce::juce_core
+    juce::juce_recommended_config_flags)
+
+# --- Offline render test suite (pure C++, no JUCE) --------------------------
+enable_testing()
+add_executable(blockwave_tests tests/TestMain.cpp)
+set(BLOCKWAVE_TEST_SOURCES tests/TestMain.cpp)
+blockwave_strict_warnings(${BLOCKWAVE_TEST_SOURCES})
+target_include_directories(blockwave_tests PRIVATE src)
+target_compile_definitions(blockwave_tests PRIVATE
+    BLOCKWAVE_TEST_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests")
+add_test(NAME blockwave_render_tests COMMAND blockwave_tests)
