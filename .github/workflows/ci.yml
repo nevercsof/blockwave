@@ -33,6 +33,12 @@ jobs:
         if: runner.os == 'macOS'
         run: cmake --build --preset release --parallel
 
+      - name: Set up MSVC environment (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
       - name: Configure (Windows)
         if: runner.os == 'Windows'
         run: cmake --preset win-release

@@ -18,10 +18,10 @@
     },
     {
       "name": "win-release",
-      "displayName": "Windows x64 Release (VS 2022)",
-      "generator": "Visual Studio 17 2022",
-      "architecture": { "value": "x64" },
+      "displayName": "Windows x64 Release (Ninja + MSVC)",
+      "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/win-release",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" },
       "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
     }
   ],
@@ -31,7 +31,6 @@
     {
       "name": "win-release",
       "configurePreset": "win-release",
-      "configuration": "Release",
       "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
     }
   ]
