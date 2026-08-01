@@ -1,0 +1,108 @@
+# BLOCKWAVE CI — macOS + Windows matrix build, pluginval strictness 10, artifacts.
+# Windows x64 VST3 is built and validated EXCLUSIVELY here (no local Windows).
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            name: macOS
+          - os: windows-latest
+            name: Windows
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Ninja (macOS)
+        if: runner.os == 'macOS'
+        run: brew install ninja
+
+      - name: Configure (macOS)
+        if: runner.os == 'macOS'
+        run: cmake --preset release
+
+      - name: Build (macOS)
+        if: runner.os == 'macOS'
+        run: cmake --build --preset release --parallel
+
+      - name: Configure (Windows)
+        if: runner.os == 'Windows'
+        run: cmake --preset win-release
+
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        run: cmake --build --preset win-release --parallel
+
+      - name: Download pluginval (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          curl -fL https://github.com/Tracktion/pluginval/releases/latest/download/pluginval_macOS.zip -o pluginval.zip
+          unzip -q pluginval.zip
+
+      - name: Run pluginval s10 (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          VST3=$(find build/release -name "*.vst3" -maxdepth 6 -type d | head -1)
+          echo "Validating $VST3"
+          mkdir -p pluginval-logs
+          ./pluginval.app/Contents/MacOS/pluginval --strictness-level 10 --verbose \
+            --output-dir pluginval-logs --validate "$VST3"
+
+      - name: Download pluginval (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          curl -fL https://github.com/Tracktion/pluginval/releases/latest/download/pluginval_Windows.zip -o pluginval.zip
+          unzip -q pluginval.zip
+
+      - name: Run pluginval s10 (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          VST3=$(find build/win-release -name "*.vst3" -type d | head -1)
+          echo "Validating $VST3"
+          mkdir -p pluginval-logs
+          ./pluginval.exe --strictness-level 10 --verbose \
+            --output-dir pluginval-logs --validate "$VST3"
+
+      - name: Package artifacts (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          mkdir -p dist
+          cp -R "$(find build/release -name '*.vst3' -maxdepth 6 -type d | head -1)" dist/
+          AU=$(find build/release -name "*.component" -maxdepth 6 -type d | head -1)
+          [ -n "$AU" ] && cp -R "$AU" dist/
+          APP=$(find build/release -name "*.app" -maxdepth 6 -type d | grep -v "\.vst3" | head -1)
+          [ -n "$APP" ] && cp -R "$APP" dist/
+          ls -la dist/
+
+      - name: Package artifacts (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          mkdir -p dist
+          cp -R "$(find build/win-release -name '*.vst3' -type d | head -1)" dist/
+          ls -la dist/
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: blockwave-${{ matrix.name }}
+          path: dist/
+          if-no-files-found: error
+
+      - name: Upload pluginval logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pluginval-logs-${{ matrix.name }}
+          path: pluginval-logs/
+          if-no-files-found: warn

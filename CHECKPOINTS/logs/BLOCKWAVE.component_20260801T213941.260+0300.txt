@@ -1,0 +1,11 @@
+Random seed: 0x2850b50
+Validation started
+	1 Aug 2026 9:39:41pm
+
+Strictness level: 10
+-----------------------------------------------------------------
+Starting tests in: pluginval / Scan for plugins located in: /Users/kirillboyko/Downloads/blockwave-kickoff/build/release/BLOCKWAVE_artefacts/Release/AU/BLOCKWAVE.component...
+Num plugins found: 0
+!!! Test 1 failed: No types found. This usually means the plugin binary is missing or damaged, an incompatible format or that it is an AU that isn't found by macOS so can't be created.
+FAILED!!  1 test failed, out of a total of 1
+FAILURE

@@ -1,0 +1,83 @@
+cmake_minimum_required(VERSION 3.22)
+
+# ---------------------------------------------------------------------------
+# BLOCKWAVE — square-wave-only synthesizer (GPLv3)
+# Working title lives here — single point of change (see CLAUDE.md).
+# ---------------------------------------------------------------------------
+set(BLOCKWAVE_PRODUCT_NAME "BLOCKWAVE")
+
+project(BLOCKWAVE VERSION 0.1.0 LANGUAGES C CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+# --- JUCE 8 via FetchContent ------------------------------------------------
+include(FetchContent)
+FetchContent_Declare(
+    JUCE
+    GIT_REPOSITORY https://github.com/juce-framework/JUCE.git
+    GIT_TAG        8.0.8
+    GIT_SHALLOW    TRUE
+)
+FetchContent_MakeAvailable(JUCE)
+
+# --- Strict warnings for OUR sources only (JUCE module sources excluded) ----
+# CLAUDE.md quality gate: -Wall -Wextra as errors on clang, /W4 /WX on MSVC.
+function(blockwave_strict_warnings)
+    if(MSVC)
+        set(_flags "/W4;/WX")
+    else()
+        set(_flags "-Wall;-Wextra;-Werror")
+    endif()
+    set_source_files_properties(${ARGV} PROPERTIES COMPILE_OPTIONS "${_flags}")
+endfunction()
+
+# --- Plugin target ----------------------------------------------------------
+set(BLOCKWAVE_FORMATS VST3 Standalone)
+if(APPLE)
+    list(APPEND BLOCKWAVE_FORMATS AU)
+endif()
+
+juce_add_plugin(${PROJECT_NAME}
+    PRODUCT_NAME                "${BLOCKWAVE_PRODUCT_NAME}"
+    COMPANY_NAME                "Kirill Boyko"
+    BUNDLE_ID                   "com.kirillboyko.blockwave"
+    PLUGIN_MANUFACTURER_CODE    Krbk
+    PLUGIN_CODE                 Blkw
+    FORMATS                     ${BLOCKWAVE_FORMATS}
+    IS_SYNTH                    TRUE
+    NEEDS_MIDI_INPUT            TRUE
+    NEEDS_MIDI_OUTPUT           FALSE
+    IS_MIDI_EFFECT              FALSE
+    EDITOR_WANTS_KEYBOARD_FOCUS TRUE
+    COPY_PLUGIN_AFTER_BUILD     FALSE
+    VST3_CATEGORIES             Instrument Synth
+    AU_MAIN_TYPE                kAudioUnitType_MusicDevice
+)
+
+set(BLOCKWAVE_PLUGIN_SOURCES
+    plugin/PluginProcessor.cpp
+    plugin/PluginEditor.cpp
+)
+
+target_sources(${PROJECT_NAME} PRIVATE ${BLOCKWAVE_PLUGIN_SOURCES})
+blockwave_strict_warnings(${BLOCKWAVE_PLUGIN_SOURCES})
+
+target_include_directories(${PROJECT_NAME} PRIVATE src)
+
+target_compile_definitions(${PROJECT_NAME}
+    PUBLIC
+        JUCE_WEB_BROWSER=0
+        JUCE_USE_CURL=0
+        JUCE_VST3_CAN_REPLACE_VST2=0
+)
+
+target_link_libraries(${PROJECT_NAME}
+    PRIVATE
+        juce::juce_audio_utils
+        juce::juce_dsp
+    PUBLIC
+        juce::juce_recommended_config_flags
+)

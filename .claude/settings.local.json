@@ -13,7 +13,23 @@
       "Bash(cmake --version | head -1; ninja --version; gh --version | head -1; gh auth status 2>&1 | head -6; echo \"=== pluginval ===\"; which pluginval || ls /Applications/pluginval.app 2>/dev/null || echo \"not installed\")",
       "Bash(git init *)",
       "Bash(git add *)",
-      "Bash(git -c user.name=\"Kirill Boyko\" -c user.email=\"kirichplayez@gmail.com\" commit -m \"kickoff: specs, roadmap, agents\")"
+      "Bash(git -c user.name=\"Kirill Boyko\" -c user.email=\"kirichplayez@gmail.com\" commit -m \"kickoff: specs, roadmap, agents\")",
+      "Bash(git config *)",
+      "Bash(curl -fsSL https://www.gnu.org/licenses/gpl-3.0.txt -o /Users/kirillboyko/Downloads/blockwave-kickoff/LICENSE)",
+      "Bash(chmod +x scripts/build.sh scripts/validate.sh)",
+      "Bash(./scripts/build.sh)",
+      "Bash(./scripts/build.sh --clean)",
+      "Bash(echo \"BUILD_EXIT=$?\")",
+      "Bash(break)",
+      "Bash(./scripts/validate.sh CHECKPOINTS/logs)",
+      "Bash(echo \"VALIDATE_EXIT=$?\")",
+      "Bash(mkdir -p ~/Library/Audio/Plug-Ins/Components)",
+      "Bash(cp -R /Users/kirillboyko/Downloads/blockwave-kickoff/build/release/BLOCKWAVE_artefacts/Release/AU/BLOCKWAVE.component ~/Library/Audio/Plug-Ins/Components/)",
+      "Bash(killall -9 AudioComponentRegistrar)",
+      "Bash(/Applications/pluginval.app/Contents/MacOS/pluginval --strictness-level 10 --verbose --output-dir /Users/kirillboyko/Downloads/blockwave-kickoff/CHECKPOINTS/logs --validate ~/Library/Audio/Plug-Ins/Components/BLOCKWAVE.component)",
+      "Bash(echo \"AU_EXIT=$?\")",
+      "Bash(cmake --build --preset release --parallel)",
+      "Bash(git commit -m 'Phase 0: JUCE 8 skeleton — VST3+AU+Standalone build, pluginval s10 green, CI workflow *)"
     ]
   }
 }
