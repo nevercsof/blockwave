@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "name": "ECHO TOM",
+  "category": "PERC",
+  "author": "BLOCKWAVE Factory",
+  "note": "spacey tom \u2014 CLOUD cave behind the drop, attack pinned",
+  "craft": {
+    "base": "PERC",
+    "cells": [
+      "",
+      "",
+      "",
+      "CLOUD",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_a": 0.001,
+    "env2_pitch": 18,
+    "filt_cutoff": 600,
+    "cave_mix": 0.3
+  }
+}

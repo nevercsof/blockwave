@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "STARLESS POND",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "hazy soft lo-fi bass, faint air",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "MOSS",
+      "",
+      "",
+      "CLOUD",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_a": 0.03,
+    "cave_mix": 0.1
+  }
+}

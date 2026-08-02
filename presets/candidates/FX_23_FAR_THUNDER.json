@@ -1,0 +1,28 @@
+{
+  "formatVersion": 1,
+  "name": "FAR THUNDER",
+  "category": "FX",
+  "author": "BLOCKWAVE Factory",
+  "note": "distant thunder \u2014 long dark LFSR rumble with a slow pitch sag",
+  "craft": {
+    "base": "PERC",
+    "cells": [
+      "",
+      "CLOUD",
+      "",
+      "",
+      "SAND",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_a": 0.001,
+    "env1_d": 2.0,
+    "filt_cutoff": 250,
+    "env2_pitch": 8,
+    "env2_d": 0.5,
+    "noise_level": 0.6
+  }
+}

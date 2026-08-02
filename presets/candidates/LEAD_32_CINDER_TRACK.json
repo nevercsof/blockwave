@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "CINDER TRACK",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 12 \u2014 RAW crushed runner, short sustain",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "LAVA",
+      "",
+      "",
+      "STONE",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_s": 0.6
+  }
+}

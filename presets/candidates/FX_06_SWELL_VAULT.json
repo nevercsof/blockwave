@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "name": "SWELL VAULT",
+  "category": "FX",
+  "author": "BLOCKWAVE Factory",
+  "note": "filter-only riser pad \u2014 cutoff climbs from 900 Hz, pitch stays put",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "ICE",
+      ""
+    ]
+  },
+  "params": {
+    "filt_cutoff": 900,
+    "env2_a": 2.8,
+    "env2_s": 1.0,
+    "filt_env": 0.8
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "name": "BRINE CLAV",
+  "category": "KEYS",
+  "author": "BLOCKWAVE Factory",
+  "note": "square clav \u2014 thin pulse, envelope bite, crunchy edge",
+  "craft": {
+    "base": "KEYS",
+    "cells": [
+      "",
+      "",
+      "",
+      "GLASS",
+      "LAVA",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_s": 0.2,
+    "env1_d": 0.3,
+    "filt_env": 0.5,
+    "filt_keytrack": 0.6
+  }
+}

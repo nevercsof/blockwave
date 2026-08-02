@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "WOBBLE CART",
+  "category": "CHIP",
+  "author": "BLOCKWAVE Factory",
+  "note": "fast 1/16 PW wobble \u2014 a cart with a bent wheel",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "SLIME",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "lfo2_rate": 0.0625
+  }
+}

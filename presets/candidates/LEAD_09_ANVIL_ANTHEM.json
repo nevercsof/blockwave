@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "ANVIL ANTHEM",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 4 supersquare \u2014 7 voices wide, anthem sustain",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "GOLD",
+      "GOLD",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "uni_detune": 28,
+    "env1_s": 0.85
+  }
+}

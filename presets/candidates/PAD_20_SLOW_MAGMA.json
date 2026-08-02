@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "SLOW MAGMA",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "dark heavy crush pad, kept at pitch",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "",
+      "LAVA",
+      "",
+      "",
+      "OBSIDIAN",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "oscA_oct": 0,
+    "crush_mix": 0.2,
+    "filt_cutoff": 1200
+  }
+}

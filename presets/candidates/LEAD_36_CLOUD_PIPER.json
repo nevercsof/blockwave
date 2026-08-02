@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "CLOUD PIPER",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 13-adjacent soft airy lead, damped cave",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "CLOUD",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_a": 0.12,
+    "cave_damp": 0.7
+  }
+}

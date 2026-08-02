@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "LICHEN HARMONIUM",
+  "category": "KEYS",
+  "author": "BLOCKWAVE Factory",
+  "note": "hazy harmonium \u2014 lo-fi crush with CLOUD air",
+  "craft": {
+    "base": "KEYS",
+    "cells": [
+      "",
+      "",
+      "",
+      "MOSS",
+      "CLOUD",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_s": 0.9,
+    "env1_a": 0.15
+  }
+}

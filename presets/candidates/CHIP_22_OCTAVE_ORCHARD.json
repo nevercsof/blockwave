@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "OCTAVE ORCHARD",
+  "category": "CHIP",
+  "author": "BLOCKWAVE Factory",
+  "note": "octave-stacked chip \u2014 OSC B a rung above, GOLD width",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "GOLD",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "oscB_on": true,
+    "oscB_oct": 1,
+    "oscB_level": 0.5
+  }
+}

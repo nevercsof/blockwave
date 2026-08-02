@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "CRATER BOOM",
+  "category": "PERC",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 8 \u2014 sub kick an octave down, long boom",
+  "craft": {
+    "base": "PERC",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "OBSIDIAN",
+      ""
+    ]
+  },
+  "params": {
+    "env1_d": 0.5,
+    "env2_pitch": 34
+  }
+}

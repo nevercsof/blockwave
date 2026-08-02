@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "WALNUT PIANO",
+  "category": "KEYS",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 3 warmed \u2014 woody piano-adjacent keys",
+  "craft": {
+    "base": "KEYS",
+    "cells": [
+      "",
+      "",
+      "",
+      "WOOD",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_keytrack": 0.6
+  }
+}

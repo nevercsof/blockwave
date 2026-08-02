@@ -1,0 +1,21 @@
+{
+  "formatVersion": 1,
+  "name": "GEYSER",
+  "category": "FX",
+  "author": "BLOCKWAVE Factory",
+  "note": "hidden-recipe showcase: technique 13 + LFSR \u2014 pressure builds, then the held riser erupts",
+  "craft": {
+    "base": "DRONE",
+    "cells": [
+      "",
+      "VOLT",
+      "",
+      "",
+      "",
+      "SAND",
+      "SAND",
+      "SAND"
+    ]
+  },
+  "params": {}
+}

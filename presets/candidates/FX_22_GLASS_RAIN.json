@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "name": "GLASS RAIN",
+  "category": "FX",
+  "author": "BLOCKWAVE Factory",
+  "note": "shimmer rain \u2014 fast chirps through a 1/16 feedback sprinkle",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "GLASS",
+      "",
+      "",
+      "ICE",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "dly_time": "1/16",
+    "dly_fb": 0.65,
+    "dly_mix": 0.5,
+    "env2_pitch": 17,
+    "env2_d": 0.03
+  }
+}

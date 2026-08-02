@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "FANFARE FALLS",
+  "category": "CHIP",
+  "author": "BLOCKWAVE Factory",
+  "note": "RAW wide fanfare tone \u2014 victory screen material",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "GOLD",
+      "",
+      "",
+      "",
+      "",
+      "STONE",
+      ""
+    ]
+  },
+  "params": {
+    "env1_s": 0.7
+  }
+}

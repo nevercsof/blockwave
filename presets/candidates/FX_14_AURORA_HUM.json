@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "AURORA HUM",
+  "category": "FX",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 1 \u2014 shimmering drone under the slowest 8/1 PWM",
+  "craft": {
+    "base": "DRONE",
+    "cells": [
+      "",
+      "",
+      "",
+      "ICE",
+      "GOLD",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "lfo1_rate": 8.0
+  }
+}

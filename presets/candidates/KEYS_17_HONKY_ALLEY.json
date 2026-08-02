@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "HONKY ALLEY",
+  "category": "KEYS",
+  "author": "BLOCKWAVE Factory",
+  "note": "honky-tonk \u2014 beat-frequency detune on lo-fi RAW keys",
+  "craft": {
+    "base": "KEYS",
+    "cells": [
+      "",
+      "STONE",
+      "",
+      "",
+      "MOSS",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "oscA_fine": 6,
+    "uni_count": 2,
+    "uni_detune": 12
+  }
+}

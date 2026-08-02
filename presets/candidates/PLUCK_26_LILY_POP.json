@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "LILY POP",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "gluey pop \u2014 60% pulse with SLIME's PW wobble on the tail",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "",
+      "",
+      "SLIME",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env2_pitch": 8,
+    "env2_d": 0.05
+  }
+}

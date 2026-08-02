@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "name": "BRICK BUMP",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "8-bit stab with a small technique 7 pitch drop",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "STONE",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_s": 0.0,
+    "env1_d": 0.2,
+    "env2_pitch": 12,
+    "env2_d": 0.05
+  }
+}

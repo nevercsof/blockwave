@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "name": "FUSE DROP",
+  "category": "FX",
+  "author": "BLOCKWAVE Factory",
+  "note": "the drop \u2014 pitch falls 30 st over 1.6 s and stays down",
+  "craft": {
+    "base": "DRONE",
+    "cells": [
+      "",
+      "",
+      "",
+      "TNT",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_s": 1.0,
+    "env2_a": 1.6,
+    "env2_s": 1.0,
+    "env2_pitch": -30,
+    "noise_level": 0.3
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "POLAR CHOIR",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 4 soft supersquare choir, slow bloom",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "ICE",
+      "ICE",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_a": 0.06,
+    "env1_s": 0.9
+  }
+}

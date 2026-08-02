@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "QUARTZ SCREAM",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 5 sync scream, single CRYSTAL formant + keytrack",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "CRYSTAL",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_keytrack": 0.4,
+    "filt_res": 0.22
+  }
+}

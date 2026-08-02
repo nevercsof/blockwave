@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "BOG WHISTLE",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 14 vocal whistle \u2014 thin PW pinned under the SLIME wobble",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "SLIME",
+      "",
+      "",
+      "",
+      "",
+      "GLASS",
+      ""
+    ]
+  },
+  "params": {
+    "oscA_pw": 16,
+    "voice_mode": "legato"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "JITTER PEAK",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "VOLT lead \u2014 1/16 PWM shimmer + s&h cutoff sparks",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "VOLT",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_res": 0.2
+  }
+}

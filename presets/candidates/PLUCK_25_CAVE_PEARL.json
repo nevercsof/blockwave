@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "CAVE PEARL",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 5+13 \u2014 small bell dropped into a large cave",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "",
+      "",
+      "CLOUD",
+      "",
+      "",
+      "CRYSTAL",
+      ""
+    ]
+  },
+  "params": {
+    "env1_a": 0.002,
+    "cave_size": 0.8
+  }
+}

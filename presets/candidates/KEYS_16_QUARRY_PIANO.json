@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "QUARRY PIANO",
+  "category": "KEYS",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 12 \u2014 RAW dry keys, chisel-bright velocity",
+  "craft": {
+    "base": "KEYS",
+    "cells": [
+      "",
+      "",
+      "",
+      "STONE",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_keytrack": 0.5,
+    "vel_amp": 0.85
+  }
+}

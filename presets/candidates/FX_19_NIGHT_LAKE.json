@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "NIGHT LAKE",
+  "category": "FX",
+  "author": "BLOCKWAVE Factory",
+  "note": "dark lo-fi drone \u2014 still water, no moon",
+  "craft": {
+    "base": "DRONE",
+    "cells": [
+      "",
+      "OBSIDIAN",
+      "",
+      "",
+      "MOSS",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "master_gain": -1.0
+  }
+}

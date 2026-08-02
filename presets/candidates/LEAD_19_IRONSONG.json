@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "IRONSONG",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 5+12 \u2014 RAW dry sync metal",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "CRYSTAL",
+      "",
+      "",
+      "STONE",
+      ""
+    ]
+  },
+  "params": {
+    "filt_res": 0.2
+  }
+}

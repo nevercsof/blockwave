@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "CAVERN LIGHT",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 13 \u2014 a thin ray in a big wet cave",
+  "craft": {
+    "base": "DRONE",
+    "cells": [
+      "",
+      "CLOUD",
+      "",
+      "",
+      "",
+      "",
+      "GLASS",
+      ""
+    ]
+  },
+  "params": {
+    "cave_damp": 0.35
+  }
+}

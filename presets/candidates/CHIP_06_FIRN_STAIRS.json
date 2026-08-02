@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "name": "FIRN STAIRS",
+  "category": "CHIP",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 10 \u2014 cold octave steps at a lazy 1/4",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "ICE",
+      "",
+      "VOLT",
+      ""
+    ]
+  },
+  "params": {
+    "lfo2_dest": "pitch",
+    "lfo2_shape": "square",
+    "lfo2_amt": 1.0,
+    "lfo2_rate": 0.25
+  }
+}

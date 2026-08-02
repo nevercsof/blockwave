@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "name": "COLD ASCENT",
+  "category": "FX",
+  "author": "BLOCKWAVE Factory",
+  "note": "held riser \u2014 ENV2 attack drives pitch and filter upward for 2.5 s",
+  "craft": {
+    "base": "DRONE",
+    "cells": [
+      "",
+      "ICE",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env2_a": 2.5,
+    "env2_s": 1.0,
+    "env2_pitch": 19,
+    "filt_env": 0.4,
+    "master_gain": -2.0
+  }
+}

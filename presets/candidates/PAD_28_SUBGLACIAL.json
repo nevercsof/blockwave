@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "SUBGLACIAL",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "under the ice sheet \u2014 deep drone pad, keytracked to survive chords",
+  "craft": {
+    "base": "DRONE",
+    "cells": [
+      "",
+      "",
+      "",
+      "OBSIDIAN",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_cutoff": 520,
+    "filt_keytrack": 0.5,
+    "master_gain": -1.0
+  }
+}

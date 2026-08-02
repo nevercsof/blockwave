@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "NIGHT LIBRARY",
+  "category": "KEYS",
+  "author": "BLOCKWAVE Factory",
+  "note": "dark quiet keys, kept at pitch and keytracked",
+  "craft": {
+    "base": "KEYS",
+    "cells": [
+      "",
+      "",
+      "",
+      "OBSIDIAN",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "oscA_oct": 0,
+    "filt_keytrack": 0.6,
+    "filt_cutoff": 1500
+  }
+}

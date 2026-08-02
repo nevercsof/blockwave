@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "BONUS STAGE",
+  "category": "CHIP",
+  "author": "BLOCKWAVE Factory",
+  "note": "sparkly bonus-round jingle chip with a 1/16 glitter echo",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "",
+      "",
+      "GOLD",
+      "",
+      "",
+      "GLASS",
+      ""
+    ]
+  },
+  "params": {
+    "env1_s": 0.5,
+    "dly_time": "1/16",
+    "dly_mix": 0.25
+  }
+}

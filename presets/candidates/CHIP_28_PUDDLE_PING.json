@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "PUDDLE PING",
+  "category": "CHIP",
+  "author": "BLOCKWAVE Factory",
+  "note": "lo-fi blip with a soft landing",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "MOSS",
+      "",
+      "",
+      "GLASS",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_s": 0.2,
+    "env1_d": 0.15
+  }
+}

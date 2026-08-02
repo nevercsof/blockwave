@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "OBOE MESA",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 3-adjacent hollow reed lead, legato micro-glide",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "WOOD",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "voice_mode": "legato",
+    "glide_time": 0.06
+  }
+}

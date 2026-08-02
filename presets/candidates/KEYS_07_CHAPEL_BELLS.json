@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "name": "CHAPEL BELLS",
+  "category": "KEYS",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 5 bell keys \u2014 CRYSTAL chirp, long strike",
+  "craft": {
+    "base": "KEYS",
+    "cells": [
+      "",
+      "CRYSTAL",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_d": 0.9,
+    "env1_s": 0.15,
+    "env1_r": 0.6,
+    "filt_keytrack": 0.5
+  }
+}

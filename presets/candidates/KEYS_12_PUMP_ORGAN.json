@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "name": "PUMP ORGAN",
+  "category": "KEYS",
+  "author": "BLOCKWAVE Factory",
+  "note": "hollow organ \u2014 sub drawbar, full sustain",
+  "craft": {
+    "base": "KEYS",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "WOOD",
+      ""
+    ]
+  },
+  "params": {
+    "sub_on": true,
+    "sub_level": 0.5,
+    "env1_s": 1.0,
+    "env1_r": 0.09
+  }
+}

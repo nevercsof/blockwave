@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "BRIGHT RIM",
+  "category": "PERC",
+  "author": "BLOCKWAVE Factory",
+  "note": "RAW rimshot \u2014 short bright tick with grit",
+  "craft": {
+    "base": "PERC",
+    "cells": [
+      "",
+      "STONE",
+      "",
+      "",
+      "SAND",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_cutoff": 3500,
+    "env1_d": 0.06,
+    "env2_pitch": 5
+  }
+}

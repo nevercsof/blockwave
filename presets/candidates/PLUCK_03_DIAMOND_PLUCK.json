@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "DIAMOND PLUCK",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 7 pitch-env pluck \u2014 glassy, wide, keytracked",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "",
+      "",
+      "GLASS",
+      "ICE",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env2_pitch": 12,
+    "env2_d": 0.06,
+    "filt_keytrack": 0.5
+  }
+}

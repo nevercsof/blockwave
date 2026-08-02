@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "TAPE SNARE",
+  "category": "PERC",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 11 \u2014 lo-fi snare, crushed and downsampled",
+  "craft": {
+    "base": "PERC",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "SAND",
+      "",
+      "MOSS",
+      ""
+    ]
+  },
+  "params": {
+    "filt_cutoff": 1400,
+    "env1_d": 0.13
+  }
+}

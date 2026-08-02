@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "name": "BOILER RISE",
+  "category": "FX",
+  "author": "BLOCKWAVE Factory",
+  "note": "slow pressure riser \u2014 noise swells as the pitch climbs",
+  "craft": {
+    "base": "DRONE",
+    "cells": [
+      "",
+      "",
+      "",
+      "SAND",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env2_a": 3.5,
+    "env2_s": 1.0,
+    "env2_pitch": 12,
+    "filt_env": 0.6,
+    "noise_level": 0.5
+  }
+}

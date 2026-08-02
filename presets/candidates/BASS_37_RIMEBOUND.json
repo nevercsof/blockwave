@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "RIMEBOUND",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "cold RAW stab \u2014 frost on stone",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "ICE",
+      "",
+      "",
+      "STONE",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_d": 0.2
+  }
+}

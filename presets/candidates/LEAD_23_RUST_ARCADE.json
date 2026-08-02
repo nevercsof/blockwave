@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "RUST ARCADE",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 12 RAW + LAVA grind, downsampled arcade cabinet",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "STONE",
+      "",
+      "",
+      "",
+      "",
+      "LAVA",
+      ""
+    ]
+  },
+  "params": {
+    "crush_down": 4
+  }
+}

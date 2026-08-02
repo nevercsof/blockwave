@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "DUST CURTAIN",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "LFSR texture behind the PWM \u2014 a falling dust veil",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "SAND",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "noise_level": 0.2
+  }
+}

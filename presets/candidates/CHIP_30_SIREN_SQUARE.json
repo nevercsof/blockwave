@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "name": "SIREN SQUARE",
+  "category": "CHIP",
+  "author": "BLOCKWAVE Factory",
+  "note": "slow triangle pitch siren \u2014 free-running at 1.2 Hz",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "VOLT",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "lfo2_dest": "pitch",
+    "lfo2_shape": "tri",
+    "lfo2_sync": false,
+    "lfo2_rate": 1.2,
+    "lfo2_amt": 0.55
+  }
+}

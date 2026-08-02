@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "FLINT WHISTLE",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 2 an octave up \u2014 piccolo pulse into a 1/8 ping-pong",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "GLASS",
+      ""
+    ]
+  },
+  "params": {
+    "oscA_oct": 1,
+    "dly_mix": 0.25,
+    "dly_time": "1/8"
+  }
+}

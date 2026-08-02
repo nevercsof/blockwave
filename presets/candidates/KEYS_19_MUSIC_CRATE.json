@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "MUSIC CRATE",
+  "category": "KEYS",
+  "author": "BLOCKWAVE Factory",
+  "note": "music-box plink \u2014 an octave up, no sustain, RAW sparkle",
+  "craft": {
+    "base": "KEYS",
+    "cells": [
+      "",
+      "GLASS",
+      "",
+      "",
+      "STONE",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "oscA_oct": 1,
+    "env1_d": 0.5,
+    "env1_s": 0.0
+  }
+}

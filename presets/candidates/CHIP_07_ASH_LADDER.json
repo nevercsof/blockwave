@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "ASH LADDER",
+  "category": "CHIP",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 10 \u2014 crushed octave arp, soot on every rung",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "",
+      "",
+      "VOLT",
+      "",
+      "",
+      "LAVA",
+      ""
+    ]
+  },
+  "params": {
+    "lfo2_dest": "pitch",
+    "lfo2_shape": "square",
+    "lfo2_amt": 1.0
+  }
+}

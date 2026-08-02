@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "SMOKE SIGNAL",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "hazy signal \u2014 CLOUD air through a mild downsample",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "",
+      "CLOUD",
+      "",
+      "",
+      "",
+      "",
+      "MOSS",
+      ""
+    ]
+  },
+  "params": {
+    "crush_down": 6
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "DEEP CURRENT",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "DRONE base as a pad \u2014 cold undertow, slow PWM drift",
+  "craft": {
+    "base": "DRONE",
+    "cells": [
+      "",
+      "",
+      "",
+      "ICE",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_keytrack": 0.4,
+    "env1_a": 1.2
+  }
+}

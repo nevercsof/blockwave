@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "SWAMP CABLE",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "crushed wub \u2014 LAVA grind under a lazy 1/4 swing",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "",
+      "",
+      "SLIME",
+      "LAVA",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "lfo2_rate": 0.25,
+    "voice_mode": "mono"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "GRAVEL POP",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 7+8 \u2014 percussive pop with an LFSR spit",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "STONE",
+      "",
+      "",
+      "",
+      "",
+      "TNT",
+      ""
+    ]
+  },
+  "params": {
+    "noise_level": 0.3,
+    "env2_pitch": 16
+  }
+}

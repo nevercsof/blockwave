@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "TREMOR TOM",
+  "category": "PERC",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 8 \u2014 sub-boom floor tom, seismic",
+  "craft": {
+    "base": "PERC",
+    "cells": [
+      "",
+      "OBSIDIAN",
+      "",
+      "",
+      "TNT",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_d": 0.6
+  }
+}

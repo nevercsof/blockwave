@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "PLINK DROP",
+  "category": "PERC",
+  "author": "BLOCKWAVE Factory",
+  "note": "water plink \u2014 thin pulse drop into a GLASS echo",
+  "craft": {
+    "base": "PERC",
+    "cells": [
+      "",
+      "",
+      "",
+      "GLASS",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env2_pitch": 30,
+    "env2_d": 0.03,
+    "filt_cutoff": 2200
+  }
+}

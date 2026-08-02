@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "name": "LASER HEDGE",
+  "category": "CHIP",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 8 zap as a playable lead \u2014 +36 st pew, RAW",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "STONE",
+      ""
+    ]
+  },
+  "params": {
+    "env2_pitch": 36,
+    "env2_d": 0.08,
+    "env1_s": 0.0,
+    "env1_d": 0.15
+  }
+}

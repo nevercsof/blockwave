@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "CRUST BREAKER",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "double LAVA \u2014 7-bit grind with envelope wah, headroom spent carefully",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "",
+      "",
+      "LAVA",
+      "LAVA",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env2_d": 0.1,
+    "master_gain": -2.0
+  }
+}

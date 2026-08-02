@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "TINE POND",
+  "category": "KEYS",
+  "author": "BLOCKWAVE Factory",
+  "note": "EP tines \u2014 GLASS thinness on a WOOD body",
+  "craft": {
+    "base": "KEYS",
+    "cells": [
+      "",
+      "GLASS",
+      "",
+      "",
+      "WOOD",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_keytrack": 0.6,
+    "vel_amp": 0.85
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "COPPER BELL",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 5 bell \u2014 single CRYSTAL, long strike decay",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "CRYSTAL",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_d": 0.6,
+    "env1_r": 0.5,
+    "filt_keytrack": 0.5
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "PRAIRIE SHINE",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "wide thin shimmer pad, slow bloom",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "",
+      "GLASS",
+      "",
+      "",
+      "GOLD",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_a": 0.6
+  }
+}

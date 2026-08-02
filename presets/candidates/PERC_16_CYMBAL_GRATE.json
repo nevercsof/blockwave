@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "name": "CYMBAL GRATE",
+  "category": "PERC",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 9 \u2014 short-LFSR trash ride, long metallic decay",
+  "craft": {
+    "base": "PERC",
+    "cells": [
+      "",
+      "SAND",
+      "",
+      "",
+      "SAND",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "oscA_on": false,
+    "noise_mode": "short",
+    "filt_type": "HP",
+    "filt_cutoff": 4500,
+    "env1_d": 0.6
+  }
+}

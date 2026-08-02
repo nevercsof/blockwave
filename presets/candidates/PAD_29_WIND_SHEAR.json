@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "WIND SHEAR",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "cold breathy pad \u2014 noise shear across the PWM",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "",
+      "SAND",
+      "",
+      "",
+      "",
+      "",
+      "ICE",
+      ""
+    ]
+  },
+  "params": {
+    "noise_level": 0.25
+  }
+}

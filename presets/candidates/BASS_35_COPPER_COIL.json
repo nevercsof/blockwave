@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "COPPER COIL",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "wide gritty coil \u2014 GOLD sheen over LAVA crush",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "",
+      "",
+      "GOLD",
+      "",
+      "",
+      "LAVA",
+      ""
+    ]
+  },
+  "params": {
+    "uni_spread": 0.25,
+    "crush_mix": 0.2
+  }
+}

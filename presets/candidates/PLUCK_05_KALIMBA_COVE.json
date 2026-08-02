@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "KALIMBA COVE",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 7 \u2014 soft thumb-piano chirp, warm filter",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "",
+      "",
+      "WOOD",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env2_pitch": 9,
+    "env2_d": 0.04,
+    "env1_d": 0.3
+  }
+}

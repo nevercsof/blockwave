@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "LADDER SPRITE",
+  "category": "CHIP",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 10 faked arp \u2014 square LFO2 to pitch, +/-12 st at 1/16",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "",
+      "",
+      "VOLT",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "lfo2_dest": "pitch",
+    "lfo2_shape": "square",
+    "lfo2_amt": 1.0
+  }
+}

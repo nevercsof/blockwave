@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "MOSS BEAD",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 7+11 \u2014 lo-fi bead, wobbly tape pitch",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "",
+      "",
+      "MOSS",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env2_pitch": 10,
+    "env2_d": 0.05
+  }
+}

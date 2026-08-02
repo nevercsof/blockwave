@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "name": "PIT PLUNGE",
+  "category": "FX",
+  "author": "BLOCKWAVE Factory",
+  "note": "SINKHOLE's little cousin \u2014 chord falls 24 st, filter closes behind it",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "OBSIDIAN",
+      "OBSIDIAN",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "oscA_oct": 0,
+    "env2_a": 2.2,
+    "env2_s": 1.0,
+    "env2_pitch": -24,
+    "filt_env": -0.5
+  }
+}

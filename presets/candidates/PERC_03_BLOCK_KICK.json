@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "BLOCK KICK",
+  "category": "PERC",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 8 kick \u2014 the PERC base itself, tightened; replaces the dev preset",
+  "craft": {
+    "base": "PERC",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_d": 0.28,
+    "filt_cutoff": 300
+  }
+}

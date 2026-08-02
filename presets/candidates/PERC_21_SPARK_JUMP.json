@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "SPARK JUMP",
+  "category": "PERC",
+  "author": "BLOCKWAVE Factory",
+  "note": "rising zap \u2014 negative pitch env sweeps up into the note",
+  "craft": {
+    "base": "PERC",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "VOLT",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env2_pitch": -36,
+    "env2_d": 0.2,
+    "filt_cutoff": 1500
+  }
+}

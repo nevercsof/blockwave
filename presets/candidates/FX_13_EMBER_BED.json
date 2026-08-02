@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "EMBER BED",
+  "category": "FX",
+  "author": "BLOCKWAVE Factory",
+  "note": "crackling warm drone \u2014 coals settling overnight",
+  "craft": {
+    "base": "DRONE",
+    "cells": [
+      "",
+      "",
+      "",
+      "LAVA",
+      "MOSS",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_cutoff": 700
+  }
+}

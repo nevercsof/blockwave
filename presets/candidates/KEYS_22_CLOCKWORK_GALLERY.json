@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "CLOCKWORK GALLERY",
+  "category": "KEYS",
+  "author": "BLOCKWAVE Factory",
+  "note": "dry metallic keys \u2014 escapement ticks in a stone room",
+  "craft": {
+    "base": "KEYS",
+    "cells": [
+      "",
+      "",
+      "",
+      "CRYSTAL",
+      "",
+      "",
+      "STONE",
+      ""
+    ]
+  },
+  "params": {
+    "env1_s": 0.15,
+    "env1_d": 0.5
+  }
+}

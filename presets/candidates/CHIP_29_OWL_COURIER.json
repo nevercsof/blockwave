@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "OWL COURIER",
+  "category": "CHIP",
+  "author": "BLOCKWAVE Factory",
+  "note": "dark low chip \u2014 night delivery an octave down",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "",
+      "",
+      "OBSIDIAN",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_keytrack": 0.6
+  }
+}

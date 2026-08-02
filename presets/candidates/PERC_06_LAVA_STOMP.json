@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "LAVA STOMP",
+  "category": "PERC",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 8 \u2014 crushed kick, gritty mid knock",
+  "craft": {
+    "base": "PERC",
+    "cells": [
+      "",
+      "",
+      "",
+      "LAVA",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_d": 0.2
+  }
+}

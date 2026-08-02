@@ -20,3 +20,6 @@ compile_commands.json
 # deterministic — kept local instead of bloating a public repo forever.
 #   render --craft-matrix CHECKPOINTS/artifacts/craft_matrix --sr 48000
 CHECKPOINTS/artifacts/craft_matrix/
+
+# Phase 6 listening pack: ~360 MB of WAVs, regenerable from presets/candidates
+CHECKPOINTS/artifacts/renderpack/

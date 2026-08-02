@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "name": "FIFTH FOUNTAIN",
+  "category": "CHIP",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 10 \u2014 +/-7 st square jumps at 1/8, fourths-and-fifths fountain",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "VOLT",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "lfo2_dest": "pitch",
+    "lfo2_shape": "square",
+    "lfo2_amt": 0.76,
+    "lfo2_rate": 0.125
+  }
+}

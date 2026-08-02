@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "RANDOM RUINS",
+  "category": "CHIP",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 10 \u2014 s&h random octave arp at VOLT's 1/16",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "VOLT",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "lfo2_dest": "pitch",
+    "lfo2_amt": 1.0
+  }
+}

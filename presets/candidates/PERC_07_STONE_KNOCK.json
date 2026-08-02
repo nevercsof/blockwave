@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "STONE KNOCK",
+  "category": "PERC",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 8+12 \u2014 tight RAW click kick, tiny drop",
+  "craft": {
+    "base": "PERC",
+    "cells": [
+      "",
+      "",
+      "",
+      "STONE",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_d": 0.12,
+    "env2_pitch": 22
+  }
+}

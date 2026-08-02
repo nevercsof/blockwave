@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "DUSK TERRACE",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "dark pad pinned back to pitch, sub anchored",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "OBSIDIAN",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "oscA_oct": 0,
+    "filt_keytrack": 0.4
+  }
+}

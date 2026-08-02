@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "MINE ELEVATOR",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 14 \u2014 deep gliding platform bass",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "OBSIDIAN",
+      "",
+      "SLIME",
+      ""
+    ]
+  },
+  "params": {
+    "voice_mode": "mono",
+    "filt_cutoff": 520
+  }
+}

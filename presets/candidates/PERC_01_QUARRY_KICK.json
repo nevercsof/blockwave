@@ -1,0 +1,21 @@
+{
+  "formatVersion": 1,
+  "name": "QUARRY KICK",
+  "category": "PERC",
+  "author": "BLOCKWAVE Factory",
+  "note": "hidden-recipe showcase: technique 8 kick \u2014 +30 st / 55 ms drop with a short-LFSR crack",
+  "craft": {
+    "base": "PERC",
+    "cells": [
+      "",
+      "TNT",
+      "",
+      "SAND",
+      "",
+      "",
+      "TNT",
+      ""
+    ]
+  },
+  "params": {}
+}

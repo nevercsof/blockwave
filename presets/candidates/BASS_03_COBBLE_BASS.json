@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "COBBLE BASS",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 6+12 \u2014 sub-anchored, RAW, bone dry",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "",
+      "",
+      "STONE",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_keytrack": 0.4,
+    "env1_d": 0.22
+  }
+}

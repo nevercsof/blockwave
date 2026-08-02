@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "ANTHEM WALL",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "gated RAW supersquare wall \u2014 dry, tight, wide",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "",
+      "GOLD",
+      "",
+      "",
+      "",
+      "",
+      "STONE",
+      ""
+    ]
+  },
+  "params": {
+    "env1_a": 0.05,
+    "env1_s": 1.0
+  }
+}

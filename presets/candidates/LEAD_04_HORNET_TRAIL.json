@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "HORNET TRAIL",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 2 thin pulse with a breath of long-LFSR air",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "GLASS",
+      "SAND",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "noise_level": 0.22
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "COBALT CRY",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 5 sync chilled by ICE, big cave",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "CRYSTAL",
+      "",
+      "",
+      "ICE",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "cave_size": 0.75
+  }
+}

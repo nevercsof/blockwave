@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "SLEET HISS",
+  "category": "FX",
+  "author": "BLOCKWAVE Factory",
+  "note": "cold hiss texture \u2014 LFSR sleet on a frozen drone",
+  "craft": {
+    "base": "DRONE",
+    "cells": [
+      "",
+      "ICE",
+      "",
+      "",
+      "SAND",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "noise_level": 0.4
+  }
+}

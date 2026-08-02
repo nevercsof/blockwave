@@ -1,0 +1,21 @@
+{
+  "formatVersion": 1,
+  "name": "COBBLE THUMP",
+  "category": "PERC",
+  "author": "BLOCKWAVE Factory",
+  "note": "hidden-recipe showcase: technique 8+12 \u2014 bone-dry RAW tom, keytracked across the drum range",
+  "craft": {
+    "base": "PERC",
+    "cells": [
+      "STONE",
+      "",
+      "STONE",
+      "",
+      "",
+      "STONE",
+      "",
+      "STONE"
+    ]
+  },
+  "params": {}
+}

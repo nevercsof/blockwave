@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "QUAKE LINE",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "one block shy of MAGMA FLOOR \u2014 its rougher cousin",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "",
+      "",
+      "OBSIDIAN",
+      "LAVA",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_cutoff": 420,
+    "filt_keytrack": 0.5
+  }
+}

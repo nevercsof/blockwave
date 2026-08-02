@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "CASSETTE KEYS",
+  "category": "KEYS",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 11 \u2014 lo-fi tape piano",
+  "craft": {
+    "base": "KEYS",
+    "cells": [
+      "",
+      "",
+      "",
+      "MOSS",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_keytrack": 0.5
+  }
+}

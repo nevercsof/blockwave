@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "TAR HOP",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "dry RAW wub stab \u2014 sticks then lets go",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "SLIME",
+      "",
+      "",
+      "",
+      "",
+      "STONE",
+      ""
+    ]
+  },
+  "params": {
+    "env1_s": 0.3
+  }
+}

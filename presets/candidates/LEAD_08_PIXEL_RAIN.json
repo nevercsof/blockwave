@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "name": "PIXEL RAIN",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 2 thin pulse into a dotted-1/8 rain delay",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "GLASS",
+      "",
+      "",
+      "",
+      "",
+      "GLASS",
+      ""
+    ]
+  },
+  "params": {
+    "dly_time": "1/8D",
+    "dly_mix": 0.4,
+    "dly_fb": 0.55,
+    "env1_s": 0.45
+  }
+}

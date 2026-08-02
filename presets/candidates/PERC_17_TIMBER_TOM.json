@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "name": "TIMBER TOM",
+  "category": "PERC",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 8 tom \u2014 warm knock, keytracked across the kit",
+  "craft": {
+    "base": "PERC",
+    "cells": [
+      "",
+      "",
+      "",
+      "WOOD",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env2_pitch": 16,
+    "env2_d": 0.08,
+    "filt_cutoff": 700,
+    "filt_keytrack": 0.8,
+    "env1_d": 0.3
+  }
+}

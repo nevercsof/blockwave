@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "FIREBOX KEYS",
+  "category": "KEYS",
+  "author": "BLOCKWAVE Factory",
+  "note": "gritty keys \u2014 LAVA crush kept polite for chords",
+  "craft": {
+    "base": "KEYS",
+    "cells": [
+      "",
+      "",
+      "",
+      "LAVA",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_env": 0.15
+  }
+}

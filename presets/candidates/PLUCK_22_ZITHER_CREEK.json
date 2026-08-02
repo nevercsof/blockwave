@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "ZITHER CREEK",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "shimmering zither \u2014 thin pulse, GOLD spread, echo",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "GLASS",
+      "",
+      "GOLD",
+      ""
+    ]
+  },
+  "params": {
+    "filt_keytrack": 0.5
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "CELLAR HOP",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 11 lo-fi hop bass, short sustain",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "",
+      "",
+      "MOSS",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_s": 0.3
+  }
+}

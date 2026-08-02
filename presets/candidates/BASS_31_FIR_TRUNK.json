@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "FIR TRUNK",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "dry warm RAW \u2014 felled and stacked",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "WOOD",
+      "",
+      "",
+      "",
+      "",
+      "STONE",
+      ""
+    ]
+  },
+  "params": {
+    "vel_amp": 0.6
+  }
+}

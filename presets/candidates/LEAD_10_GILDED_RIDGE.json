@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "GILDED RIDGE",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 4 supersquare, gold polish over ice width",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "GOLD",
+      "",
+      "",
+      "",
+      "",
+      "ICE",
+      ""
+    ]
+  },
+  "params": {
+    "master_gain": -1.0
+  }
+}

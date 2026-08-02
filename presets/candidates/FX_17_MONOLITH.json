@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "MONOLITH",
+  "category": "FX",
+  "author": "BLOCKWAVE Factory",
+  "note": "the DRONE base, unadorned \u2014 a teaching patch",
+  "craft": {
+    "base": "DRONE",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_keytrack": 0.5
+  }
+}

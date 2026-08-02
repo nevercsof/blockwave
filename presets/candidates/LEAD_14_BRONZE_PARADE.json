@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "BRONZE PARADE",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 4 supersquare warmed by WOOD \u2014 brass-block parade",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "GOLD",
+      "",
+      "",
+      "WOOD",
+      ""
+    ]
+  },
+  "params": {
+    "env1_a": 0.02
+  }
+}

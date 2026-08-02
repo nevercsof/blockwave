@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "GRANITE STADIUM",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 4+12 \u2014 RAW aliased supersquare, bone dry",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "GOLD",
+      "",
+      "GOLD",
+      "",
+      "",
+      "",
+      "STONE",
+      ""
+    ]
+  },
+  "params": {
+    "uni_detune": 30
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "ASH HAULER",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "gritty crushed hauler, short sustain",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "SAND",
+      "",
+      "",
+      "",
+      "",
+      "LAVA",
+      ""
+    ]
+  },
+  "params": {
+    "noise_level": 0.25,
+    "env1_s": 0.5
+  }
+}

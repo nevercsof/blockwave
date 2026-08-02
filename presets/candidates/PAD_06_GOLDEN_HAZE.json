@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "GOLDEN HAZE",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 1+11 \u2014 wide PWM through tape crush",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "GOLD",
+      "MOSS",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_a": 0.8
+  }
+}

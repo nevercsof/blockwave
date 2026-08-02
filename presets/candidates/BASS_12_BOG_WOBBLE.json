@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "BOG WOBBLE",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 14 wub \u2014 SLIME's own PW wobble, filter opened to show it",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "",
+      "",
+      "SLIME",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_cutoff": 950,
+    "voice_mode": "mono"
+  }
+}

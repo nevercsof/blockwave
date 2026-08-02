@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "name": "SIGNAL FLARE",
+  "category": "FX",
+  "author": "BLOCKWAVE Factory",
+  "note": "fast riser \u2014 a flare fired from the LEAD base, mono",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "VOLT",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env2_a": 1.8,
+    "env2_s": 1.0,
+    "env2_pitch": 31,
+    "filt_env": 0.5,
+    "voice_mode": "mono"
+  }
+}

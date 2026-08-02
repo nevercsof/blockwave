@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "LUSH LEDGE",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 1 \u2014 the money PWM pad, deeper and slower than the base",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "lfo1_pwm": 0.55,
+    "lfo1_rate": 4.0
+  }
+}

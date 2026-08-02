@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "SUNSPIKE",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 4 supersquare an octave up with echo sheen",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "GOLD",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "oscA_oct": 1,
+    "dly_mix": 0.2
+  }
+}

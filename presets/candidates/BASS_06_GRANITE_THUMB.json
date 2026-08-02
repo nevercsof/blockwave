@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "GRANITE THUMB",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "the bare BASS base with a tighter bite \u2014 a teaching patch",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "oscA_pw": 28,
+    "env2_d": 0.09,
+    "filt_env": 0.35
+  }
+}

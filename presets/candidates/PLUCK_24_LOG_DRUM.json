@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "LOG DRUM",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 7+8 \u2014 slit-drum thud with a noise tick",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "WOOD",
+      "",
+      "",
+      "TNT",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env2_pitch": 14,
+    "noise_level": 0.15,
+    "filt_keytrack": 0.6
+  }
+}

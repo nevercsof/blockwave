@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "DIESEL MOSS",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 11 lo-fi + LAVA grind \u2014 badly maintained machinery",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "",
+      "",
+      "MOSS",
+      "LAVA",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env2_d": 0.1
+  }
+}

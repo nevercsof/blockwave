@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "SEA GLASS",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "thin PWM air \u2014 14% pulse swept wide by the PWM engine",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "GLASS",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "cave_mix": 0.3
+  }
+}

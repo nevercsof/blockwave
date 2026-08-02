@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "SILVER BIRCH",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "bright PWM shimmer \u2014 one GOLD, one ICE (AURORA VEIL's sapling)",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "",
+      "GOLD",
+      "",
+      "",
+      "",
+      "",
+      "ICE",
+      ""
+    ]
+  },
+  "params": {
+    "lfo1_rate": 3.0
+  }
+}

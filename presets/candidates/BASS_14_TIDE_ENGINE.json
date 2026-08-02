@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "name": "TIDE ENGINE",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "slow 1/2 cutoff wub \u2014 TARPIT's lazy cousin",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "SLIME",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "lfo2_dest": "cutoff",
+    "lfo2_amt": 0.55,
+    "lfo2_rate": 0.5,
+    "filt_res": 0.5,
+    "voice_mode": "mono"
+  }
+}

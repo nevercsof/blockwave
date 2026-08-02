@@ -1,0 +1,21 @@
+{
+  "formatVersion": 1,
+  "name": "HOLLOW GEODE",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "hidden-recipe showcase: technique 5+7 \u2014 struck bell at a clean 3:1 sync ratio inside a damped cave",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "",
+      "CRYSTAL",
+      "",
+      "",
+      "CRYSTAL",
+      "",
+      ""
+    ]
+  },
+  "params": {}
+}

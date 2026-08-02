@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "ROBOT GULL",
+  "category": "CHIP",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 9 NES metallic \u2014 short-LFSR tone layered over the pulse",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "",
+      "",
+      "SAND",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "noise_mode": "short",
+    "noise_level": 0.6,
+    "oscA_level": 0.35
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "CUMULUS FORT",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 13 \u2014 double CLOUD, slow ramparts of air",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "CLOUD",
+      "CLOUD",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_keytrack": 0.3,
+    "master_gain": -1.0
+  }
+}

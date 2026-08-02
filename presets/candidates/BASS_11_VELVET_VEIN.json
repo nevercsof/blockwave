@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "VELVET VEIN",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "wide warm reese, soft top",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "GOLD",
+      "",
+      "",
+      "",
+      "",
+      "WOOD",
+      ""
+    ]
+  },
+  "params": {
+    "uni_spread": 0.3
+  }
+}

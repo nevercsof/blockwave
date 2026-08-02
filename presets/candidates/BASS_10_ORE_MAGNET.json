@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "ORE MAGNET",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "reese \u2014 GOLD detune sheen, narrowed for mono safety",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "GOLD",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "voice_mode": "mono",
+    "uni_spread": 0.25
+  }
+}

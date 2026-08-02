@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "TIN TOY",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 7 \u2014 RAW lo-fi toy plink, high chirp",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "",
+      "",
+      "STONE",
+      "MOSS",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env2_pitch": 19,
+    "env2_d": 0.03
+  }
+}

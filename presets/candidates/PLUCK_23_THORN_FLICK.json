@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "THORN FLICK",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "tiny high flick \u2014 an octave up with a +7 st chirp",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "GLASS",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "oscA_oct": 1,
+    "env2_pitch": 7,
+    "env2_d": 0.03
+  }
+}

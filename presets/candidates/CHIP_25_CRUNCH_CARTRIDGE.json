@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "CRUNCH CARTRIDGE",
+  "category": "CHIP",
+  "author": "BLOCKWAVE Factory",
+  "note": "LAVA crush + downsample \u2014 a dying cartridge that still slaps",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "",
+      "",
+      "LAVA",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "crush_down": 6
+  }
+}

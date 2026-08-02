@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "SNOW BERRY",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "soft airy pluck \u2014 CLOUD air with the attack pinned fast",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "ICE",
+      "",
+      "",
+      "",
+      "",
+      "CLOUD",
+      ""
+    ]
+  },
+  "params": {
+    "env1_a": 0.002
+  }
+}

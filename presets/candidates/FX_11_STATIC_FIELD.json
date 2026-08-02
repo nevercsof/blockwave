@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "STATIC FIELD",
+  "category": "FX",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 9 texture \u2014 LFSR static over a jittering drone",
+  "craft": {
+    "base": "DRONE",
+    "cells": [
+      "",
+      "SAND",
+      "",
+      "",
+      "VOLT",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "noise_level": 0.55,
+    "oscA_level": 0.3
+  }
+}

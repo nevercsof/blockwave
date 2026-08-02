@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "PICK FENCE",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "muted dry string \u2014 picked fence wire",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "WOOD",
+      "",
+      "",
+      "",
+      "",
+      "STONE",
+      ""
+    ]
+  },
+  "params": {
+    "env1_d": 0.25
+  }
+}

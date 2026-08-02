@@ -1,0 +1,21 @@
+{
+  "formatVersion": 1,
+  "name": "THUNDER SEAM",
+  "category": "CHIP",
+  "author": "BLOCKWAVE Factory",
+  "note": "hidden-recipe showcase: technique 10+9+12 \u2014 the faked octave-jump chip arp, RAW with LFSR metal",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "",
+      "VOLT",
+      "",
+      "VOLT",
+      "",
+      "",
+      "VOLT"
+    ]
+  },
+  "params": {}
+}

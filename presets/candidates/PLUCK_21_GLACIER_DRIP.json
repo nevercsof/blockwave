@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "GLACIER DRIP",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 7 drip in a wet cave, attack pinned fast",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "",
+      "",
+      "GLASS",
+      "CLOUD",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_a": 0.001,
+    "env2_pitch": 12,
+    "env2_d": 0.045
+  }
+}

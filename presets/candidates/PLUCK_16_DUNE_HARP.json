@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "DUNE HARP",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "gritty harp \u2014 LFSR sand in the attack",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "",
+      "",
+      "SAND",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "noise_level": 0.25,
+    "env1_d": 0.3
+  }
+}

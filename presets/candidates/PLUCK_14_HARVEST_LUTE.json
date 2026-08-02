@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "HARVEST LUTE",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "warm wide lute \u2014 GOLD spread on a WOOD body",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "",
+      "",
+      "WOOD",
+      "",
+      "",
+      "GOLD",
+      ""
+    ]
+  },
+  "params": {
+    "env1_d": 0.45
+  }
+}

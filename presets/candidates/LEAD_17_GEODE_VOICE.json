@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "GEODE VOICE",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 5+14 \u2014 SLIME wobbles the synced pulse width: vocal formant",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "CRYSTAL",
+      "",
+      "",
+      "",
+      "",
+      "SLIME",
+      ""
+    ]
+  },
+  "params": {
+    "voice_mode": "mono"
+  }
+}

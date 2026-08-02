@@ -1,0 +1,21 @@
+{
+  "formatVersion": 1,
+  "name": "SHARDSTORM",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "hidden-recipe showcase: technique 5 sync scream at 3:1 + ping-pong scatter (override patch from the recipe book)",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "CRYSTAL",
+      "",
+      "CRYSTAL",
+      "",
+      "",
+      "CRYSTAL",
+      "",
+      "CRYSTAL"
+    ]
+  },
+  "params": {}
+}

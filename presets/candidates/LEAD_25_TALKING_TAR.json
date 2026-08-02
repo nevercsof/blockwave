@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "TALKING TAR",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 14 glide talk \u2014 legato thin pulse with PW wobble",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "SLIME",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "voice_mode": "legato"
+  }
+}

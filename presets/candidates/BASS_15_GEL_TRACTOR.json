@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "GEL TRACTOR",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "random-step wub \u2014 s&h on the cutoff at SLIME's 1/8",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "SLIME",
+      "",
+      "",
+      "",
+      "",
+      "VOLT",
+      ""
+    ]
+  },
+  "params": {
+    "lfo2_dest": "cutoff",
+    "lfo2_shape": "s&h",
+    "lfo2_amt": 0.5
+  }
+}

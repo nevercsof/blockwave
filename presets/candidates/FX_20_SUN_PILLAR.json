@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "SUN PILLAR",
+  "category": "FX",
+  "author": "BLOCKWAVE Factory",
+  "note": "bright thin drone \u2014 a column of light, deep PWM",
+  "craft": {
+    "base": "DRONE",
+    "cells": [
+      "",
+      "GOLD",
+      "",
+      "",
+      "GLASS",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "lfo1_pwm": 0.5
+  }
+}

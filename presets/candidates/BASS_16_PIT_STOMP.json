@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "PIT STOMP",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "8-bit stab \u2014 RAW crushed, no sustain",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "",
+      "",
+      "STONE",
+      "",
+      "",
+      "LAVA",
+      ""
+    ]
+  },
+  "params": {
+    "env1_s": 0.0,
+    "env1_d": 0.28
+  }
+}

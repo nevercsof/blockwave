@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "FORGE HOWL",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "hot crush inside cold width \u2014 steam where they meet",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "LAVA",
+      "",
+      "",
+      "",
+      "",
+      "ICE",
+      ""
+    ]
+  },
+  "params": {
+    "master_gain": -1.0
+  }
+}

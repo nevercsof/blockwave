@@ -1,0 +1,21 @@
+{
+  "formatVersion": 1,
+  "name": "NARROW GATE",
+  "category": "CHIP",
+  "author": "BLOCKWAVE Factory",
+  "note": "GLASS alone on CHIP \u2014 the 12.5%-style NES duty, zero overrides",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "GLASS",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {}
+}

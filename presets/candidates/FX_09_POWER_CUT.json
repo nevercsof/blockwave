@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "POWER CUT",
+  "category": "FX",
+  "author": "BLOCKWAVE Factory",
+  "note": "console power-down slide \u2014 RAW pitch sag on the CHIP base",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "STONE",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env2_a": 1.0,
+    "env2_s": 1.0,
+    "env2_pitch": -24
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "WOLF PINE",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 14 \u2014 warm wood voice on a gluey legato",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "WOOD",
+      "",
+      "",
+      "SLIME",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "voice_mode": "legato"
+  }
+}

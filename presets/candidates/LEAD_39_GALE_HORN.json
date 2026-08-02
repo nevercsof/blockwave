@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "GALE HORN",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "cold wide horn with LFSR breath",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "ICE",
+      "",
+      "",
+      "SAND",
+      ""
+    ]
+  },
+  "params": {
+    "noise_level": 0.3
+  }
+}

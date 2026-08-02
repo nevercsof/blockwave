@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "GRIT PICK",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 12 RAW dirt lead, nothing else \u2014 the honest one",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "STONE",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "vel_amp": 0.6
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "PRISM LANCE",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 5 sync + technique 2 thinness \u2014 glinting lance",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "CRYSTAL",
+      "",
+      "",
+      "",
+      "GLASS",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_keytrack": 0.3
+  }
+}

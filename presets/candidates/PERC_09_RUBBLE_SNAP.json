@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "RUBBLE SNAP",
+  "category": "PERC",
+  "author": "BLOCKWAVE Factory",
+  "note": "crushed snare \u2014 rubble in the wires",
+  "craft": {
+    "base": "PERC",
+    "cells": [
+      "",
+      "SAND",
+      "",
+      "",
+      "",
+      "",
+      "LAVA",
+      ""
+    ]
+  },
+  "params": {
+    "filt_cutoff": 2000,
+    "env1_d": 0.12
+  }
+}

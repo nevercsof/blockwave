@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "VHS CLIFF",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 11 lo-fi haze \u2014 deep crush wobble, softened edge",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "MOSS",
+      "MOSS",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_a": 0.01,
+    "dly_mix": 0.2
+  }
+}

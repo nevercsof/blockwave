@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "name": "MARIMBA MESA",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 7 marimba \u2014 double WOOD, heavy keytrack",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "",
+      "",
+      "WOOD",
+      "WOOD",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env2_pitch": 12,
+    "env2_d": 0.035,
+    "filt_keytrack": 0.8,
+    "env1_d": 0.32
+  }
+}

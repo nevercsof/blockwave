@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "BASALT CHAMBER",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "dark wide pad \u2014 cold air in a black room",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "",
+      "OBSIDIAN",
+      "",
+      "",
+      "ICE",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "oscA_oct": 0,
+    "env1_a": 0.7
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "DRIFTWOOD",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "warm distant pad \u2014 washed ashore",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "WOOD",
+      "CLOUD",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_keytrack": 0.3
+  }
+}

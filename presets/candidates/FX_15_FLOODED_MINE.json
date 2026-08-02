@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "FLOODED MINE",
+  "category": "FX",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 13 \u2014 deep drone in standing water, bright reverb drips",
+  "craft": {
+    "base": "DRONE",
+    "cells": [
+      "",
+      "",
+      "",
+      "CLOUD",
+      "OBSIDIAN",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "cave_damp": 0.2,
+    "master_gain": -1.0
+  }
+}

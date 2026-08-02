@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "FERN CANOPY",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "warm lo-fi canopy \u2014 light through leaves",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "",
+      "WOOD",
+      "",
+      "",
+      "MOSS",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_a": 0.5
+  }
+}

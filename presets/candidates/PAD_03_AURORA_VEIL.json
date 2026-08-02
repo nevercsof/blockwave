@@ -1,0 +1,21 @@
+{
+  "formatVersion": 1,
+  "name": "AURORA VEIL",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "hidden-recipe showcase: technique 4+1 \u2014 the bright golden counterpart to PERMAFROST",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "",
+      "GOLD",
+      "",
+      "ICE",
+      "ICE",
+      "",
+      "GOLD",
+      ""
+    ]
+  },
+  "params": {}
+}

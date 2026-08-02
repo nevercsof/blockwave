@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "SHARD RIDER",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 5 \u2014 stacked CRYSTAL with the sync partial pinned to a DC-clean 4:1",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "CRYSTAL",
+      "CRYSTAL",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "oscB_oct": 2,
+    "oscB_semi": 0,
+    "master_gain": -2.0
+  }
+}

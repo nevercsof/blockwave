@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "GRAVEL ENGINE",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 6 + LFSR grit idling under the hood",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "",
+      "",
+      "SAND",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "noise_level": 0.3
+  }
+}

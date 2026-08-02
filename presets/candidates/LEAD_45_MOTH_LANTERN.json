@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "MOTH LANTERN",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 11 haze + CLOUD air \u2014 dusty light",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "MOSS",
+      "",
+      "",
+      "",
+      "",
+      "CLOUD",
+      ""
+    ]
+  },
+  "params": {
+    "env1_a": 0.08
+  }
+}

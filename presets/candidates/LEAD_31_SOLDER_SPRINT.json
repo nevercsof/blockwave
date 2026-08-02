@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "SOLDER SPRINT",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "LAVA grind + VOLT s&h cutoff jitter \u2014 sparking wire lead",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "LAVA",
+      "VOLT",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "lfo2_amt": 0.5
+  }
+}

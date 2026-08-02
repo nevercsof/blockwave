@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "WINTER WELL",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "cold wet pad with a bright reverb top",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "ICE",
+      "",
+      "CLOUD",
+      ""
+    ]
+  },
+  "params": {
+    "cave_damp": 0.3
+  }
+}

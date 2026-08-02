@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "RIDGE RUNNER",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 12 RAW + VOLT jitter \u2014 chiptune athletics",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "STONE",
+      "",
+      "",
+      "VOLT",
+      ""
+    ]
+  },
+  "params": {
+    "lfo2_amt": 0.45
+  }
+}

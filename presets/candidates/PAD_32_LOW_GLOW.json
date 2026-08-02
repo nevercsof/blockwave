@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "LOW GLOW",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "nasal-warm quiet glow, small cave",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "",
+      "WOOD",
+      "",
+      "",
+      "GLASS",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "cave_mix": 0.25
+  }
+}

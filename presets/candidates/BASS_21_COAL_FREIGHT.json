@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "COAL FREIGHT",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "dark and wide \u2014 freight through a frozen tunnel",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "OBSIDIAN",
+      "",
+      "",
+      "",
+      "",
+      "ICE",
+      ""
+    ]
+  },
+  "params": {
+    "uni_spread": 0.2,
+    "filt_cutoff": 500
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "ABYSS PILLAR",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "double OBSIDIAN pinned back to -1 oct so the note survives",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "",
+      "",
+      "OBSIDIAN",
+      "",
+      "",
+      "OBSIDIAN",
+      ""
+    ]
+  },
+  "params": {
+    "oscA_oct": -1,
+    "filt_cutoff": 380,
+    "filt_keytrack": 0.7
+  }
+}

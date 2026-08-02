@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "ASHGLOW",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "warm crushed pad \u2014 embers under the PWM",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "LAVA",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "crush_mix": 0.18,
+    "filt_env": 0.1
+  }
+}

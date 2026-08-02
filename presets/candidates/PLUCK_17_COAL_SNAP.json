@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "COAL SNAP",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "crushed snap \u2014 LAVA bite with a downsample crunch",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "",
+      "",
+      "LAVA",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env2_d": 0.1,
+    "crush_down": 3
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "name": "COIN CHUTE",
+  "category": "CHIP",
+  "author": "BLOCKWAVE Factory",
+  "note": "coin blip \u2014 reverse chirp bends up into the note",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "GLASS",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_s": 0.0,
+    "env1_d": 0.09,
+    "env2_pitch": -5,
+    "env2_d": 0.05
+  }
+}

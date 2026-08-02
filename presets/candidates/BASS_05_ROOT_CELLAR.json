@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "ROOT CELLAR",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 6 warmed by WOOD \u2014 round and woody",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "",
+      "",
+      "WOOD",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_keytrack": 0.5
+  }
+}

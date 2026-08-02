@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "DEEP SHAFT",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 6 an octave down \u2014 the long way down",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "OBSIDIAN",
+      ""
+    ]
+  },
+  "params": {
+    "filt_keytrack": 0.6,
+    "env1_r": 0.12
+  }
+}

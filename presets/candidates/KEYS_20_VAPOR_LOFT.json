@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "VAPOR LOFT",
+  "category": "KEYS",
+  "author": "BLOCKWAVE Factory",
+  "note": "soft pad-keys \u2014 CLOUD attack shortened to stay playable",
+  "craft": {
+    "base": "KEYS",
+    "cells": [
+      "",
+      "",
+      "",
+      "CLOUD",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_a": 0.08,
+    "env1_s": 0.7
+  }
+}

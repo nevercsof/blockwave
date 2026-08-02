@@ -1,0 +1,30 @@
+{
+  "formatVersion": 1,
+  "name": "WIND CORRIDOR",
+  "category": "FX",
+  "author": "BLOCKWAVE Factory",
+  "note": "wind \u2014 resonant BP noise swept by a slow LFO; oscillators silenced",
+  "craft": {
+    "base": "DRONE",
+    "cells": [
+      "",
+      "",
+      "",
+      "SAND",
+      "CLOUD",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "oscA_on": false,
+    "sub_on": false,
+    "noise_level": 0.8,
+    "filt_type": "BP",
+    "filt_cutoff": 1200,
+    "filt_res": 0.55,
+    "lfo2_amt": 0.5,
+    "lfo2_rate": 4.0
+  }
+}

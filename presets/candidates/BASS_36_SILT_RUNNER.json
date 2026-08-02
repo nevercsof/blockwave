@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "SILT RUNNER",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "gritty wub \u2014 sediment in the works",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "",
+      "",
+      "SAND",
+      "SLIME",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "noise_level": 0.2,
+    "voice_mode": "mono"
+  }
+}

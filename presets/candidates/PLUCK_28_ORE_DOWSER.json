@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "ORE DOWSER",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "lo-fi bell \u2014 sync partial through the tape crush",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "",
+      "",
+      "CRYSTAL",
+      "",
+      "",
+      "MOSS",
+      ""
+    ]
+  },
+  "params": {
+    "filt_keytrack": 0.5
+  }
+}

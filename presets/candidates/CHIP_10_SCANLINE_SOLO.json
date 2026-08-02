@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "SCANLINE SOLO",
+  "category": "CHIP",
+  "author": "BLOCKWAVE Factory",
+  "note": "thin RAW solo voice \u2014 one bright scanline",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "STONE",
+      "",
+      "GLASS",
+      ""
+    ]
+  },
+  "params": {
+    "vel_amp": 0.4
+  }
+}

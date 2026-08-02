@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "PORTA SPRITE",
+  "category": "CHIP",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 14 \u2014 mono chip with SLIME glide between notes",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "",
+      "",
+      "SLIME",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "voice_mode": "mono"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "ATTIC UPRIGHT",
+  "category": "KEYS",
+  "author": "BLOCKWAVE Factory",
+  "note": "warm lo-fi upright \u2014 dust on the strings",
+  "craft": {
+    "base": "KEYS",
+    "cells": [
+      "",
+      "MOSS",
+      "",
+      "",
+      "WOOD",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_keytrack": 0.6
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "RUMBLE SHEET",
+  "category": "PERC",
+  "author": "BLOCKWAVE Factory",
+  "note": "thunder-sheet hit \u2014 dark LFSR wash, no pitch chirp",
+  "craft": {
+    "base": "PERC",
+    "cells": [
+      "",
+      "",
+      "",
+      "SAND",
+      "OBSIDIAN",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_d": 0.8,
+    "noise_level": 0.7,
+    "env2_pitch": 0
+  }
+}

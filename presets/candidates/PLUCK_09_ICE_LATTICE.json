@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "ICE LATTICE",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "cold ringing pluck \u2014 ICE stretches the release",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "ICE",
+      "",
+      "",
+      "GLASS",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_keytrack": 0.5
+  }
+}

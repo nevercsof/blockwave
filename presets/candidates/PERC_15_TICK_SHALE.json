@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "name": "TICK SHALE",
+  "category": "PERC",
+  "author": "BLOCKWAVE Factory",
+  "note": "long-LFSR tick \u2014 whiter, softer closed hat",
+  "craft": {
+    "base": "PERC",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "SAND",
+      ""
+    ]
+  },
+  "params": {
+    "oscA_on": false,
+    "filt_type": "HP",
+    "filt_cutoff": 9000,
+    "env1_d": 0.03,
+    "master_gain": 3.0
+  }
+}

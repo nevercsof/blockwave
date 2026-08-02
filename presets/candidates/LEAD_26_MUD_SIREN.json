@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "MUD SIREN",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 14 \u2014 heavy SLIME, slow 1/4 PW swing, mono",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "SLIME",
+      "SLIME",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "voice_mode": "mono",
+    "lfo2_rate": 0.25
+  }
+}

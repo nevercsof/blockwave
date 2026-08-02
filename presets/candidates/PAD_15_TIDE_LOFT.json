@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "TIDE LOFT",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "airy distant pad, softened reverb top",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "",
+      "GLASS",
+      "",
+      "",
+      "",
+      "",
+      "CLOUD",
+      ""
+    ]
+  },
+  "params": {
+    "cave_damp": 0.6
+  }
+}

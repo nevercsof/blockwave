@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "BAMBOO WELL",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "woodblock plick \u2014 +24 st chirp, heavy keytrack",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "WOOD",
+      ""
+    ]
+  },
+  "params": {
+    "env2_pitch": 24,
+    "env2_d": 0.025,
+    "filt_keytrack": 0.7
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "MAMMOTH STEP",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 8 repurposed \u2014 TNT drop as an 808-style boom bass",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "",
+      "",
+      "TNT",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_d": 0.55,
+    "env1_r": 0.15,
+    "noise_level": 0.1
+  }
+}

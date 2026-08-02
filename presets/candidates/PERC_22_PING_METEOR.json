@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "PING METEOR",
+  "category": "PERC",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 5+8 \u2014 synced metal ping with a steep fall",
+  "craft": {
+    "base": "PERC",
+    "cells": [
+      "",
+      "",
+      "",
+      "CRYSTAL",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env2_pitch": 40,
+    "env2_d": 0.05,
+    "filt_cutoff": 3000
+  }
+}

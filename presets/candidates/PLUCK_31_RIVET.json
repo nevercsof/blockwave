@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "RIVET",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "industrial tight pluck \u2014 RAW crush, tiny chirp",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "LAVA",
+      "",
+      "",
+      "STONE",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_d": 0.18,
+    "env2_pitch": 5
+  }
+}

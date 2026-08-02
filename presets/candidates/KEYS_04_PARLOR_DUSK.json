@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "PARLOR DUSK",
+  "category": "KEYS",
+  "author": "BLOCKWAVE Factory",
+  "note": "double WOOD \u2014 dark felted parlor keys, wide velocity",
+  "craft": {
+    "base": "KEYS",
+    "cells": [
+      "",
+      "",
+      "",
+      "WOOD",
+      "WOOD",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_keytrack": 0.7,
+    "vel_amp": 0.9
+  }
+}

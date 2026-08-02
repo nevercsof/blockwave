@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "TIN COMET",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "thin pulse smeared by lo-fi crush, dotted tail",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "GLASS",
+      "",
+      "",
+      "MOSS",
+      ""
+    ]
+  },
+  "params": {
+    "dly_time": "1/4D",
+    "dly_mix": 0.3
+  }
+}

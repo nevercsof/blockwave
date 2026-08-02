@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "TWIN RAIL",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "reese-ish \u2014 ICE detune pair riding the sub",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "",
+      "",
+      "ICE",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_keytrack": 0.4
+  }
+}

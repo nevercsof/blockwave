@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "OWL BURROW",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "dark hollow flute \u2014 WOOD twice, keytracked",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "WOOD",
+      "WOOD",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_keytrack": 0.4
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "STATIC MEADOW",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "s&h cutoff flickers over a slow PWM field",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "VOLT",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "lfo2_rate": 0.25,
+    "lfo2_amt": 0.25
+  }
+}

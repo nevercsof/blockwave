@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "UNDERTOW",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "reese \u2014 four detuned voices, mono, pulled under",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "",
+      "",
+      "ICE",
+      "ICE",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "voice_mode": "mono",
+    "env1_r": 0.2
+  }
+}

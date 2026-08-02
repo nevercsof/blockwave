@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "RASTER PICK",
+  "category": "CHIP",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 12 RAW NES lead with the 25% duty restored",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "",
+      "",
+      "STONE",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "oscA_pw": 25
+  }
+}

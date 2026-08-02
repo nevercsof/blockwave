@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "DUSK BEACON",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "dark baritone lead an octave down, mono",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "OBSIDIAN",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "voice_mode": "mono",
+    "filt_keytrack": 0.5
+  }
+}

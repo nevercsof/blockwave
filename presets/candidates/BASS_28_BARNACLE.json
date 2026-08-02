@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "BARNACLE",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "RAW cold stab \u2014 clings to the low hull",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "STONE",
+      "",
+      "",
+      "ICE",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_d": 0.2
+  }
+}
