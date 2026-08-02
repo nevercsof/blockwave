@@ -19,6 +19,7 @@
 #pragma once
 
 #include <atomic>
+#include <cmath>
 #include "BlockwaveParams.h"
 #include "Voice.h"
 #include "Lfo.h"
@@ -35,14 +36,32 @@ namespace blockwave
 //  - noteOn()/noteOff()/process() from the audio thread only. No allocation,
 //    no locks, no I/O anywhere on that path.
 //
-// OSCILLATOR-COUNT CAP: uni_count applies per voice, so a naive worst case is
-// 16 voices x 8 unison x 2 oscs = 256 polyBLEP pulses plus 16 subs + 16 noise.
-// The engine caps the TOTAL number of unison stacks at kMaxUnisonStacks (64):
-// effectiveUnison = min(uni_count, max(1, 64 / poly_count)). So 8 voices can
-// run full 8-way unison, while 16 voices cap at 4-way. Worst case is then
-// 64 stacks x 2 = 128 pulse oscillators + 16 sub + 16 noise = 160 oscillators,
-// which stays comfortably realtime on a mid-range CPU (measured in Phase-1
-// checkpoint). The cap is deterministic and documented here — single source.
+// OSCILLATOR-COUNT CAP: uni_count applies per voice. The engine caps the
+// TOTAL number of unison stacks at kMaxUnisonStacks (128):
+// effectiveUnison = min(uni_count, max(1, 128 / poly_count)). Since
+// 16 voices x 8 unison = 128 stacks, the full SPEC maximum is now possible
+// (architect amendment, Phase 2; the cap was 64 in Phase 1). Worst case is
+// 128 stacks x 2 = 256 pulse oscillators + 16 sub + 16 noise = 288
+// oscillators, re-measured comfortably realtime in the Phase-2 checkpoint.
+// The cap is deterministic and documented here — single source.
+//
+// MASTER SOFTCLIP: the engine chain ends in a fixed transparent softclip
+// (masterSoftclip below) — bit-exact unity below -0.3 dBFS, tanh-shaped
+// above, output strictly < 1.0 (0 dBFS). Always on, allocation-free.
+
+// Transparent master ceiling. Identity for |x| <= t (bit-exact — quiet
+// material passes a null test), C1-continuous tanh saturation above, output
+// asymptote t + (1-t) = 1.0 so the engine never exceeds 0 dBFS.
+inline float masterSoftclip (float x) noexcept
+{
+    constexpr float t = 0.96605088f;              // 10^(-0.3/20), -0.3 dBFS
+    const float a = x < 0.0f ? -x : x;
+    if (a <= t)
+        return x;
+    const float y = t + (1.0f - t) * std::tanh ((a - t) / (1.0f - t));
+    return x < 0.0f ? -y : y;
+}
+
 class BlockwaveEngine
 {
 public:
@@ -72,6 +91,8 @@ public:
         serialCounter = 0;
         lastNote = -1.0f;
         anyVoiceSounding = false;
+        tBend = 0.0f;
+        sBend = 0.0f;
         snapSmoothers();
     }
 
@@ -81,6 +102,13 @@ public:
     void setTempo (double bpm) noexcept { tempoBpm.store (bpm, std::memory_order_relaxed); }
 
     // ---- Audio thread from here on ----------------------------------------
+
+    // MIDI pitch bend, fixed range ±2 st. Smoothed with the same ~25 ms
+    // one-pole as the audible parameters, so wheel steps are zipper-free.
+    void setPitchBend (float semitones) noexcept
+    {
+        tBend = semitones < -2.0f ? -2.0f : (semitones > 2.0f ? 2.0f : semitones);
+    }
 
     void noteOn (int note, float velocity) noexcept
     {
@@ -214,6 +242,7 @@ public:
             sPwB += alpha * (tPwB - sPwB);
             sCutLog2 += alpha * (tCutLog2 - sCutLog2);
             sMaster += alpha * (tMaster - sMaster);
+            sBend += alpha * (tBend - sBend);
 
             float l1buf[kCtrlSamples], l2buf[kCtrlSamples];
             for (int i = 0; i < chunk; ++i)
@@ -231,6 +260,7 @@ public:
             ctx.cutoffLog2 = sCutLog2;
             ctx.lfo1 = l1buf; ctx.lfo2 = l2buf;
             ctx.effectiveUnison = effUni;
+            ctx.pitchBendSemis = sBend;
 
             for (auto& v : voices)
             {
@@ -240,8 +270,9 @@ public:
 
             for (int i = 0; i < chunk; ++i)
             {
-                outL[offset + i] *= sMaster;
-                outR[offset + i] *= sMaster;
+                // End of chain: master gain, then the fixed softclip ceiling.
+                outL[offset + i] = masterSoftclip (outL[offset + i] * sMaster);
+                outR[offset + i] = masterSoftclip (outR[offset + i] * sMaster);
             }
             offset += chunk;
             ctrlPhase = (ctrlPhase + chunk) % kCtrlSamples;
@@ -336,6 +367,7 @@ private:
     Lfo lfo1, lfo2;
 
     float smoothLambda = -0.001f;
+    float tBend = 0.0f, sBend = 0.0f;     // pitch bend target / smoothed, semitones
     float sLvlA = 0.8f, sLvlB = 0.8f, sLvlSub = 0.7f, sLvlNoise = 0.5f;
     float sPwA = 0.5f, sPwB = 0.5f, sCutLog2 = 14.3f, sMaster = 1.0f;
     float tLvlA = 0.8f, tLvlB = 0.8f, tLvlSub = 0.7f, tLvlNoise = 0.5f;

@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "name": "DEV CAVE DRONE",
+  "category": "FX",
+  "author": "BLOCKWAVE Dev (TEMPORARY - replaced in Phase 6)",
+  "description": "Technique 13-adjacent ambience (CAVE reverb lands in Phase 5): dark drone, LFSR air, slow LFO2 cutoff sweep.",
+  "craft": { "base": "", "cells": ["", "", "", "", "", "", "", ""] },
+  "params": {
+    "oscA_level": 0.5,
+    "sub_on": true,
+    "sub_level": 0.6,
+    "noise_on": true,
+    "noise_level": 0.35,
+    "lfo2_dest": "cutoff",
+    "lfo2_shape": "tri",
+    "lfo2_sync": true,
+    "lfo2_rate": 4.0,
+    "lfo2_amt": 0.6,
+    "filt_cutoff": 800.0,
+    "filt_res": 0.35,
+    "env1_a": 1.5,
+    "env1_s": 1.0,
+    "env1_r": 2.0,
+    "vel_amp": 0.2
+  }
+}

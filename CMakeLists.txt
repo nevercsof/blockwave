@@ -67,6 +67,11 @@ blockwave_strict_warnings(${BLOCKWAVE_PLUGIN_SOURCES})
 
 target_include_directories(${PROJECT_NAME} PRIVATE src)
 
+# --- Factory preset bank (8 temporary dev presets, replaced in Phase 6) ------
+file(GLOB BLOCKWAVE_FACTORY_PRESETS CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/presets/factory/*.json")
+juce_add_binary_data(BlockwaveFactoryPresets SOURCES ${BLOCKWAVE_FACTORY_PRESETS})
+
 target_compile_definitions(${PROJECT_NAME}
     PUBLIC
         JUCE_WEB_BROWSER=0
@@ -76,6 +81,7 @@ target_compile_definitions(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
+        BlockwaveFactoryPresets
         juce::juce_audio_utils
         juce::juce_dsp
     PUBLIC
@@ -108,3 +114,23 @@ if(MSVC)
     # Tests use portable fopen deliberately; silence MSVC's C4996 under /WX.
     target_compile_definitions(blockwave_tests PRIVATE _CRT_SECURE_NO_WARNINGS)
 endif()
+
+# --- Phase-2 state/preset test suite (JUCE: APVTS, presets, session state) ---
+juce_add_console_app(blockwave_state_tests PRODUCT_NAME "blockwave_state_tests")
+set(BLOCKWAVE_STATE_TEST_SOURCES tests/StateTests.cpp)
+target_sources(blockwave_state_tests PRIVATE
+    ${BLOCKWAVE_STATE_TEST_SOURCES}
+    plugin/PluginProcessor.cpp
+    plugin/PluginEditor.cpp)
+blockwave_strict_warnings(${BLOCKWAVE_STATE_TEST_SOURCES})
+target_include_directories(blockwave_state_tests PRIVATE src plugin tools/render)
+target_compile_definitions(blockwave_state_tests PRIVATE
+    JUCE_WEB_BROWSER=0
+    JUCE_USE_CURL=0
+    JucePlugin_Name="BLOCKWAVE"
+    BLOCKWAVE_TEST_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests")
+target_link_libraries(blockwave_state_tests PRIVATE
+    BlockwaveFactoryPresets
+    juce::juce_audio_utils
+    juce::juce_recommended_config_flags)
+add_test(NAME blockwave_state_tests COMMAND blockwave_state_tests)

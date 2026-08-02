@@ -48,6 +48,7 @@ struct ModContext
     const float* lfo1 = nullptr;
     const float* lfo2 = nullptr;
     int effectiveUnison = 1;           // engine-capped, 1..8
+    float pitchBendSemis = 0.0f;       // smoothed MIDI pitch bend, fixed ±2 st
 };
 
 // One logical voice: up to 8 unison stacks of (OSC A + hard-synced OSC B),
@@ -214,14 +215,21 @@ private:
         cVolMod = 1.0f;
         switch (p.lfo2_dest)
         {
-            case Lfo2Dest::pitch:  pitchMod += 2.0f * p.lfo2_amt * lfo2Start; break;
+            // Full scale ±12 st with quadratic taper: effective depth is
+            // amt² · 12 st, sign of amt preserved (amt·|amt| = sign(amt)·amt²).
+            // Fine vibrato lives in the lower half of the knob; the top
+            // reaches a full octave (architect amendment, Phase 2).
+            case Lfo2Dest::pitch:
+                pitchMod += 12.0f * p.lfo2_amt
+                          * (p.lfo2_amt < 0.0f ? -p.lfo2_amt : p.lfo2_amt) * lfo2Start;
+                break;
             case Lfo2Dest::cutoff: cutMod   += 4.0f * p.lfo2_amt * lfo2Start; break;
             case Lfo2Dest::vol:    cVolMod   = clampf (1.0f + 0.5f * p.lfo2_amt * lfo2Start, 0.0f, 2.0f); break;
             case Lfo2Dest::pw:
             default: break;                            // per-sample above
         }
 
-        const float baseNote = glideNote + pitchMod;
+        const float baseNote = glideNote + pitchMod + ctx.pitchBendSemis;
         const float baseHz   = 440.0f * exp2f ((baseNote - 69.0f) / 12.0f);
 
         const float cutLog2 = ctx.cutoffLog2

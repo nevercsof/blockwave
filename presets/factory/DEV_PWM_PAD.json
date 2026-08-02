@@ -1,0 +1,22 @@
+{
+  "formatVersion": 1,
+  "name": "DEV PWM PAD",
+  "category": "PAD",
+  "author": "BLOCKWAVE Dev (TEMPORARY - replaced in Phase 6)",
+  "description": "Technique 1, PWM pad: LFO1->PW 0.45 at 2/1 synced, 5-voice unison, slow envelope.",
+  "craft": { "base": "", "cells": ["", "", "", "", "", "", "", ""] },
+  "params": {
+    "lfo1_pwm": 0.45,
+    "lfo1_sync": true,
+    "lfo1_rate": 2.0,
+    "uni_count": 5,
+    "uni_detune": 16.0,
+    "uni_spread": 0.9,
+    "filt_cutoff": 6500.0,
+    "env1_a": 0.5,
+    "env1_d": 0.5,
+    "env1_s": 0.8,
+    "env1_r": 1.2,
+    "vel_amp": 0.3
+  }
+}

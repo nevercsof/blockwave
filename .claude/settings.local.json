@@ -51,7 +51,30 @@
       "Bash(clang++ -std=c++20 -O3 -I /Users/kirillboyko/Downloads/blockwave-kickoff/src /private/tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/cpu8x8.cpp -o /private/tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/cpu8x8)",
       "Bash(/private/tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/cpu8x8)",
       "Bash(mkdir -p CHECKPOINTS/artifacts && cp /private/tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/c4_*.wav CHECKPOINTS/artifacts/ 2>/dev/null; ls CHECKPOINTS/artifacts/ CHECKPOINTS/logs/ | head -20)",
-      "Bash(git commit -m 'Phase 1: DSP core \\(polyBLEP osc, LFSR, SVF, ADSR, LFO, voices, unison\\) + tools/render + 38 render tests; checkpoint PHASE-1 *)"
+      "Bash(git commit -m 'Phase 1: DSP core \\(polyBLEP osc, LFSR, SVF, ADSR, LFO, voices, unison\\) + tools/render + 38 render tests; checkpoint PHASE-1 *)",
+      "Bash(gh repo *)",
+      "Bash(git push *)",
+      "Bash(gh run *)",
+      "Bash(grep -v \"^$\")",
+      "Bash(git commit -m 'CI: switch Windows build to Ninja + msvc-dev-cmd \\(windows-latest runner has no VS2022 generator\\) *)",
+      "Bash(git commit -m 'CI: allow portable fopen in tests under MSVC /WX \\(_CRT_SECURE_NO_WARNINGS\\) *)",
+      "Bash(cmake --build /Users/kirillboyko/Downloads/blockwave-kickoff/build/release --target blockwave_tests)",
+      "Bash(/Users/kirillboyko/Downloads/blockwave-kickoff/build/release/blockwave_tests)",
+      "Bash(/Users/kirillboyko/Downloads/blockwave-kickoff/build/release/blockwave_state_tests_artefacts/Release/blockwave_state_tests)",
+      "Bash(cmake --build /Users/kirillboyko/Downloads/blockwave-kickoff/build/release --target blockwave_state_tests)",
+      "Bash(./build/release/render_artefacts/render presets/factory/DEV_PWM_PAD.json note:C4:2s /tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/pad_c4.wav --sr 48000)",
+      "Bash(./build/release/render_artefacts/render presets/factory/DEV_OCTAVE_CHIP.json note:A3:2s /tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/chip_a3.wav --sr 48000)",
+      "Bash(./build/release/render_artefacts/Release/render presets/factory/DEV_PWM_PAD.json note:C4:2s /tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/pad_c4.wav --sr 48000)",
+      "Bash(./build/release/render_artefacts/Release/render presets/factory/DEV_OCTAVE_CHIP.json note:A3:2s /tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/chip_a3.wav --sr 48000)",
+      "Bash(python3 - /tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad)",
+      "Bash(./build/release/render_artefacts/Release/render - /tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/bend.mid /tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/bend.wav --sr 48000)",
+      "Bash(bash scripts/build.sh --clean)",
+      "Bash(tee /private/tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/build.log)",
+      "Bash(tee /private/tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/ctest.log)",
+      "Bash(./blockwave_tests)",
+      "Bash(tee /private/tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/unit_tests.log)",
+      "Bash(./blockwave_state_tests_artefacts/Release/blockwave_state_tests)",
+      "Bash(tee /private/tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/state_tests.log)"
     ]
   }
 }

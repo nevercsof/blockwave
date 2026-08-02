@@ -28,7 +28,7 @@ namespace blockwave
 // Engine limits. See BlockwaveEngine.h for the oscillator-count cap rationale.
 constexpr int kMaxVoices        = 16;
 constexpr int kMaxUnison        = 8;
-constexpr int kMaxUnisonStacks  = 64;   // total A+B unison stacks across all voices
+constexpr int kMaxUnisonStacks  = 128;  // total A+B unison stacks across all voices
 
 enum class NoiseMode  : int { longMode = 0, shortMode = 1 };
 enum class VoiceMode  : int { poly = 0, mono = 1, legato = 2 };

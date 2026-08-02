@@ -1,0 +1,21 @@
+{
+  "formatVersion": 1,
+  "name": "DEV BLOCK KICK",
+  "category": "PERC",
+  "author": "BLOCKWAVE Dev (TEMPORARY - replaced in Phase 6)",
+  "description": "Technique 8, chip kick: -30 st pitch envelope over 90 ms into a nearly-closed LP24.",
+  "craft": { "base": "", "cells": ["", "", "", "", "", "", "", ""] },
+  "params": {
+    "oscA_level": 1.0,
+    "env2_pitch": -30.0,
+    "env2_d": 0.09,
+    "env2_s": 0.0,
+    "env2_r": 0.05,
+    "filt_cutoff": 250.0,
+    "env1_a": 0.001,
+    "env1_d": 0.25,
+    "env1_s": 0.0,
+    "env1_r": 0.08,
+    "vel_amp": 0.3
+  }
+}

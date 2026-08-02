@@ -20,9 +20,11 @@
 //
 //   render <preset.json> <input.mid | notespec> <out.wav> [--sr N] [--bpm N]
 //
-// Preset JSON per SPEC §Preset format; only "params" is applied in Phase 1
-// (craft applies in Phase 4). Missing params = SPEC defaults. Pass "-" as the
-// preset to render the default patch.
+// Preset JSON per SPEC §Preset format; "params" is applied through the same
+// frozen table (src/ParamSpec.h) as the plugin's APVTS, so render and plugin
+// agree exactly (craft applies in Phase 4). Missing params = SPEC defaults.
+// Pass "-" as the preset to render the default patch. MIDI pitch-wheel events
+// in .mid inputs drive the engine's ±2 st smoothed pitch bend.
 //
 // Note spec (test convenience, documented for qa-runner):
 //   note:<name-or-number>:<seconds>s      e.g. note:C4:2s   note:60:1.5s
@@ -39,7 +41,9 @@
 namespace
 {
 
-struct NoteEvent { double timeSec; int note; float vel; bool on; };
+// type: 0 = note-off, 1 = note-on (value = velocity),
+//       2 = pitch bend (value = semitones, fixed ±2 st range).
+struct NoteEvent { double timeSec; int note; float value; int type; };
 
 int parseNoteName (const juce::String& s)
 {
@@ -74,8 +78,8 @@ bool buildEvents (const juce::String& midiArg, std::vector<NoteEvent>& events, d
         const double dur = parts[2].dropLastCharacters (1).getDoubleValue();
         if (note < 0 || note > 127 || dur <= 0.0)
             return false;
-        events.push_back ({ 0.0, note, 100.0f / 127.0f, true });
-        events.push_back ({ dur, note, 0.0f, false });
+        events.push_back ({ 0.0, note, 100.0f / 127.0f, 1 });
+        events.push_back ({ dur, note, 0.0f, 0 });
         lengthSec = dur + 2.0;
         return true;
     }
@@ -97,9 +101,13 @@ bool buildEvents (const juce::String& midiArg, std::vector<NoteEvent>& events, d
         {
             const auto& m = track->getEventPointer (i)->message;
             if (m.isNoteOn())
-                events.push_back ({ m.getTimeStamp(), m.getNoteNumber(), m.getFloatVelocity(), true });
+                events.push_back ({ m.getTimeStamp(), m.getNoteNumber(), m.getFloatVelocity(), 1 });
             else if (m.isNoteOff())
-                events.push_back ({ m.getTimeStamp(), m.getNoteNumber(), 0.0f, false });
+                events.push_back ({ m.getTimeStamp(), m.getNoteNumber(), 0.0f, 0 });
+            else if (m.isPitchWheel())   // fixed ±2 st range, matches the plugin
+                events.push_back ({ m.getTimeStamp(), 0,
+                                    2.0f * static_cast<float> (m.getPitchWheelValue() - 8192)
+                                         / 8192.0f, 2 });
             last = std::max (last, m.getTimeStamp());
         }
     }
@@ -174,8 +182,9 @@ int main (int argc, char* argv[])
                && static_cast<int> (events[evIdx].timeSec * sr) <= pos)
         {
             const auto& e = events[evIdx];
-            if (e.on) engine.noteOn (e.note, e.vel);
-            else      engine.noteOff (e.note);
+            if      (e.type == 1) engine.noteOn (e.note, e.value);
+            else if (e.type == 0) engine.noteOff (e.note);
+            else                  engine.setPitchBend (e.value);
             ++evIdx;
         }
         if (evIdx < events.size())

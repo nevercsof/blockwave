@@ -20,6 +20,8 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include "BlockwaveEngine.h"
+#include "BlockwaveApvts.h"
+#include "PresetLibrary.h"
 
 class BlockwaveAudioProcessor final : public juce::AudioProcessor
 {
@@ -50,8 +52,45 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    // ---- parameters --------------------------------------------------------
+    juce::AudioProcessorValueTreeState apvts;
+
+    // ---- presets (message thread only) -------------------------------------
+    blockwave::PresetLibrary& getPresetLibrary() { return presetLibrary; }
+
+    // Applies a full preset var (SPEC §Preset format): params reset to SPEC
+    // defaults, then overrides; craft carried as opaque data until Phase 4.
+    bool loadPresetVar (const juce::var& presetRoot, juce::String& error);
+    bool loadPresetAtIndex (int index, juce::String& error);
+    bool loadNextPreset (juce::String& error);
+    bool loadPrevPreset (juce::String& error);
+
+    // Snapshot of the current patch as a preset var / save it as user preset.
+    juce::var buildCurrentPresetVar (const juce::String& name,
+                                     const juce::String& category,
+                                     const juce::String& author);
+    bool saveCurrentAsUserPreset (const juce::String& name,
+                                  const juce::String& category,
+                                  juce::String& error);
+
+    juce::String getPresetName() const;
+    juce::String getPresetCategory() const;
+    juce::var getCraftData() const;                  // opaque until Phase 4
+
 private:
+    void loadFactoryBank();
+
     blockwave::BlockwaveEngine engine;
+    blockwave::RawParams rawParams;
+
+    blockwave::PresetLibrary presetLibrary { blockwave::PresetLibrary::defaultUserFolder() };
+
+    // Non-automatable state (SPEC): preset identity + craft grid contents.
+    // Guarded because hosts may call get/setStateInformation off the message
+    // thread; never touched by the audio thread.
+    mutable juce::CriticalSection metaLock;
+    juce::String presetName { "INIT" }, presetCategory, presetAuthor;
+    juce::String craftJson;                          // compact JSON, "" = none
 
     // Stereo scratch the engine renders into; sized in prepareToPlay only
     // (real-time rules: no allocation in processBlock).

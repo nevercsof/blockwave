@@ -1,0 +1,22 @@
+{
+  "formatVersion": 1,
+  "name": "DEV COBBLE BASS",
+  "category": "BASS",
+  "author": "BLOCKWAVE Dev (TEMPORARY - replaced in Phase 6)",
+  "description": "Technique 6, sub-anchored bass: PW 35% character osc, SUB -1 weight, low cutoff, mono.",
+  "craft": { "base": "", "cells": ["", "", "", "", "", "", "", ""] },
+  "params": {
+    "oscA_pw": 35.0,
+    "oscA_level": 0.7,
+    "sub_on": true,
+    "sub_oct": -1,
+    "sub_level": 0.85,
+    "voice_mode": "mono",
+    "filt_cutoff": 650.0,
+    "filt_res": 0.2,
+    "env1_d": 0.18,
+    "env1_s": 0.9,
+    "env1_r": 0.12,
+    "vel_amp": 0.4
+  }
+}

@@ -18,10 +18,26 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "BinaryData.h"
 
 BlockwaveAudioProcessor::BlockwaveAudioProcessor()
-    : AudioProcessor (BusesProperties().withOutput ("Output", juce::AudioChannelSet::stereo(), true))
+    : AudioProcessor (BusesProperties().withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
+      apvts (*this, nullptr, "PARAMS", blockwave::createParameterLayout())
 {
+    rawParams.attach (apvts);
+    loadFactoryBank();
+    presetLibrary.rescanUserPresets();      // lists only; never creates the folder
+}
+
+void BlockwaveAudioProcessor::loadFactoryBank()
+{
+    for (int i = 0; i < BinaryData::namedResourceListSize; ++i)
+    {
+        int size = 0;
+        if (const char* data = BinaryData::getNamedResource (
+                BinaryData::namedResourceList[i], size))
+            presetLibrary.addFactoryPresetJson (juce::String::fromUTF8 (data, size));
+    }
 }
 
 void BlockwaveAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
@@ -31,9 +47,9 @@ void BlockwaveAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
     // chunk in processBlock if a larger block still arrives.
     scratch.setSize (2, juce::jmax (samplesPerBlock, 4096), false, true, true);
 
-    // Phase 1: default internal patch = ParamSnapshot defaults (SPEC table).
-    // Phase 2 replaces this with the APVTS-driven snapshot.
-    engine.setParams (blockwave::ParamSnapshot {});
+    blockwave::ParamSnapshot snap;
+    rawParams.toSnapshot (snap);
+    engine.setParams (snap);
     engine.prepare (sampleRate, samplesPerBlock);
 }
 
@@ -49,6 +65,13 @@ void BlockwaveAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                                             juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
+
+    // Host automation -> engine: build the snapshot from the APVTS raw
+    // atomics (no locks, no allocation) and hand it to the engine, which
+    // smooths every audible parameter internally.
+    blockwave::ParamSnapshot snap;
+    rawParams.toSnapshot (snap);
+    engine.setParams (snap);
 
     // Host tempo (offline render safe: getPlayHead may be null).
     if (auto* ph = getPlayHead())
@@ -79,6 +102,9 @@ void BlockwaveAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                 engine.noteOn (msg.getNoteNumber(), msg.getFloatVelocity());
             else if (msg.isNoteOff())
                 engine.noteOff (msg.getNoteNumber());
+            else if (msg.isPitchWheel())    // fixed ±2 st, smoothed in engine
+                engine.setPitchBend (2.0f * static_cast<float> (msg.getPitchWheelValue() - 8192)
+                                          / 8192.0f);
             else if (msg.isAllNotesOff() || msg.isAllSoundOff())
                 engine.allNotesOff();
             ++midiIt;
@@ -111,19 +137,131 @@ juce::AudioProcessorEditor* BlockwaveAudioProcessor::createEditor()
     return new BlockwaveAudioProcessorEditor (*this);
 }
 
+// ---- presets (message thread only) -----------------------------------------
+
+bool BlockwaveAudioProcessor::loadPresetVar (const juce::var& presetRoot, juce::String& error)
+{
+    auto* obj = presetRoot.getDynamicObject();
+    if (obj == nullptr) { error = "preset root is not an object"; return false; }
+
+    // Craft first (opaque until Phase 4), then params = SPEC defaults + overrides.
+    blockwave::resetParamsToDefaults (apvts);
+    if (! blockwave::applyPresetVarToApvts (presetRoot, apvts, error))
+        return false;
+
+    const juce::ScopedLock sl (metaLock);
+    presetName     = obj->getProperty ("name").toString();
+    if (presetName.isEmpty()) presetName = "UNTITLED";
+    presetCategory = obj->getProperty ("category").toString();
+    presetAuthor   = obj->getProperty ("author").toString();
+    const auto craft = obj->getProperty ("craft");
+    craftJson = craft.isVoid() ? juce::String() : juce::JSON::toString (craft, true);
+    return true;
+}
+
+bool BlockwaveAudioProcessor::loadPresetAtIndex (int index, juce::String& error)
+{
+    if (index < 0 || index >= presetLibrary.getNumPresets())
+    {
+        error = "preset index out of range";
+        return false;
+    }
+    if (! loadPresetVar (presetLibrary.getPreset (index).root, error))
+        return false;
+    presetLibrary.setCurrentIndex (index);
+    return true;
+}
+
+bool BlockwaveAudioProcessor::loadNextPreset (juce::String& error)
+{
+    return loadPresetAtIndex (presetLibrary.getNextIndex(), error);
+}
+
+bool BlockwaveAudioProcessor::loadPrevPreset (juce::String& error)
+{
+    return loadPresetAtIndex (presetLibrary.getPrevIndex(), error);
+}
+
+juce::var BlockwaveAudioProcessor::buildCurrentPresetVar (const juce::String& name,
+                                                          const juce::String& category,
+                                                          const juce::String& author)
+{
+    juce::var craft;
+    {
+        const juce::ScopedLock sl (metaLock);
+        if (craftJson.isNotEmpty())
+            craft = juce::JSON::parse (craftJson);
+    }
+    return blockwave::buildPresetVar (apvts, name, category, author, craft);
+}
+
+bool BlockwaveAudioProcessor::saveCurrentAsUserPreset (const juce::String& name,
+                                                       const juce::String& category,
+                                                       juce::String& error)
+{
+    const auto preset = buildCurrentPresetVar (name, category, "User");
+    if (! presetLibrary.saveUserPreset (preset, error))
+        return false;
+    const juce::ScopedLock sl (metaLock);
+    presetName = name;
+    presetCategory = category;
+    presetAuthor = "User";
+    return true;
+}
+
+juce::String BlockwaveAudioProcessor::getPresetName() const
+{
+    const juce::ScopedLock sl (metaLock);
+    return presetName;
+}
+
+juce::String BlockwaveAudioProcessor::getPresetCategory() const
+{
+    const juce::ScopedLock sl (metaLock);
+    return presetCategory;
+}
+
+juce::var BlockwaveAudioProcessor::getCraftData() const
+{
+    const juce::ScopedLock sl (metaLock);
+    return craftJson.isNotEmpty() ? juce::JSON::parse (craftJson) : juce::var();
+}
+
+// ---- host session state -----------------------------------------------------
+
 void BlockwaveAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
-    // Phase 2 will serialise the full APVTS + craft grid here.
-    juce::ValueTree state ("BLOCKWAVE_STATE");
-    state.setProperty ("formatVersion", 0, nullptr);
+    juce::ValueTree root ("BLOCKWAVE_STATE");
+    root.setProperty ("formatVersion", 1, nullptr);
+    {
+        const juce::ScopedLock sl (metaLock);
+        root.setProperty ("presetName",     presetName, nullptr);
+        root.setProperty ("presetCategory", presetCategory, nullptr);
+        root.setProperty ("presetAuthor",   presetAuthor, nullptr);
+        root.setProperty ("craft",          craftJson, nullptr);
+    }
+    root.appendChild (apvts.copyState(), nullptr);
+
     juce::MemoryOutputStream stream (destData, false);
-    state.writeToStream (stream);
+    root.writeToStream (stream);
 }
 
 void BlockwaveAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    auto state = juce::ValueTree::readFromData (data, static_cast<size_t> (sizeInBytes));
-    juce::ignoreUnused (state);
+    const auto root = juce::ValueTree::readFromData (data, static_cast<size_t> (sizeInBytes));
+    if (! root.isValid() || ! root.hasType ("BLOCKWAVE_STATE"))
+        return;
+    // formatVersion 0 (Phase-1 shell) carried no parameters; anything >= 1
+    // is read best-effort so future minor additions stay backward compatible.
+    const auto params = root.getChildWithName (apvts.state.getType());
+    if (params.isValid())
+        apvts.replaceState (params.createCopy());
+
+    const juce::ScopedLock sl (metaLock);
+    presetName     = root.getProperty ("presetName", "INIT").toString();
+    presetCategory = root.getProperty ("presetCategory", juce::String()).toString();
+    presetAuthor   = root.getProperty ("presetAuthor", juce::String()).toString();
+    craftJson      = root.getProperty ("craft", juce::String()).toString();
 }
 
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()

@@ -350,11 +350,10 @@ static void test_no_allocation_on_audio_thread()
 }
 
 // ---------------------------------------------------------------------------
-static void test_cpu_worst_case()
+static double measureCpuRatio (double sr, int blockSize)
 {
-    std::printf ("[cpu_worst_case]\n");
-    // Worst realtime patch: everything on, 16 held notes, unison 8 requested
-    // (engine caps to 4 with poly 16 -> 64 stacks; see BlockwaveEngine.h).
+    // Worst realtime patch: everything on, 16 held notes x full 8-way unison
+    // = 128 stacks (kMaxUnisonStacks raised 64 -> 128, Phase-2 amendment).
     ParamSnapshot p;
     p.oscB_on = true; p.oscB_sync = true; p.sub_on = true; p.noise_on = true;
     p.uni_count = 8; p.poly_count = 16;
@@ -363,24 +362,352 @@ static void test_cpu_worst_case()
 
     BlockwaveEngine engine;
     engine.setParams (p);
-    engine.prepare (44100.0, 128);
+    engine.prepare (sr, blockSize);
     for (int i = 0; i < 16; ++i)
         engine.noteOn (36 + i * 3, 0.9f);
 
-    float l[128], r[128];
-    const int blocks = static_cast<int> (5.0 * 44100.0 / 128.0);
+    static float l[4096], r[4096];
+    const int blocks = static_cast<int> (5.0 * sr / blockSize);
     const auto t0 = std::chrono::steady_clock::now();
     for (int i = 0; i < blocks; ++i)
-        engine.process (l, r, 128);
+        engine.process (l, r, blockSize);
     const auto t1 = std::chrono::steady_clock::now();
 
     const double renderSec = std::chrono::duration<double> (t1 - t0).count();
-    const double audioSec  = blocks * 128.0 / 44100.0;
-    const double ratio = renderSec / audioSec;
-    std::printf ("  16 voices, capped 4-way unison (64 stacks), all sources on:\n");
-    std::printf ("  %.2f s audio in %.3f s CPU -> %.1f%% of one core @ 44.1k/128\n",
-                 audioSec, renderSec, ratio * 100.0);
-    CHECK_MSG (ratio < 0.9, "worst case not realtime: %.1f%%", ratio * 100.0);
+    const double audioSec  = blocks * static_cast<double> (blockSize) / sr;
+    return renderSec / audioSec;
+}
+
+static void test_cpu_worst_case()
+{
+    std::printf ("[cpu_worst_case]\n");
+    std::printf ("  16 voices x full 8-way unison (128 stacks), all sources on:\n");
+    const double r1 = measureCpuRatio (44100.0, 128);
+    std::printf ("  %.1f%% of one core @ 44.1k/128 (%.2f%% per voice)\n",
+                 r1 * 100.0, r1 * 100.0 / 16.0);
+    const double r2 = measureCpuRatio (48000.0, 512);
+    std::printf ("  %.1f%% of one core @ 48k/512  (%.2f%% per voice)\n",
+                 r2 * 100.0, r2 * 100.0 / 16.0);
+    CHECK_MSG (r1 < 0.9, "worst case not realtime @ 44.1k/128: %.1f%%", r1 * 100.0);
+    CHECK_MSG (r2 < 0.9, "worst case not realtime @ 48k/512: %.1f%%", r2 * 100.0);
+}
+
+// ---------------------------------------------------------------------------
+// Amendment 1: LFO2->pitch full scale ±12 st with quadratic taper
+// (effective depth = amt^2 * 12 st, sign of amt preserved).
+static void test_lfo2_pitch_taper()
+{
+    std::printf ("[lfo2_pitch_taper]\n");
+    const double sr = 48000.0;
+    const int note = 57;                                 // A3, 220 Hz
+    const double base = 220.0;
+
+    const float amts[]     = { 1.0f, 0.5f, -0.5f };
+    const double expectSt[] = { 12.0, 3.0, -3.0 };       // amt*|amt|*12
+
+    for (int k = 0; k < 3; ++k)
+    {
+        ParamSnapshot p;
+        p.env1_s = 1.0f;
+        p.lfo2_dest  = Lfo2Dest::pitch;
+        p.lfo2_shape = LfoShape::square;
+        p.lfo2_sync  = false;
+        p.lfo2_rate  = 0.05f;        // 20 s period: square stays at +1 all render
+        p.lfo2_amt   = amts[k];
+        auto r = renderNote (p, note, sr, 1.5, 1.5);
+        const double f0 = measureF0 (r.l, static_cast<int> (0.5 * sr),
+                                     static_cast<int> (1.4 * sr), sr);
+        const double ref = base * std::exp2 (expectSt[k] / 12.0);
+        const double cents = centsDiff (f0, ref);
+        std::printf ("  amt=%+.2f -> f0=%8.3f Hz, expected %8.3f Hz (%+.1f st), err %+.2f cents\n",
+                     static_cast<double> (amts[k]), f0, ref, expectSt[k], cents);
+        CHECK_MSG (std::abs (cents) <= 3.0,
+                   "quadratic taper off: %+.2f cents at amt %.2f", cents,
+                   static_cast<double> (amts[k]));
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Amendment 3: pitch bend, fixed ±2 st, smoothed (no zipper).
+static void test_pitch_bend()
+{
+    std::printf ("[pitch_bend]\n");
+    const double sr = 48000.0;
+    const int note = 57;                                 // A3, 220 Hz
+
+    ParamSnapshot p;
+    p.env1_s = 1.0f;
+
+    BlockwaveEngine engine;
+    engine.setParams (p);
+    engine.prepare (sr, 512);
+    engine.noteOn (note, 1.0f);
+
+    const int nPre = static_cast<int> (1.0 * sr);
+    const int nPost = static_cast<int> (1.5 * sr);
+    std::vector<float> l (static_cast<size_t> (nPre + nPost)),
+                       r (static_cast<size_t> (nPre + nPost));
+    for (int pos = 0; pos < nPre; pos += 512)
+        engine.process (l.data() + pos, r.data() + pos, std::min (512, nPre - pos));
+    engine.setPitchBend (2.0f);
+    for (int pos = nPre; pos < nPre + nPost; pos += 512)
+        engine.process (l.data() + pos, r.data() + pos, std::min (512, nPre + nPost - pos));
+
+    const double fPre = measureF0 (l, static_cast<int> (0.3 * sr),
+                                   static_cast<int> (0.9 * sr), sr);
+    const double fPost = measureF0 (l, nPre + static_cast<int> (0.5 * sr),
+                                    nPre + static_cast<int> (1.4 * sr), sr);
+    const double refPost = 220.0 * std::exp2 (2.0 / 12.0);
+    std::printf ("  pre-bend %.3f Hz, post-bend %.3f Hz (target %.3f)\n", fPre, fPost, refPost);
+    CHECK_MSG (std::abs (centsDiff (fPre, 220.0)) <= 1.0,
+               "pre-bend pitch off: %.2f cents", centsDiff (fPre, 220.0));
+    CHECK_MSG (std::abs (centsDiff (fPost, refPost)) <= 1.0,
+               "post-bend pitch off: %.2f cents", centsDiff (fPost, refPost));
+
+    // No zipper: successive waveform periods through the transition must move
+    // gradually. 25 ms smoothing at 220 Hz gives < ~2% per period; a hard
+    // step would jump the full 12.2% in one period.
+    {
+        std::vector<double> periods;
+        double lastT = -1.0;
+        for (int i = nPre - static_cast<int> (0.05 * sr) + 1;
+             i < nPre + static_cast<int> (0.3 * sr); ++i)
+        {
+            const auto a = l[static_cast<size_t> (i - 1)], b = l[static_cast<size_t> (i)];
+            if (a < 0.0f && b >= 0.0f)
+            {
+                const double t = (i - 1) + static_cast<double> (-a) / (b - a);
+                if (lastT >= 0.0)
+                    periods.push_back (t - lastT);
+                lastT = t;
+            }
+        }
+        double worstRatio = 1.0;
+        for (size_t i = 1; i < periods.size(); ++i)
+        {
+            const double ratio = periods[i] > periods[i - 1]
+                               ? periods[i] / periods[i - 1]
+                               : periods[i - 1] / periods[i];
+            worstRatio = std::max (worstRatio, ratio);
+        }
+        std::printf ("  worst period-to-period step through bend: %.2f%% (%zu periods)\n",
+                     (worstRatio - 1.0) * 100.0, periods.size());
+        CHECK_MSG (periods.size() > 40, "too few periods measured (%zu)", periods.size());
+        CHECK_MSG (worstRatio < 1.04,
+                   "bend zippered: %.2f%% period jump", (worstRatio - 1.0) * 100.0);
+    }
+
+    // Fixed range: out-of-range values clamp to ±2 st.
+    engine.setPitchBend (10.0f);
+    std::vector<float> l2 (static_cast<size_t> (sr)), r2 (static_cast<size_t> (sr));
+    for (int pos = 0; pos < static_cast<int> (sr); pos += 512)
+        engine.process (l2.data() + pos, r2.data() + pos,
+                        std::min (512, static_cast<int> (sr) - pos));
+    const double fClamp = measureF0 (l2, static_cast<int> (0.4 * sr),
+                                     static_cast<int> (0.95 * sr), sr);
+    std::printf ("  bend request +10 st -> clamped f0 %.3f Hz\n", fClamp);
+    CHECK_MSG (std::abs (centsDiff (fClamp, refPost)) <= 1.0,
+               "bend clamp failed: %.2f cents from +2 st", centsDiff (fClamp, refPost));
+}
+
+// ---------------------------------------------------------------------------
+// Amendment 2: unison cap raised to 128 stacks — 16 voices x 8 unison is now
+// genuinely possible (the old 64-stack cap silently folded it to 4-way).
+static void test_unison_cap_128()
+{
+    std::printf ("[unison_cap_128]\n");
+    static_assert (kMaxUnisonStacks == 128, "cap must be 128 (Phase-2 amendment)");
+    static_assert (kMaxVoices * kMaxUnison == kMaxUnisonStacks,
+                   "full 16x8 unison must fit the cap");
+
+    ParamSnapshot p;
+    p.uni_count = 8; p.poly_count = 16;
+    p.uni_detune = 30.0f; p.env1_s = 1.0f;
+
+    ParamSnapshot p4 = p;
+    p4.uni_count = 4;
+
+    const auto renderChord = [] (const ParamSnapshot& ps)
+    {
+        BlockwaveEngine e;
+        e.setParams (ps);
+        e.prepare (48000.0, 512);
+        for (int i = 0; i < 16; ++i)
+            e.noteOn (40 + i * 2, 0.9f);
+        std::vector<float> l (24000), r (24000);
+        for (int pos = 0; pos < 24000; pos += 512)
+            e.process (l.data() + pos, r.data() + pos, std::min (512, 24000 - pos));
+        return l;
+    };
+
+    const auto a = renderChord (p);      // 16 voices x 8 requested
+    const auto b = renderChord (p4);     // 16 voices x 4 (the old capped result)
+    double diff = 0.0;
+    for (size_t i = 0; i < a.size(); ++i)
+        diff += std::abs (static_cast<double> (a[i]) - b[i]);
+    diff /= static_cast<double> (a.size());
+    std::printf ("  mean |8-way - 4-way| with 16 voices = %.4f\n", diff);
+    CHECK_MSG (diff > 1.0e-3,
+               "16 voices x 8 unison identical to 4-way: cap still folding (%.3g)", diff);
+}
+
+// ---------------------------------------------------------------------------
+// Amendment 4: master softclip ceiling — transparent below -0.3 dBFS, hard
+// guarantee of < 0 dBFS above, always on.
+static void test_master_softclip()
+{
+    std::printf ("[master_softclip]\n");
+    constexpr float t = 0.96605088f;
+
+    // Bit-exact identity below the threshold.
+    {
+        int mismatches = 0;
+        for (int i = 0; i <= 2000; ++i)
+        {
+            const float x = -0.96f + 0.96f * static_cast<float> (i) / 1000.0f;
+            if (masterSoftclip (x) != x)
+                ++mismatches;
+        }
+        CHECK_MSG (mismatches == 0, "softclip not bit-transparent below threshold (%d)", mismatches);
+    }
+    // Bounded (<= 0 dBFS; the tanh asymptote rounds to exactly 1.0 in float
+    // for extreme inputs, which the amendment allows) and monotonic above.
+    {
+        float prev = 0.0f;
+        bool monotonic = true, bounded = true;
+        for (int i = 0; i <= 1000; ++i)
+        {
+            const float y = masterSoftclip (10.0f * static_cast<float> (i) / 1000.0f);
+            if (y < prev) monotonic = false;
+            if (y > 1.0f) bounded = false;
+            prev = y;
+        }
+        CHECK_MSG (monotonic, "softclip not monotonic");
+        CHECK_MSG (bounded, "softclip exceeded 0 dBFS");
+        CHECK_MSG (masterSoftclip (-10.0f) >= -1.0f, "negative rail exceeded");
+    }
+
+    // Hot resonant patch stays <= 0 dBFS.
+    {
+        ParamSnapshot p;
+        p.uni_count = 8; p.uni_detune = 25.0f;
+        p.oscA_level = 1.0f;
+        p.filt_cutoff = 800.0f; p.filt_res = 0.9f;
+        p.env1_s = 1.0f;
+        p.master_gain = 6.0f;
+
+        BlockwaveEngine e;
+        e.setParams (p);
+        e.prepare (48000.0, 512);
+        for (int n : { 36, 43, 48, 55, 60 })
+            e.noteOn (n, 1.0f);
+        std::vector<float> l (48000), r (48000);
+        for (int pos = 0; pos < 48000; pos += 512)
+            e.process (l.data() + pos, r.data() + pos, std::min (512, 48000 - pos));
+        float peak = 0.0f;
+        for (size_t i = 0; i < l.size(); ++i)
+            peak = std::max ({ peak, std::abs (l[i]), std::abs (r[i]) });
+        std::printf ("  hot patch peak = %.6f (threshold %.5f)\n",
+                     static_cast<double> (peak), static_cast<double> (t));
+        CHECK_MSG (peak <= 1.0f, "hot patch exceeded 0 dBFS: %.4f", static_cast<double> (peak));
+        CHECK_MSG (peak > t, "hot patch never engaged the clip — test patch too quiet");
+    }
+
+    // Quiet patch null: every sample below threshold, therefore the clip was
+    // bit-transparent (verified by re-applying it — output must be identical).
+    {
+        ParamSnapshot p;                                 // defaults
+        auto rn = renderNote (p, 60, 48000.0, 1.0, 1.2);
+        float peak = 0.0f;
+        int changed = 0;
+        for (const float x : rn.l)
+        {
+            peak = std::max (peak, std::abs (x));
+            if (masterSoftclip (x) != x)
+                ++changed;
+        }
+        std::printf ("  quiet patch peak = %.4f, resamples changed by clip = %d\n",
+                     static_cast<double> (peak), changed);
+        CHECK_MSG (peak < t, "quiet patch reached the threshold (%.3f)", static_cast<double> (peak));
+        CHECK_MSG (changed == 0, "quiet patch not null under softclip (%d samples)", changed);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Phase-2 DoD: host automation of cutoff/PW is click-free (engine smoothing).
+// A stepped parameter change mid-note must not add a discontinuity beyond the
+// waveform's own steady-state slew; an unsmoothed switch (spliced renders)
+// must trip the same detector — proving the detector actually bites.
+static void test_param_smoothing_click_free()
+{
+    std::printf ("[param_smoothing_click_free]\n");
+    const double sr = 48000.0;
+    const int note = 33;                                 // A1, 55 Hz
+
+    ParamSnapshot p1;
+    p1.env1_a = 0.005f; p1.env1_s = 1.0f;
+    p1.filt_cutoff = 400.0f; p1.filt_res = 0.1f;
+
+    ParamSnapshot p2 = p1;
+    p2.filt_cutoff = 1200.0f;
+    p2.oscA_pw = 15.0f;
+
+    const int total = static_cast<int> (1.2 * sr);
+    const int stepAt = static_cast<int> (0.5 * sr);
+
+    BlockwaveEngine e;
+    e.setParams (p1);
+    e.prepare (sr, 512);
+    e.noteOn (note, 1.0f);
+    std::vector<float> l (static_cast<size_t> (total)), r (static_cast<size_t> (total));
+    bool stepped = false;
+    for (int pos = 0; pos < total; )
+    {
+        if (! stepped && pos >= stepAt) { e.setParams (p2); stepped = true; }
+        int n = std::min (512, total - pos);
+        if (! stepped && pos + n > stepAt)
+            n = stepAt - pos;
+        e.process (l.data() + pos, r.data() + pos, n);
+        pos += n;
+    }
+
+    const auto maxSlew = [&l] (int from, int to)
+    {
+        float m = 0.0f;
+        for (int i = from + 1; i < to; ++i)
+            m = std::max (m, std::abs (l[static_cast<size_t> (i)]
+                                     - l[static_cast<size_t> (i - 1)]));
+        return m;
+    };
+
+    const float steady1 = maxSlew (static_cast<int> (0.25 * sr), static_cast<int> (0.48 * sr));
+    const float steady2 = maxSlew (static_cast<int> (0.90 * sr), static_cast<int> (1.15 * sr));
+    const float trans   = maxSlew (stepAt, static_cast<int> (0.65 * sr));
+    const float bound   = 1.25f * std::max (steady1, steady2);
+    std::printf ("  slew: steady(before)=%.4f steady(after)=%.4f transition=%.4f bound=%.4f\n",
+                 static_cast<double> (steady1), static_cast<double> (steady2),
+                 static_cast<double> (trans), static_cast<double> (bound));
+    CHECK_MSG (trans <= bound,
+               "cutoff/PW step clicked: transition slew %.4f > bound %.4f",
+               static_cast<double> (trans), static_cast<double> (bound));
+
+    // Negative control: splice two independent steady renders at the step
+    // point — that is what an unsmoothed parameter jump does to the output.
+    {
+        auto ra = renderNote (p1, note, sr, 1.2, 1.2);
+        auto rb = renderNote (p2, note, sr, 1.2, 1.2);
+        float spliceSlew = 0.0f;
+        for (int k = 0; k < 10; ++k)
+        {
+            const size_t n0 = static_cast<size_t> (stepAt + k * 17);
+            spliceSlew = std::max (spliceSlew, std::abs (rb.l[n0] - ra.l[n0 - 1]));
+        }
+        std::printf ("  negative control (hard splice) slew = %.4f\n",
+                     static_cast<double> (spliceSlew));
+        CHECK_MSG (spliceSlew > bound,
+                   "click detector too lax: splice slew %.4f under bound %.4f",
+                   static_cast<double> (spliceSlew), static_cast<double> (bound));
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -393,6 +720,11 @@ int main()
     test_adsr_shape();
     test_block_size_invariance();
     test_no_allocation_on_audio_thread();
+    test_lfo2_pitch_taper();
+    test_pitch_bend();
+    test_unison_cap_128();
+    test_master_softclip();
+    test_param_smoothing_click_free();
     test_cpu_worst_case();
 
     std::printf ("\n%d checks, %d failures\n", state().checks, state().failures);
