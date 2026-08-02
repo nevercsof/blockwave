@@ -619,12 +619,20 @@ void drawMiniCraftIconEmpty (juce::Graphics& g, int x, int y)
 
 void drawMiniCraftIcon (juce::Graphics& g, const CraftGrid& grid, int x, int y)
 {
-    // 3x3 of 4x4 blocks; cell order matches CraftEngine's frozen indexing.
+    drawMiniCraftIcon (g, grid, x, y, 1);
+}
+
+void drawMiniCraftIcon (juce::Graphics& g, const CraftGrid& grid, int x, int y,
+                        int scale)
+{
+    // 3x3 of (4*scale)^2 blocks; cell order matches CraftEngine's frozen
+    // indexing. Integer fillRects only, so any integer scale stays crisp.
     static const int cellForSlot[9] = { 0, 1, 2, 3, -1, 4, 5, 6, 7 };
+    const int cell = 4 * scale;
     for (int s = 0; s < 9; ++s)
     {
-        const int cx = x + (s % 3) * 4;
-        const int cy = y + (s / 3) * 4;
+        const int cx = x + (s % 3) * cell;
+        const int cy = y + (s / 3) * cell;
         juce::Colour c;
         if (cellForSlot[s] < 0)
             c = baseKeyColour (grid.base);
@@ -634,15 +642,15 @@ void drawMiniCraftIcon (juce::Graphics& g, const CraftGrid& grid, int x, int y)
             c = m == Material::none ? colours::chip : materialKeyColour (m);
         }
         g.setColour (c);
-        g.fillRect (cx, cy, 4, 4);
+        g.fillRect (cx, cy, cell, cell);
         if (cellForSlot[s] >= 0 && grid.cells[cellForSlot[s]] == Material::none)
         {
             g.setColour (colours::night);         // sunken empty slot
-            g.fillRect (cx + 1, cy + 1, 2, 2);
+            g.fillRect (cx + scale, cy + scale, 2 * scale, 2 * scale);
         }
     }
     g.setColour (colours::outline);
-    g.drawRect (x, y, kMiniIconSize, kMiniIconSize, 1);
+    g.drawRect (x, y, kMiniIconSize * scale, kMiniIconSize * scale, scale);
 }
 
 const juce::Image& BlockImageCache::material (Material m, int scale)

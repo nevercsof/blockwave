@@ -1,4 +1,3 @@
-Started validating: /Users/kirillboyko/Library/Audio/Plug-Ins/Components/BLOCKWAVE.component
 Random seed: 0x53c5d32
 Validation started
 	2 Aug 2026 3:27:06pm

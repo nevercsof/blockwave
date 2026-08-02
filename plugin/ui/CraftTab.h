@@ -91,8 +91,10 @@ private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DiscoveryToast)
 };
 
-// Persistent Discoveries page: every recipe slot, found ones by name, the
-// rest locked. No hints beyond the counter (CRAFT_GRID.md).
+// Persistent Discoveries page: every recipe slot, found ones by name PLUS
+// their 3x3 pattern as a 2x mini icon (a shareable, screenshot-crisp cheat
+// card), the rest locked as ???? with no pattern. No hints beyond the
+// counter (CRAFT_GRID.md).
 class DiscoveriesPanel final : public juce::Component
 {
 public:

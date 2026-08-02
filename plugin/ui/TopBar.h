@@ -20,8 +20,9 @@
 
 // Always-visible top bar (SPEC §UI): logo, preset prev/next, preset name
 // (click opens the browser), PRESETS, SAVE, RAW LED toggle, master volume
-// knob, 1x/2x scale toggle. Preset loading runs on the message thread and
-// lands as atomic parameter writes (via the processor's preset API).
+// knob, UI scale cycler (100/125/150/175/200 %, button shows the current
+// value). Preset loading runs on the message thread and lands as atomic
+// parameter writes (via the processor's preset API).
 
 #include "../PluginProcessor.h"
 #include "ParamCells.h"
@@ -35,10 +36,10 @@ public:
     explicit TopBar (BlockwaveAudioProcessor& processor);
 
     std::function<void()> onBrowse, onSave, onPresetChanged;
-    std::function<void (int)> onScaleChange;                 // 1 or 2
+    std::function<void (int)> onScaleChange;                 // percent: 100..200
 
     void refresh();                                          // preset name/cat
-    void setScaleLabel (int currentScale);
+    void setScaleLabel (int currentScalePercent);
 
     void paint (juce::Graphics&) override;
     void resized() override;
@@ -49,13 +50,13 @@ private:
     BlockwaveAudioProcessor& proc;
     juce::TextButton prevBtn { "<" }, nextBtn { ">" }, nameBtn,
                      browseBtn { "PRESETS" }, saveBtn { "SAVE" },
-                     scaleBtn { "2X" };
+                     scaleBtn { "100%" };
     juce::ToggleButton rawBtn { "RAW" };
     PixelSlider masterKnob { juce::Slider::RotaryVerticalDrag,
                              juce::Slider::NoTextBox };
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> rawAtt;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> masterAtt;
-    int currentScale = 1;
+    int currentScale = 100;                                  // percent
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TopBar)
 };

@@ -226,6 +226,43 @@ static void test_lfsr()
         CHECK_MSG (period == 93, "short-mode period %ld != 93", period);
     }
 
+    // DC blocker (~8 Hz one-pole HP in LfsrNoise::tick): the raw short-mode
+    // 93-step loop has a mean of ~ +0.66 — a massive DC offset — while the
+    // blocked tick() output must average to ~0 in both modes. The raw
+    // sequence itself (step()/state()) is deliberately untouched.
+    for (int mode = 0; mode < 2; ++mode)
+    {
+        const bool shortMode = mode == 1;
+
+        LfsrNoise s;                                    // raw sequence mean
+        s.prepare (48000.0);
+        const long period = shortMode ? 93 : 32767;
+        double rawSum = 0.0;
+        for (long i = 0; i < period; ++i)
+        {
+            s.step (shortMode);
+            rawSum += (s.state() & 1u) ? -1.0 : 1.0;
+        }
+        const double rawMean = rawSum / static_cast<double> (period);
+
+        LfsrNoise n;                                    // blocked tick() mean
+        n.prepare (48000.0);
+        double sum = 0.0;
+        const int N = 96000;                            // 2 s @ 48k
+        for (int i = 0; i < N; ++i)
+            sum += n.tick (shortMode);
+        const double mean = sum / static_cast<double> (N);
+
+        std::printf ("  %s-mode mean: raw sequence %+.4f -> DC-blocked output %+.6f\n",
+                     shortMode ? "short" : "long", rawMean, mean);
+        CHECK_MSG (std::abs (mean) < 0.01,
+                   "%s-mode DC not blocked: mean %.4f", shortMode ? "short" : "long", mean);
+        if (shortMode)
+            CHECK_MSG (rawMean > 0.5,
+                       "short-mode raw sequence changed (mean %.4f) — DC test is stale",
+                       rawMean);
+    }
+
     // Golden renders, both modes.
     for (int mode = 0; mode < 2; ++mode)
     {
@@ -665,6 +702,111 @@ static void test_master_softclip()
 }
 
 // ---------------------------------------------------------------------------
+// Polyphony headroom (kVoiceHeadroom, chord-distortion investigation): a
+// 4-note pad chord must not ride the master softclip into sustained
+// intermodulation. Metric: nonlinearity residual — render the chord normally
+// and again at -24 dB master (linear region), scale the quiet render back up;
+// the chain is linear up to the softclip when the FX are off, so the relative
+// RMS of the difference is exactly the clip's contribution. A hot negative
+// control (+12 dB master) must blow the same gate, proving the metric bites.
+static Rendered renderChord (const ParamSnapshot& p, const std::vector<int>& notes,
+                             double sr, double noteSec, double totalSec)
+{
+    BlockwaveEngine engine;
+    engine.setParams (p);
+    engine.setTempo (120.0);
+    engine.prepare (sr, 512);
+    const int total = static_cast<int> (totalSec * sr);
+    const int offAt = static_cast<int> (noteSec * sr);
+    Rendered out;
+    out.l.assign (static_cast<size_t> (total), 0.0f);
+    out.r.assign (static_cast<size_t> (total), 0.0f);
+    for (int n : notes)
+        engine.noteOn (n, 100.0f / 127.0f);
+    int pos = 0;
+    bool offSent = false;
+    while (pos < total)
+    {
+        if (! offSent && pos >= offAt)
+        {
+            for (int n : notes)
+                engine.noteOff (n);
+            offSent = true;
+        }
+        int n = std::min (512, total - pos);
+        if (! offSent && pos + n > offAt)
+            n = offAt - pos;
+        engine.process (out.l.data() + pos, out.r.data() + pos, n);
+        pos += n;
+    }
+    return out;
+}
+
+static double chordClipResidualPct (const ParamSnapshot& p, const std::vector<int>& notes,
+                                    double sr)
+{
+    const auto full = renderChord (p, notes, sr, 2.0, 2.5);
+    ParamSnapshot quiet = p;
+    quiet.master_gain = p.master_gain - 24.0f;
+    const auto lin = renderChord (quiet, notes, sr, 2.0, 2.5);
+    const double gain = std::pow (10.0, 24.0 / 20.0);
+    double resid = 0.0, ref = 0.0;
+    for (size_t i = 0; i < full.l.size(); ++i)
+    {
+        const double linUp = static_cast<double> (lin.l[i]) * gain;
+        resid += (linUp - full.l[i]) * (linUp - full.l[i]);
+        ref   += linUp * linUp;
+    }
+    return 100.0 * std::sqrt (resid / std::max (ref, 1.0e-12));
+}
+
+static void test_poly_chord_headroom()
+{
+    std::printf ("[poly_chord_headroom]\n");
+    const double sr = 48000.0;
+
+    // The dev PWM pad, replicated field-for-field from
+    // presets/factory/DEV_PWM_PAD.json (the preset Kirill's chord report used).
+    ParamSnapshot pad;
+    pad.lfo1_pwm = 0.45f; pad.lfo1_sync = true; pad.lfo1_rate = 2.0f;
+    pad.uni_count = 5; pad.uni_detune = 16.0f; pad.uni_spread = 0.9f;
+    pad.filt_cutoff = 6500.0f;
+    pad.env1_a = 0.5f; pad.env1_d = 0.5f; pad.env1_s = 0.8f; pad.env1_r = 1.2f;
+    pad.vel_amp = 0.3f;
+
+    const std::vector<int> chord4 { 48, 52, 55, 59 };   // C3 E3 G3 B3
+
+    // Single-note sanity: healthy level, comfortably under the clip threshold.
+    {
+        const auto single = renderChord (pad, { 48 }, sr, 2.0, 2.5);
+        float peak = 0.0f;
+        for (const float v : single.l)
+            peak = std::max (peak, std::abs (v));
+        std::printf ("  single-note peak %.4f (want ~-6 dBFS: 0.2..0.9)\n",
+                     static_cast<double> (peak));
+        CHECK_MSG (peak > 0.2f && peak < 0.9f,
+                   "single-note level not sane after the headroom trim: %.4f",
+                   static_cast<double> (peak));
+    }
+
+    // 4-note chord: intermod/dirt gate. Pre-trim this measured 18.5%;
+    // post-trim 0.5% — the 2% gate leaves margin without ever letting the
+    // pre-trim behavior back in.
+    const double resid4 = chordClipResidualPct (pad, chord4, sr);
+    std::printf ("  4-note chord nonlinearity residual %.2f%% (gate 2%%)\n", resid4);
+    CHECK_MSG (resid4 < 2.0, "pad chord rides the softclip: residual %.2f%%", resid4);
+
+    // Negative control: the same chord pushed +12 dB into the ceiling must
+    // trip the gate by a wide margin, or the metric proves nothing.
+    ParamSnapshot hot = pad;
+    hot.master_gain = 12.0f;
+    const double residHot = chordClipResidualPct (hot, chord4, sr);
+    std::printf ("  negative control (+12 dB master) residual %.2f%%\n", residHot);
+    CHECK_MSG (residHot > 10.0,
+               "clip-residual metric is toothless: hot chord scored %.2f%%", residHot);
+}
+
+// ---------------------------------------------------------------------------
 // Phase-2 DoD: host automation of cutoff/PW is click-free (engine smoothing).
 // A stepped parameter change mid-note must not add a discontinuity beyond the
 // waveform's own steady-state slew; an unsmoothed switch (spliced renders)
@@ -755,6 +897,7 @@ int main()
     test_pitch_bend();
     test_unison_cap_128();
     test_master_softclip();
+    test_poly_chord_headroom();
     test_param_smoothing_click_free();
 
     // Phase-5 FX block (tests/FxTests.h):

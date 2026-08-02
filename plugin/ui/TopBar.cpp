@@ -59,11 +59,12 @@ TopBar::TopBar (BlockwaveAudioProcessor& processor) : proc (processor)
     masterAtt = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
         proc.apvts, "master_gain", masterKnob);
 
-    scaleBtn.setTooltip ("pixel size toggle");
+    scaleBtn.setTooltip ("pixel size cycle");
     scaleBtn.onClick = [this]
     {
+        // 100 -> 125 -> 150 -> 175 -> 200 -> 100.
         if (onScaleChange)
-            onScaleChange (currentScale == 1 ? 2 : 1);
+            onScaleChange (currentScale >= 200 ? 100 : currentScale + 25);
     };
     addAndMakeVisible (scaleBtn);
 
@@ -93,7 +94,7 @@ void TopBar::refresh()
 void TopBar::setScaleLabel (int s)
 {
     currentScale = s;
-    scaleBtn.setButtonText (s == 1 ? "2X" : "1X");
+    scaleBtn.setButtonText (juce::String (s) + "%");   // shows the CURRENT scale
 }
 
 void TopBar::paint (juce::Graphics& g)
@@ -122,7 +123,7 @@ void TopBar::resized()
     saveBtn.setBounds   (376, 12, 48, 16);
     rawBtn.setBounds    (648, 12, 56, 16);
     masterKnob.setBounds (712, 8, 24, 24);
-    scaleBtn.setBounds  (792, 12, 32, 16);
+    scaleBtn.setBounds  (784, 12, 40, 16);             // fits "100%" at 1x
 }
 
 } // namespace blockwave::ui

@@ -122,9 +122,14 @@ BlockwaveAudioProcessorEditor::BlockwaveAudioProcessorEditor (BlockwaveAudioProc
 
     setActiveTab (Tab::craft);                        // CRAFT is home (SPEC)
 
-    const int storedScale = static_cast<int> (
-        proc.apvts.state.getProperty ("uiScale", 1));
-    setUiScale (juce::jlimit (1, 2, storedScale));
+    // "uiScale" session property is a percent (100..200). Sessions saved
+    // before the percent scheme stored 1 or 2 — anything < 10 is one of those
+    // legacy integers, so read it as 100/200.
+    int storedScale = static_cast<int> (
+        proc.apvts.state.getProperty ("uiScale", 100));
+    if (storedScale < 10)
+        storedScale *= 100;
+    setUiScale (storedScale);
 }
 
 BlockwaveAudioProcessorEditor::~BlockwaveAudioProcessorEditor()
@@ -146,11 +151,22 @@ void BlockwaveAudioProcessorEditor::setActiveTab (Tab tab)
     tweakTabBtn.setToggleState (tab == Tab::tweak, juce::dontSendNotification);
 }
 
-void BlockwaveAudioProcessorEditor::setUiScale (int scale)
+void BlockwaveAudioProcessorEditor::setUiScale (int scalePercent)
 {
-    uiScale = juce::jlimit (1, 2, scale);
-    content.setTransform (juce::AffineTransform::scale (static_cast<float> (uiScale)));
-    setSize (kCanvasW * uiScale, kCanvasH * uiScale);
+    // Snap to the cycle steps: 100 / 125 / 150 / 175 / 200.
+    const int clamped = juce::jlimit (100, 200, scalePercent);
+    uiScale = 100 + 25 * ((clamped - 100 + 12) / 25);
+
+    // The content stays a fixed 832x456 canvas; only the transform changes.
+    // 100% / 200% are exact integer transforms (pixel-perfect path); the
+    // fractional steps stay chunky because everything is drawn with solid
+    // integer-coordinate fillRects (no filtered image scaling anywhere).
+    content.setTransform (
+        juce::AffineTransform::scale (static_cast<float> (uiScale) / 100.0f));
+
+    // kCanvasW/H are multiples of 8, so W*pct and H*pct divide exactly by
+    // 100 for every step — the window size is always a whole pixel count.
+    setSize ((kCanvasW * uiScale) / 100, (kCanvasH * uiScale) / 100);
     proc.apvts.state.setProperty ("uiScale", uiScale, nullptr);   // session state
     topBar.setScaleLabel (uiScale);
 }

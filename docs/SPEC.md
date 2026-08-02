@@ -5,7 +5,7 @@ One-line pitch: a free synth where **every sound is a square** — from NES grit
 ## Formats & targets
 
 - macOS: VST3 + AU + Standalone (local dev & test). Windows x64: VST3 built unattended in GitHub Actions CI. Both platforms ship at v1.0; unsigned binaries with install instructions (code signing deferred).
-- Fixed-size pixel UI with 1x / 2x integer scaling toggle (crisp pixels, no blur).
+- Fixed-size pixel UI with a 100 / 125 / 150 / 175 / 200 % scale cycler (top-bar button shows the current value). 100% and 200% are pixel-perfect integer scales; the fractional steps stay chunky-sharp via nearest-neighbour rendering — uneven pixel sizes are acceptable, blur is not. *(Changed from the original "1x/2x integer scaling toggle" — approved by producer + architect.)*
 - 16-voice polyphony, unison up to 8 per voice (engine caps total oscillator count to stay realtime; document the cap).
 
 ## Signal path
@@ -80,8 +80,8 @@ Non-automatable state: craft grid contents (base + 8 cells), preset name/categor
 
 Two tabs, top bar always visible.
 
-- **Top bar:** logo, preset ◀ ▶, preset browser button, SAVE, RAW toggle (LED-style), master volume, 1x/2x scale.
-- **CRAFT tab (default):** 3×3 grid center-left; material palette (draggable blocks) on the right; big auto-generated patch name; DICE (random materials) and MUTATE buttons; a 1.5-octave clickable keyboard strip at the bottom for instant audition. This is the beginner home — full spec in `CRAFT_GRID.md`.
+- **Top bar:** logo, preset ◀ ▶, preset browser button, SAVE, RAW toggle (LED-style), master volume, UI scale cycler (100–200 %).
+- **CRAFT tab (default):** 3×3 grid center-left; material palette (draggable blocks) on the right; big auto-generated patch name; DICE (random materials), MUTATE and CLEAR (empty the bench) buttons; a 1.5-octave clickable keyboard strip at the bottom for instant audition. This is the beginner home — full spec in `CRAFT_GRID.md`.
 - **TWEAK tab:** the full synth — OSC / FILTER / ENV / LFO / FX sections as chunky block panels. Every knob a stepped pixel knob (pre-rendered 16-frame look or procedurally drawn), values shown in a bitmap-font readout.
 - **Preset browser:** list grouped by category (LEAD, BASS, PLUCK, PAD, KEYS, CHIP, PERC, FX); each preset shows its craft recipe as a mini 3×3 icon — users learn crafting by inspecting factory sounds.
 

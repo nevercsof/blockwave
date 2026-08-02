@@ -27,21 +27,34 @@ namespace blockwave
 //
 // Long mode: feedback = bit0 XOR bit1 (32767-step maximal sequence, white-ish).
 // Short mode: feedback = bit0 XOR bit6 (93-step metallic loop).
-// Output is a 1-bit pulse train (+1 / -1), so the "only squares" rule holds.
+// Output is a 1-bit pulse train (+1 / -1) — the "only squares" rule holds —
+// followed by the DC blocker described below (a filter, not a waveshape).
 //
 // The LFSR clocks at a FIXED rate independent of note pitch (per spec):
 // kClockHz = 1789773 / 54 Hz ≈ 33144 Hz — an NES-like timer division that
 // sounds bright/white in long mode at all supported sample rates. The clock
 // is run through a phase accumulator so any host sample rate works; steps are
 // applied one at a time so golden sequences are deterministic.
+//
+// DC blocker: the short-mode 93-step loop has grossly unequal +1/-1 counts
+// (mean ≈ +0.66 — a huge DC offset straight into the filter and FX chain),
+// and even the long sequence carries a 1/32767 bias. tick() therefore runs
+// the raw bit output through a one-pole high-pass at ~8 Hz. Applied to BOTH
+// modes (documented choice): one code path, bias-free by construction, and
+// at 8 Hz it is transparent for everything audible. The LFSR sequence itself
+// (step()/state(), the golden-sequence tests) is untouched.
 class LfsrNoise
 {
 public:
     static constexpr double kClockHz = 1789773.0 / 54.0;
+    static constexpr double kDcBlockHz = 8.0;
 
     void prepare (double sampleRate) noexcept
     {
         clockInc = kClockHz / sampleRate;
+        // One-pole DC blocker coefficient: y[n] = x[n] - x[n-1] + R*y[n-1].
+        dcR = static_cast<float> (1.0 - 2.0 * 3.14159265358979323846
+                                        * kDcBlockHz / sampleRate);
         reset();
     }
 
@@ -50,6 +63,8 @@ public:
         reg    = 1;
         phase  = 0.0;
         curOut = outputBit();
+        dcX1   = 0.0f;
+        dcY1   = 0.0f;
     }
 
     // shortMode selects the alternate tap (bit 6).
@@ -61,7 +76,10 @@ public:
             phase -= 1.0;
             step (shortMode);
         }
-        return curOut;
+        const float y = curOut - dcX1 + dcR * dcY1;   // DC blocker (see header)
+        dcX1 = curOut;
+        dcY1 = y;
+        return y;
     }
 
     // One raw shift-register step (public for the golden-sequence test).
@@ -83,6 +101,9 @@ private:
     double clockInc   = 0.0;
     double phase      = 0.0;
     float  curOut     = 1.0f;
+    float  dcR        = 0.999f;   // DC blocker state (see prepare/tick)
+    float  dcX1       = 0.0f;
+    float  dcY1       = 0.0f;
 };
 
 } // namespace blockwave

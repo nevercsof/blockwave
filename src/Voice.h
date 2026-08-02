@@ -36,6 +36,17 @@ namespace blockwave
 // renders bit-identical for every host block size (16..4096 and beyond).
 constexpr int kCtrlSamples = 16;
 
+// Fixed polyphony headroom: every voice is trimmed by -6 dB before it reaches
+// the mix bus. Rationale (chord-distortion investigation, Phase-5 follow-up):
+// a full-velocity voice can peak near 0 dBFS on its own, so a 3-4 note chord
+// used to slam the master softclip into sustained saturation (14-18% nonlinear
+// residual on the dev PWM pad — audible intermodulation "dirt"). With -6 dB a
+// worst-case single note peaks around -6 dBFS and a 4-note pad chord's
+// nonlinearity residual drops to ~0.5%; the softclip returns to being a
+// safety ceiling instead of a permanently-engaged limiter. Deliberately a
+// FIXED constant — no auto-gain, no pumping, renders stay deterministic.
+constexpr float kVoiceHeadroom = 0.5f;    // -6.02 dB
+
 struct ModContext
 {
     const ParamSnapshot* p = nullptr;
@@ -181,7 +192,7 @@ public:
             l += centre;
             r += centre;
 
-            const float vca = e1 * cVelGain * cVolMod;
+            const float vca = e1 * cVelGain * cVolMod * kVoiceHeadroom;
             outL[n] += svfL.process (l) * vca;
             outR[n] += svfR.process (r) * vca;
         }

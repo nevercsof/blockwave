@@ -15,7 +15,7 @@ A square wave contains only odd harmonics (1, 3, 5...) at 1/n amplitude — holl
 5. **Sync scream:** oscB_sync on, sweep oscB_semi +3..+19 via env2 or lfo2 — aggressive formant leads.
 6. **Sub-anchored bass:** OSC A one octave up with character (PW 30–40%, slight crush), SUB −1 carrying the weight, cutoff 200–800 Hz, short-ish release.
 7. **Pitch-env pluck:** env2_pitch +7..+24 st, env2 decay 30–80 ms, sustain 0 — mallet/karplus-ish attack on anything.
-8. **Chip drums:** kick = env2_pitch −24..−36 st, decay 60–120 ms, sine-ish via cutoff way down; snare = short noise burst (LFSR long) + tiny pitch drop; hat = LFSR **short** mode, 15–40 ms, HP filter. All authentically square-family.
+8. **Chip drums:** kick = env2_pitch +24..+36 st, decay 60–120 ms, sine-ish via cutoff way down (positive amounts start the note HIGH and fall to pitch — the falling boom; negative amounts sweep upward, riser territory); snare = short noise burst (LFSR long) + tiny pitch drop; hat = LFSR **short** mode, 15–40 ms, HP filter. All authentically square-family.
 9. **NES metallic:** noise_mode short at different filter tunings = the iconic robotic timbre; great texture layer.
 10. **Chip arps (faked):** no arp engine in v1 — use lfo2 square→pitch at ±12 st, fast synced rate, for octave-jump chiptune energy; label these CHIP category.
 11. **Lo-fi haze:** crush_down 6–16×, crush_mix 0.2–0.4, MOSS-style slow pitch wobble ±4–8c — tape/cassette vibe.

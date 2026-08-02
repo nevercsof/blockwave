@@ -23,6 +23,26 @@ namespace blockwave::ui
 
 // ---- PresetBrowser ----------------------------------------------------------
 
+namespace
+{
+    // Canonical category display names, index == blockwave::categoryRank.
+    const char* const kCatNames[9] = { "LEAD", "BASS", "PLUCK", "PAD", "KEYS",
+                                       "CHIP", "PERC", "FX", "OTHER" };
+
+    // 10x8 chunky pixel folder icon (original art, pure fillRects).
+    void drawFolderIcon (juce::Graphics& g, int x, int y, juce::Colour body)
+    {
+        g.setColour (colours::outline);
+        g.fillRect (x, y, 5, 2);                     // tab
+        g.fillRect (x, y + 1, 10, 7);                // body outline
+        g.setColour (body);
+        g.fillRect (x + 1, y + 1, 3, 1);             // tab face
+        g.fillRect (x + 1, y + 2, 8, 5);             // body face
+        g.setColour (body.brighter (0.35f));
+        g.fillRect (x + 1, y + 2, 8, 1);             // lid highlight
+    }
+}
+
 PresetBrowser::PresetBrowser (BlockwaveAudioProcessor& processor)
     : proc (processor)
 {
@@ -35,30 +55,86 @@ PresetBrowser::PresetBrowser (BlockwaveAudioProcessor& processor)
 
 juce::Rectangle<int> PresetBrowser::panelRect() const
 {
-    return { (getWidth() - 512) / 2, 8, 512, getHeight() - 16 };
+    return { (getWidth() - 640) / 2, 8, 640, getHeight() - 16 };
+}
+
+juce::Rectangle<int> PresetBrowser::folderRect() const
+{
+    auto r = panelRect();
+    return { r.getX() + 8, r.getY() + 24, 160, r.getHeight() - 32 };
 }
 
 juce::Rectangle<int> PresetBrowser::listRect() const
 {
     auto r = panelRect();
-    return { r.getX() + 8, r.getY() + 24, r.getWidth() - 16, r.getHeight() - 32 };
+    return { r.getX() + 176, r.getY() + 24, r.getWidth() - 184,
+             r.getHeight() - 32 };
 }
 
-void PresetBrowser::refresh()
+const PresetBrowser::Folder& PresetBrowser::selectedFolder() const
+{
+    static const Folder all;                         // safe fallback: ALL
+    if (folders.empty())
+        return all;
+    const auto i = juce::jlimit (0, static_cast<int> (folders.size()) - 1,
+                                 folderCursor);
+    return folders[static_cast<size_t> (i)];
+}
+
+void PresetBrowser::rebuildFolders()
+{
+    folders.clear();
+    const auto& lib = proc.getPresetLibrary();
+
+    folders.push_back ({ "ALL", -1, -1, 0, lib.getNumPresets() });
+
+    for (int bank = 0; bank < 2; ++bank)             // 0 factory, 1 user
+    {
+        const bool wantFactory = bank == 0;
+        int counts[9] = {};
+        int bankCount = 0;
+        for (int i = 0; i < lib.getNumPresets(); ++i)
+        {
+            const auto& e = lib.getPreset (i);
+            if (e.isFactory != wantFactory)
+                continue;
+            ++bankCount;
+            ++counts[categoryRank (e.category)];
+        }
+
+        folders.push_back ({ wantFactory ? "FACTORY" : "USER",
+                             bank, -1, 0, bankCount });
+        for (int r = 0; r < 9; ++r)
+            if (counts[r] > 0)
+                folders.push_back ({ kCatNames[r], bank, r, 1, counts[r] });
+    }
+}
+
+void PresetBrowser::rebuildRows()
 {
     rows.clear();
+    presetsListed = 0;
     const auto& lib = proc.getPresetLibrary();
+    const auto& f = selectedFolder();
+    const bool grouped = f.catRank < 0;              // ALL / bank keep headers
+
     juce::String lastCat ("\x01");
     for (int i = 0; i < lib.getNumPresets(); ++i)
     {
         const auto& e = lib.getPreset (i);
-        auto cat = e.category.toUpperCase();
-        if (cat.isEmpty())
-            cat = "OTHER";
-        if (cat != lastCat)
+        if (f.bank >= 0 && e.isFactory != (f.bank == 0))
+            continue;
+        if (f.catRank >= 0 && categoryRank (e.category) != f.catRank)
+            continue;
+
+        if (grouped)
         {
-            rows.push_back ({ true, cat, -1, false, false, {} });
-            lastCat = cat;
+            const juce::String cat (kCatNames[categoryRank (e.category)]);
+            if (cat != lastCat)
+            {
+                rows.push_back ({ true, cat, -1, false, false, {} });
+                lastCat = cat;
+            }
         }
 
         // Mini recipe icon data: parse the preset's craft object once here,
@@ -67,13 +143,51 @@ void PresetBrowser::refresh()
         row.hasCraft = craftGridFromVar (e.root.getProperty ("craft", juce::var()),
                                          row.craft);
         rows.push_back (row);
+        ++presetsListed;
     }
 
+    // Cursor: the current preset if it is in this folder, else first preset.
     cursor = 0;
+    scrollY = 0;
+    for (size_t r = 0; r < rows.size(); ++r)
+        if (! rows[r].header)
+        {
+            cursor = static_cast<int> (r);
+            break;
+        }
     for (size_t r = 0; r < rows.size(); ++r)
         if (rows[r].presetIndex == lib.getCurrentIndex())
             cursor = static_cast<int> (r);
+    keepCursorVisible();
     repaint();
+}
+
+void PresetBrowser::refresh()
+{
+    // Keep the selected folder across refreshes (preset saved, bank rescan).
+    const auto keepBank = selectedFolder().bank;
+    const auto keepRank = selectedFolder().catRank;
+
+    rebuildFolders();
+    folderCursor = 0;
+    for (size_t i = 0; i < folders.size(); ++i)
+        if (folders[i].bank == keepBank && folders[i].catRank == keepRank)
+            folderCursor = static_cast<int> (i);
+    rebuildRows();
+}
+
+bool PresetBrowser::selectFolder (int bank, const juce::String& category)
+{
+    const int rank = category.isEmpty() ? -1 : categoryRank (category);
+    for (size_t i = 0; i < folders.size(); ++i)
+        if (folders[i].bank == bank && folders[i].catRank == rank)
+        {
+            folderCursor = static_cast<int> (i);
+            focusList = false;
+            rebuildRows();
+            return true;
+        }
+    return false;
 }
 
 void PresetBrowser::resized()
@@ -92,13 +206,53 @@ void PresetBrowser::paint (juce::Graphics& g)
     g.setColour (titleBar);
     g.fillRect (p.getX() + 3, p.getY() + 3, p.getWidth() - 6, 18);
     drawPixelText (g, "PRESETS", p.getX() + 8, p.getY() + 8, 1, label);
-    drawPixelText (g, juce::String (proc.getPresetLibrary().getNumPresets())
-                          + " SOUNDS",
-                   p.getX() + p.getWidth() - 96, p.getY() + 8, 1, dimText);
+    drawPixelText (g, juce::String (presetsListed)
+                          + (presetsListed == 1 ? " SOUND" : " SOUNDS"),
+                   p.getX() + p.getWidth() - 104, p.getY() + 8, 1, dimText);
 
-    const auto list = listRect();
-    g.setColour (chip);
-    g.fillRect (list);
+    // ---- left pane: folder tree -------------------------------------------
+    const auto fBox = folderRect();
+    drawBevelBox (g, fBox, chip, panelDark, panelLight, outline, true);
+    const auto fInner = fBox.reduced (3);
+    {
+        juce::Graphics::ScopedSaveState save (g);
+        g.reduceClipRegion (fInner);
+
+        int y = fInner.getY() - folderScrollY;
+        for (size_t i = 0; i < folders.size(); ++i, y += kRowH)
+        {
+            if (y + kRowH < fInner.getY() || y > fInner.getBottom())
+                continue;
+            const auto& f = folders[i];
+            const bool sel = static_cast<int> (i) == folderCursor;
+            if (sel)
+            {
+                g.setColour (dirt);
+                g.fillRect (fInner.getX(), y, fInner.getWidth(), kRowH);
+                g.setColour (focusList ? stone : ice);   // active pane = ice
+                g.drawRect (fInner.getX(), y, fInner.getWidth(), kRowH, 1);
+            }
+
+            const int ix = fInner.getX() + 4 + f.indent * 12;
+            const auto body = f.bank < 0 ? grass
+                            : f.indent == 0 ? stone : dirt.brighter (0.25f);
+            drawFolderIcon (g, ix, y + 4, body);
+
+            const auto textCol = sel ? label
+                               : f.indent == 0 ? grass : dimText;
+            drawPixelText (g, f.label, ix + 14, y + 5, 1, textCol);
+
+            const juce::String count ("(" + juce::String (f.count) + ")");
+            drawPixelText (g, count,
+                           fInner.getRight() - 4 - pixelTextWidth (count, 1),
+                           y + 5, 1, sel ? label : panelLight);
+        }
+    }
+
+    // ---- right pane: preset list ------------------------------------------
+    const auto lBox = listRect();
+    drawBevelBox (g, lBox, chip, panelDark, panelLight, outline, true);
+    const auto list = lBox.reduced (3);
 
     juce::Graphics::ScopedSaveState save (g);
     g.reduceClipRegion (list);
@@ -126,7 +280,7 @@ void PresetBrowser::paint (juce::Graphics& g)
         }
         if (static_cast<int> (r) == cursor)
         {
-            g.setColour (ice);
+            g.setColour (focusList ? ice : stone);       // active pane = ice
             g.drawRect (list.getX(), y, list.getWidth(), kRowH, 1);
         }
 
@@ -146,11 +300,36 @@ void PresetBrowser::paint (juce::Graphics& g)
 
 int PresetBrowser::rowAt (juce::Point<int> pos) const
 {
-    const auto list = listRect();
+    const auto list = listRect().reduced (3);
     if (! list.contains (pos))
         return -1;
     const int r = (pos.y - list.getY() + scrollY) / kRowH;
     return r >= 0 && r < static_cast<int> (rows.size()) ? r : -1;
+}
+
+int PresetBrowser::folderAt (juce::Point<int> pos) const
+{
+    const auto inner = folderRect().reduced (3);
+    if (! inner.contains (pos))
+        return -1;
+    const int f = (pos.y - inner.getY() + folderScrollY) / kRowH;
+    return f >= 0 && f < static_cast<int> (folders.size()) ? f : -1;
+}
+
+void PresetBrowser::setFolderCursor (int index)
+{
+    folderCursor = juce::jlimit (0, juce::jmax (0, static_cast<int> (folders.size()) - 1),
+                                 index);
+
+    // Keep the selected folder visible.
+    const auto inner = folderRect().reduced (3);
+    const int top = folderCursor * kRowH;
+    if (top < folderScrollY)
+        folderScrollY = top;
+    else if (top + kRowH > folderScrollY + inner.getHeight())
+        folderScrollY = top + kRowH - inner.getHeight();
+
+    rebuildRows();                                   // selection filters live
 }
 
 void PresetBrowser::mouseDown (const juce::MouseEvent& e)
@@ -161,22 +340,53 @@ void PresetBrowser::mouseDown (const juce::MouseEvent& e)
             onClose();
         return;
     }
+
+    const int f = folderAt (e.getPosition());
+    if (f >= 0)
+    {
+        focusList = false;
+        setFolderCursor (f);
+        return;
+    }
+
     const int r = rowAt (e.getPosition());
     if (r >= 0 && ! rows[static_cast<size_t> (r)].header)
     {
+        focusList = true;
         cursor = r;
         loadRow (r);
     }
 }
 
-void PresetBrowser::mouseWheelMove (const juce::MouseEvent&,
+void PresetBrowser::mouseWheelMove (const juce::MouseEvent& e,
                                     const juce::MouseWheelDetails& w)
 {
-    const int total = static_cast<int> (rows.size()) * kRowH;
-    const int maxScroll = juce::jmax (0, total - listRect().getHeight());
-    scrollY = juce::jlimit (0, maxScroll,
-                            scrollY - static_cast<int> (w.deltaY * 48.0f));
+    const int step = static_cast<int> (w.deltaY * 48.0f);
+    if (folderRect().contains (e.getPosition()))
+    {
+        const int total = static_cast<int> (folders.size()) * kRowH;
+        const int maxScroll =
+            juce::jmax (0, total - folderRect().reduced (3).getHeight());
+        folderScrollY = juce::jlimit (0, maxScroll, folderScrollY - step);
+    }
+    else
+    {
+        const int total = static_cast<int> (rows.size()) * kRowH;
+        const int maxScroll =
+            juce::jmax (0, total - listRect().reduced (3).getHeight());
+        scrollY = juce::jlimit (0, maxScroll, scrollY - step);
+    }
     repaint();
+}
+
+void PresetBrowser::keepCursorVisible()
+{
+    const auto list = listRect().reduced (3);
+    const int rowTop = cursor * kRowH;
+    if (rowTop < scrollY)
+        scrollY = rowTop;
+    else if (rowTop + kRowH > scrollY + list.getHeight())
+        scrollY = rowTop + kRowH - list.getHeight();
 }
 
 void PresetBrowser::moveCursor (int delta)
@@ -193,14 +403,13 @@ void PresetBrowser::moveCursor (int delta)
     if (! rows[static_cast<size_t> (r)].header)
         cursor = r;
 
-    // Keep the cursor visible.
-    const auto list = listRect();
-    const int rowTop = cursor * kRowH;
-    if (rowTop < scrollY)
-        scrollY = rowTop;
-    else if (rowTop + kRowH > scrollY + list.getHeight())
-        scrollY = rowTop + kRowH - list.getHeight();
+    keepCursorVisible();
     repaint();
+}
+
+void PresetBrowser::moveFolderCursor (int delta)
+{
+    setFolderCursor (folderCursor + delta);
 }
 
 void PresetBrowser::loadRow (int rowIndex)
@@ -220,6 +429,34 @@ bool PresetBrowser::keyPressed (const juce::KeyPress& k)
             onClose();
         return true;
     }
+    if (k.isKeyCode (juce::KeyPress::tabKey))
+    {
+        focusList = ! focusList;                     // hop between the panes
+        repaint();
+        return true;
+    }
+
+    if (! focusList)                                 // ---- folder pane ------
+    {
+        if (k.isKeyCode (juce::KeyPress::upKey))   { moveFolderCursor (-1); return true; }
+        if (k.isKeyCode (juce::KeyPress::downKey)) { moveFolderCursor (1);  return true; }
+        if (k.isKeyCode (juce::KeyPress::rightKey)
+            || k.isKeyCode (juce::KeyPress::returnKey))
+        {
+            focusList = true;
+            repaint();
+            return true;
+        }
+        return false;
+    }
+
+    // ---- list pane --------------------------------------------------------
+    if (k.isKeyCode (juce::KeyPress::leftKey))
+    {
+        focusList = false;
+        repaint();
+        return true;
+    }
     if (k.isKeyCode (juce::KeyPress::upKey))   { moveCursor (-1); return true; }
     if (k.isKeyCode (juce::KeyPress::downKey)) { moveCursor (1);  return true; }
     if (k.isKeyCode (juce::KeyPress::returnKey))
@@ -234,6 +471,7 @@ void PresetBrowser::visibilityChanged()
 {
     if (isVisible())
     {
+        focusList = false;                           // open on the folder pane
         refresh();
         if (isShowing())
             grabKeyboardFocus();

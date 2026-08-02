@@ -48,7 +48,9 @@ namespace blockwave
 //
 // MASTER SOFTCLIP: the engine chain ends in a fixed transparent softclip
 // (masterSoftclip below) — bit-exact unity below -0.3 dBFS, tanh-shaped
-// above, output strictly < 1.0 (0 dBFS). Always on, allocation-free.
+// above, output strictly < 1.0 (0 dBFS). Always on, allocation-free. It is
+// a safety ceiling, not a musical limiter: polyphony headroom comes from the
+// fixed -6 dB per-voice trim (kVoiceHeadroom in Voice.h).
 
 // Transparent master ceiling. Identity for |x| <= t (bit-exact — quiet
 // material passes a null test), C1-continuous tanh saturation above, output

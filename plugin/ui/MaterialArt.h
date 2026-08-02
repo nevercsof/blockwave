@@ -55,9 +55,13 @@ juce::Image makeBaseImage (CraftBase, int scale);
 
 // 12x12 mini 3x3 recipe icon (4x4 px per cell): centre = base colour, outer
 // cells = material colours, empty cells = sunken dark. Teaches the crafting
-// system straight from the preset browser (SPEC §UI).
+// system straight from the preset browser (SPEC §UI). The scaled overload
+// draws the same icon at an integer multiple (cells 4*scale px) with pure
+// fillRects — no image resampling, always crisp; the Discoveries page uses
+// scale 2 so found patterns survive a screenshot.
 constexpr int kMiniIconSize = 12;
 void drawMiniCraftIcon (juce::Graphics&, const CraftGrid&, int x, int y);
+void drawMiniCraftIcon (juce::Graphics&, const CraftGrid&, int x, int y, int scale);
 void drawMiniCraftIconEmpty (juce::Graphics&, int x, int y);
 
 // Per-editor image cache (message thread only).

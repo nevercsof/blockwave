@@ -21,10 +21,17 @@
 // Phase-4 CRAFT engine tests. Included by TestMain.cpp (same strict TU).
 // Pure C++ — exercises src/CraftEngine.h without JUCE:
 //
-//  - shapeless crafting + diminishing-stack math (exact expected values)
+//  - shapeless crafting + diminishing-stack math (exact expected values in
+//    the soft-knee's linear region; knee-region values via craftdetail's
+//    softDelta, whose own properties get dedicated checks)
+//  - soft-knee stacking clamp: railed parameters stay strictly monotonic and
+//    strictly inside the SPEC rails for 1..8 copies (architect item, Phase-5
+//    follow-up; previously ICE/OBSIDIAN/TNT/SAND/CLOUD stacks hard-clamped)
 //  - fixed-order conflict resolution (VOLT/SLIME/MOSS lfo2, STONE raw)
 //  - determinism golden hashes (DoD): fixed grids -> frozen snapshot hashes
-//  - recipe pattern matching: all 8 spec patterns hit, perturbations miss
+//  - recipe pattern matching: the 8 frozen spec patterns exist and hit,
+//    perturbations miss (iterates whatever specRecipePatterns() returns —
+//    growing the pattern table must not require edits here)
 //  - auto-naming: adjective order, ties, cap, spec examples
 //  - DICE / MUTATE: seed-deterministic, base kept, ranges respected
 //  - material distinctness matrix (DoD proxy for "audibly distinct on every
@@ -41,6 +48,7 @@
 //    tell apart by ear, which makes the union a fair automated proxy.
 
 #include <cstdlib>
+#include <cstring>
 #include <initializer_list>
 #include <string>
 
@@ -92,13 +100,22 @@ static void test_craft_shapeless_and_stacking()
         const auto p1 = craftApply (makeGrid (CraftBase::PAD, { Material::ICE }));
         const auto p2 = craftApply (makeGrid (CraftBase::PAD, { Material::ICE, Material::ICE }));
 
-        // mul x2.5: copy 1 full, copy 2 at half strength (x1.75).
+        // mul x2.5: copy 1 full (2.75 s — inside the knee's linear region, so
+        // bit-exact); copy 2 at half strength lands the raw 4.8125 s in the
+        // knee (start 0.75 * headroom = 1.1 + 0.75*3.9 = 4.025 s) and is
+        // compressed by softDelta — the same pure function craftApply uses,
+        // whose linear/monotonic/sub-rail properties get their own checks in
+        // test_craft_soft_knee_stacking.
         const float r0 = p0.env1_r;
         CHECK_MSG (std::abs (p1.env1_r - r0 * 2.5f) < 1.0e-5f,
                    "ICE x1 release: %.4f != %.4f", (double) p1.env1_r, (double) (r0 * 2.5f));
-        CHECK_MSG (std::abs (p2.env1_r - r0 * 2.5f * 1.75f) < 1.0e-5f,
-                   "ICE x2 release: %.4f != %.4f", (double) p2.env1_r,
-                   (double) (r0 * 2.5f * 1.75f));
+        const float r2 = craftdetail::softDelta (r0, r0 * 2.5f * 1.75f, 0.0f, 5.0f);
+        CHECK_MSG (p2.env1_r == r2,
+                   "ICE x2 release: %.4f != soft-kneed %.4f", (double) p2.env1_r,
+                   (double) r2);
+        CHECK_MSG (p2.env1_r > p1.env1_r && p2.env1_r < 5.0f,
+                   "ICE x2 release %.4f not between ICE x1 and the 5 s rail",
+                   (double) p2.env1_r);
 
         // add +2 uni at weights 1.0 / 1.5 on PAD's 5.
         CHECK_MSG (p1.uni_count == 7, "ICE x1 uni_count %d != 7", p1.uni_count);
@@ -109,13 +126,14 @@ static void test_craft_shapeless_and_stacking()
                    "ICE PW set drifted: %.2f / %.2f",
                    (double) p1.oscA_pw, (double) p2.oscA_pw);
 
-        // Clamps hold under a full stack of 8.
+        // SPEC ranges hold under a full stack of 8 (soft knee: floats stay
+        // strictly inside the rails, integers round to the rail).
         const auto p8 = craftApply (makeGrid (CraftBase::PAD,
             { Material::ICE, Material::ICE, Material::ICE, Material::ICE,
               Material::ICE, Material::ICE, Material::ICE, Material::ICE }));
         CHECK_MSG (p8.uni_count == 8, "ICE x8 uni_count clamp: %d", p8.uni_count);
-        CHECK_MSG (p8.filt_cutoff <= 20000.0f && p8.cave_mix <= 1.0f,
-                   "ICE x8 exceeded SPEC ranges");
+        CHECK_MSG (p8.filt_cutoff < 20000.0f && p8.cave_mix < 1.0f && p8.env1_r < 5.0f,
+                   "ICE x8 railed a float param (knee should keep it strictly inside)");
     }
 
     // Fixed-order conflicts: later material in table order wins lfo2 fields.
@@ -159,6 +177,120 @@ static void test_craft_shapeless_and_stacking()
 }
 
 // ---------------------------------------------------------------------------
+// Soft-knee stacking clamp. Every case below is a parameter that used to hit
+// the hard SPEC clamp within 1-3 copies (the architect's list: ICE x3,
+// OBSIDIAN x2, TNT x2, SAND x3, CLOUD x8): with the knee, stacking 1..8
+// copies must stay strictly monotonic, strictly inside the rail, and the
+// first copies must still move the parameter by a clearly audible amount.
+// Plus direct unit checks on craftdetail::softDelta itself, since the exact-
+// math test above uses it to compute knee-region expectations.
+// ---------------------------------------------------------------------------
+static void test_craft_soft_knee_stacking()
+{
+    std::printf ("[craft_soft_knee_stacking]\n");
+    using craftdetail::softDelta;
+
+    // softDelta unit properties (the exact-math test leans on these).
+    {
+        // Linear region: bit-exact passthrough of the raw value.
+        CHECK_MSG (softDelta (1.0f, 3.0f, 0.0f, 5.0f) == 3.0f,
+                   "softDelta not identity in the linear region");
+        CHECK_MSG (softDelta (1.0f, 0.5f, 0.0f, 5.0f) == 0.5f,
+                   "softDelta not identity for small negative deltas");
+        CHECK_MSG (softDelta (2.0f, 2.0f, 0.0f, 5.0f) == 2.0f,
+                   "softDelta not identity at delta 0");
+        // Reference on the rail stays pinned (sets like sustain 0 / PW 38
+        // must remain exactly reachable).
+        CHECK_MSG (softDelta (0.0f, -1.0f, 0.0f, 1.0f) == 0.0f,
+                   "softDelta must pin when the reference sits on the rail");
+        CHECK_MSG (softDelta (1.0f, 7.0f, 0.0f, 1.0f) == 1.0f,
+                   "softDelta must pin at the hi rail too");
+        // Knee region: strictly monotonic, strictly inside the rail, and
+        // continuous at the knee start (0.75 * headroom).
+        float prev = 0.0f;
+        bool monotonic = true, inside = true;
+        for (int k = 1; k <= 200; ++k)
+        {
+            const float raw = 1.0f + 0.1f * static_cast<float> (k);   // 1.1 .. 21
+            const float y = softDelta (1.0f, raw, 0.0f, 5.0f);
+            if (y <= prev)  monotonic = false;
+            if (y >= 5.0f)  inside = false;
+            prev = y;
+        }
+        CHECK_MSG (monotonic, "softDelta not strictly monotonic through the knee");
+        CHECK_MSG (inside, "softDelta reached the rail");
+        const float kneeStart = 1.0f + 0.75f * 4.0f;                  // = 4
+        CHECK_MSG (softDelta (1.0f, kneeStart, 0.0f, 5.0f) == kneeStart,
+                   "softDelta must be exact at the knee start");
+    }
+
+    // Stacked-material monotonicity on the previously-railed parameters.
+    struct RailCase
+    {
+        const char* label;
+        CraftBase base;
+        Material mat;
+        float ParamSnapshot::* field;
+        float rail;              // the rail the stack drives toward
+        bool  increasing;        // direction of the stack
+        float minEarlyMove;      // |value(3 copies) - value(1 copy)| must exceed
+    };
+    const RailCase cases[] =
+    {
+        { "ICE->PAD env1_r (railed 5s at x3)",       CraftBase::PAD,  Material::ICE,
+          &ParamSnapshot::env1_r,      5.0f,  true,  0.10f },
+        { "OBSIDIAN->BASS sub_level (railed 1)",     CraftBase::BASS, Material::OBSIDIAN,
+          &ParamSnapshot::sub_level,   1.0f,  true,  0.004f },
+        { "TNT->PERC env2_pitch (railed +48st)",     CraftBase::PERC, Material::TNT,
+          &ParamSnapshot::env2_pitch, 48.0f,  true,  0.50f },
+        { "SAND->KEYS noise_level (railed 1 at x2)", CraftBase::KEYS, Material::SAND,
+          &ParamSnapshot::noise_level, 1.0f,  true,  0.030f },
+        { "CLOUD->DRONE cave_size (railed 1 at x2)", CraftBase::DRONE, Material::CLOUD,
+          &ParamSnapshot::cave_size,   1.0f,  true,  0.008f },
+        { "CLOUD->DRONE cave_mix (0.95 near-rail)",  CraftBase::DRONE, Material::CLOUD,
+          &ParamSnapshot::cave_mix,    1.0f,  true,  0.020f },
+    };
+
+    for (const auto& c : cases)
+    {
+        float vals[9] = {};
+        std::uint64_t hashes[9] = {};
+        for (int n = 0; n <= 8; ++n)
+        {
+            CraftGrid g;
+            g.base = c.base;
+            for (int i = 0; i < n; ++i)
+                g.cells[i] = c.mat;
+            const auto p = craftApply (g);
+            vals[n] = p.*(c.field);
+            hashes[n] = hashSnapshot (p);
+        }
+        bool monotonic = true, inside = true, hashesMove = true;
+        for (int n = 1; n <= 8; ++n)
+        {
+            const bool up = vals[n] > vals[n - 1];
+            if ((c.increasing && ! up) || (! c.increasing && vals[n] >= vals[n - 1]))
+                monotonic = false;
+            if (c.increasing ? vals[n] >= c.rail : vals[n] <= c.rail)
+                inside = false;
+            if (hashes[n] == hashes[n - 1])
+                hashesMove = false;
+        }
+        const float earlyMove = std::abs (vals[3] - vals[1]);
+        std::printf ("  %-42s n=1..8: %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f\n",
+                     c.label, (double) vals[1], (double) vals[2], (double) vals[3],
+                     (double) vals[4], (double) vals[5], (double) vals[6],
+                     (double) vals[7], (double) vals[8]);
+        CHECK_MSG (monotonic, "%s: stack not strictly monotonic", c.label);
+        CHECK_MSG (inside, "%s: stack reached the rail %.3f", c.label, (double) c.rail);
+        CHECK_MSG (earlyMove >= c.minEarlyMove,
+                   "%s: copies 1->3 moved only %.4f (need >= %.4f)",
+                   c.label, (double) earlyMove, (double) c.minEarlyMove);
+        CHECK_MSG (hashesMove, "%s: some copy count was a complete no-op", c.label);
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Determinism golden hashes (DoD). The values below are FROZEN: they were
 // generated once from the tuned tables and any change to base archetypes,
 // material deltas or application order must consciously regenerate them
@@ -179,40 +311,53 @@ static std::vector<GoldenGrid> goldenGrids()
     v.push_back ({ "PLUCK_empty", makeGrid (CraftBase::PLUCK), 0xe2a9195cd9c77452ULL });
     v.push_back ({ "KEYS_empty",  makeGrid (CraftBase::KEYS),  0xfb6e793fb7508ab6ULL });
     v.push_back ({ "CHIP_empty",  makeGrid (CraftBase::CHIP),  0x31e0f5880f2c6282ULL });
-    v.push_back ({ "PERC_empty",  makeGrid (CraftBase::PERC),  0x6c48897a520ed8c5ULL });
+    v.push_back ({ "PERC_empty",  makeGrid (CraftBase::PERC),  0xab72198902cd0e45ULL });
     v.push_back ({ "DRONE_empty", makeGrid (CraftBase::DRONE), 0x0139b1033ad668b3ULL });
 
     // Stacked + mixed grids.
     v.push_back ({ "PAD_ICE",     makeGrid (CraftBase::PAD, { M::ICE }),
                    0xe5c25ae4434a5a1fULL });
     v.push_back ({ "PAD_ICEx4",   makeGrid (CraftBase::PAD,
-                   { M::ICE, M::ICE, M::ICE, M::ICE }), 0x384bc0b47ce48285ULL });
+                   { M::ICE, M::ICE, M::ICE, M::ICE }), 0xd18e88692535ec35ULL });
     v.push_back ({ "LEAD_LAVA_GLASS", makeGrid (CraftBase::LEAD,
                    { M::LAVA, M::GLASS }), 0x63b2470c07d4dab7ULL });
     v.push_back ({ "BASS_mix8",   makeGrid (CraftBase::BASS,
                    { M::ICE, M::LAVA, M::STONE, M::WOOD,
                      M::GLASS, M::GOLD, M::CRYSTAL, M::VOLT }),
-                   0xa670095784a7f324ULL });
+                   0xc093c349c958ca6bULL });
     v.push_back ({ "CHIP_mix6",   makeGrid (CraftBase::CHIP,
                    { M::SLIME, M::TNT, M::MOSS, M::SAND, M::OBSIDIAN, M::CLOUD }),
-                   0x22353c26a1aacae6ULL });
+                   0xe8227cf7301235f3ULL });
 
-    // The 8 spec recipe grids (plain craft result — overrides live in JSON).
+    // The spec recipe grids (plain craft result — overrides live in JSON).
+    // Golden hashes are keyed by NAME, so the pattern table can grow without
+    // touching this list; a listed name that vanished from the table fails.
+    struct NamedHash { const char* name; std::uint64_t hash; };
+    static const NamedHash recipeHashes[] =
+    {
+        { "PERMAFROST",     0xd6bed827abbc9ef1ULL },
+        { "MAGMA FLOOR",    0x08486017213c0bd2ULL },
+        { "QUARRY KICK",    0xa78236f16f77b301ULL },
+        { "SHARDSTORM",     0x01a0bb9510705123ULL },
+        { "FOREST LULLABY", 0x10301394300940bcULL },
+        { "MIDAS MODE",     0x97a5c63df67abfcfULL },
+        { "STRATOSPHERE",   0x75d591e1c4a1c926ULL },
+        { "ICICLE HARP",    0x01084ca7d2600b88ULL },
+    };
     int n = 0;
     const auto* pats = specRecipePatterns (n);
-    const std::uint64_t recipeHashes[8] =
+    for (const auto& rh : recipeHashes)
     {
-        0xde0714a864eeb751ULL,   // PERMAFROST
-        0x7ed88c661c14049eULL,   // MAGMA FLOOR
-        0x1dc389ffe9f0935dULL,   // QUARRY KICK
-        0x062a08dd47760540ULL,   // SHARDSTORM
-        0xcaa1201c5e4958afULL,   // FOREST LULLABY
-        0xeb40159a1550161eULL,   // MIDAS MODE
-        0x2435e7c09fd33f7eULL,   // STRATOSPHERE
-        0x01084ca7d2600b88ULL,   // ICICLE HARP
-    };
-    for (int i = 0; i < n && i < 8; ++i)
-        v.push_back ({ pats[i].name, pats[i].grid, recipeHashes[i] });
+        bool found = false;
+        for (int i = 0; i < n; ++i)
+            if (std::strcmp (pats[i].name, rh.name) == 0)
+            {
+                v.push_back ({ pats[i].name, pats[i].grid, rh.hash });
+                found = true;
+                break;
+            }
+        CHECK_MSG (found, "spec recipe '%s' missing from specRecipePatterns()", rh.name);
+    }
 
     return v;
 }
@@ -247,7 +392,23 @@ static void test_craft_recipe_matching()
     std::printf ("[craft_recipe_matching]\n");
     int n = 0;
     const auto* pats = specRecipePatterns (n);
-    CHECK_MSG (n == 8, "expected 8 spec recipe patterns, got %d", n);
+
+    // The 8 CRAFT_GRID.md spec recipes are frozen and must exist; the table
+    // itself may grow (data-driven book coverage lives in
+    // tests/CraftCoverageTests.h) — no exact-count assertion here.
+    static const char* const kFrozenSpecNames[] =
+    {
+        "PERMAFROST", "MAGMA FLOOR", "QUARRY KICK", "SHARDSTORM",
+        "FOREST LULLABY", "MIDAS MODE", "STRATOSPHERE", "ICICLE HARP",
+    };
+    CHECK_MSG (n >= 8, "spec pattern table shrank below the 8 frozen recipes (%d)", n);
+    for (const char* name : kFrozenSpecNames)
+    {
+        bool found = false;
+        for (int i = 0; i < n && ! found; ++i)
+            found = std::strcmp (pats[i].name, name) == 0;
+        CHECK_MSG (found, "frozen spec recipe '%s' missing from the pattern table", name);
+    }
 
     for (int i = 0; i < n; ++i)
     {
@@ -295,7 +456,7 @@ static void test_craft_recipe_matching()
         CHECK_MSG (matchRecipe (extra, pats, n) != &pats[i],
                    "%s: matched with a changed cell", pats[i].name);
     }
-    std::printf ("  8 patterns: exact hit, wrong-base / moved / extra all miss\n");
+    std::printf ("  %d patterns: exact hit, wrong-base / moved / extra all miss\n", n);
 }
 
 // ---------------------------------------------------------------------------
@@ -523,6 +684,7 @@ static void test_craft_material_distinctness()
 inline void runAll()
 {
     test_craft_shapeless_and_stacking();
+    test_craft_soft_knee_stacking();
     test_craft_determinism_golden();
     test_craft_recipe_matching();
     test_craft_autoname();

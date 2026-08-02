@@ -81,7 +81,7 @@
         "TNT",
         ""
       ],
-      "note": "technique 8 chip kick. Plain TNT x2 clamps env2_pitch to -48 st, which in this engine sweeps the pitch UP into the note, and stacks noise to 1.0 \u2014 a rising hiss, not a kick. The override flips the pitch envelope to a descending +30 st / 55 ms drop, cuts the noise back to a short-LFSR crack, and lands the body at 210 Hz for a near-sine thump with a 7-bit crunch.",
+      "note": "technique 8 chip kick. Plain TNT x2 soft-knees env2_pitch to about +47 st over the PERC base's 90 ms \u2014 already a falling boom, but a woolly one, and the stacked noise drowns the body. The override tightens the drop to +30 st / 55 ms, cuts the noise back to a short-LFSR crack, and lands the body at 210 Hz for a near-sine thump with a 7-bit crunch.",
       "params": {
         "env2_pitch": 30.0,
         "env2_a": 0.0,
@@ -340,7 +340,7 @@
         "",
         "STONE"
       ],
-      "note": "NEW (four corners). technique 8 chip drums + 12 RAW. STONE x4 already gives the bone-dry, aliased, no-reverb character and a 17 ms release; what it does not give is a usable drum, because the inherited PERC pitch envelope sweeps upward. The override flips it to a descending +24 st / 70 ms tom drop, adds a short-LFSR stick click, and keytracks hard at 0.8 so one recipe covers the whole tom range.",
+      "note": "NEW (four corners). technique 8 chip drums + 12 RAW. STONE x4 already gives the bone-dry, aliased, no-reverb character and a 17 ms release over the PERC base's +30 st falling boom. The override narrows the drop to +24 st / 70 ms for a tom knock instead of a kick, adds a short-LFSR stick click, and keytracks hard at 0.8 so one recipe covers the whole tom range.",
       "params": {
         "env2_pitch": 24.0,
         "env2_d": 0.07,

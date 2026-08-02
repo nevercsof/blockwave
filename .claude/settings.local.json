@@ -74,7 +74,28 @@
       "Bash(./blockwave_tests)",
       "Bash(tee /private/tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/unit_tests.log)",
       "Bash(./blockwave_state_tests_artefacts/Release/blockwave_state_tests)",
-      "Bash(tee /private/tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/state_tests.log)"
+      "Bash(tee /private/tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/state_tests.log)",
+      "Bash(./blockwave_state_tests_artefacts/blockwave_state_tests)",
+      "Bash(python3 -c \"import json;d=json.load\\(open\\('/Users/kirillboyko/Downloads/blockwave-kickoff/data/recipes.json'\\)\\);print\\(type\\(d\\), len\\(d.get\\('recipes', d\\)\\) if isinstance\\(d,\\(dict,list\\)\\) else ''\\)\")",
+      "Bash(./build/release/blockwave_screenshots_artefacts/Release/blockwave_screenshots CHECKPOINTS/screenshots)",
+      "Bash(clang++ -std=c++20 -O2 -I/Users/kirillboyko/Downloads/blockwave-kickoff/src /private/tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/engine_diag.cpp -o /private/tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/engine_diag)",
+      "Bash(/private/tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/engine_diag)",
+      "Bash(ctest)",
+      "Bash(clang++ -std=c++20 -O2 -I/Users/kirillboyko/Downloads/blockwave-kickoff/src /private/tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/trim_sweep.cpp -o /private/tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/trim_sweep)",
+      "Bash(/private/tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/trim_sweep)",
+      "Bash(bash scripts/build.sh 2>&1 | grep -icE \"warning|error\"; cd build/release && ctest 2>&1 | tail -2 && cd ../.. && ./build/release/blockwave_screenshots_artefacts/Release/blockwave_screenshots CHECKPOINTS/screenshots 2>&1 | tail -1 && ls CHECKPOINTS/screenshots)",
+      "Bash(rm tests/golden/lfsr_long_48k.f32 tests/golden/lfsr_long_48k.wav tests/golden/lfsr_short_48k.f32 tests/golden/lfsr_short_48k.wav tests/golden/hard_sync_A2_48k.f32 tests/golden/hard_sync_A2_48k.wav)",
+      "Bash(cmake --build build/release --target blockwave_tests)",
+      "Bash(BLOCKWAVE_PRINT_CRAFT_HASHES=1 ./blockwave_tests)",
+      "Bash(cmake --build build/release --target blockwave_state_tests)",
+      "Bash(cmake --build build/debug --target blockwave_tests blockwave_state_tests render)",
+      "Bash(./blockwave_state_tests_artefacts/Debug/blockwave_state_tests)",
+      "Bash(cmake --build build/release --target render)",
+      "Bash(./build/release/render_artefacts/Release/render --craft-matrix CHECKPOINTS/artifacts/craft_matrix --sr 48000)",
+      "Bash(clang++ -std=c++20 -O2 -I/Users/kirillboyko/Downloads/blockwave-kickoff/src /private/tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/engine_diag.cpp -o /private/tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/engine_diag_after)",
+      "Bash(/private/tmp/claude-501/-Users-kirillboyko-Downloads-blockwave-kickoff/47407037-2e7b-4d2f-9da1-b069df10b62f/scratchpad/engine_diag_after)",
+      "Bash(git -C /Users/kirillboyko/Downloads/blockwave-kickoff status --short)",
+      "Bash(git -C /Users/kirillboyko/Downloads/blockwave-kickoff diff --stat -- src tests data docs tools CMakeLists.txt)"
     ]
   }
 }

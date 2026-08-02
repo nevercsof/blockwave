@@ -108,17 +108,28 @@ int main (int argc, char* argv[])
 
         using Tab = BlockwaveAudioProcessorEditor::Tab;
 
-        // 1) CRAFT tab as it opens (default tab per SPEC), 1x and 2x.
+        // 1) CRAFT tab as it opens (default tab per SPEC) at 100%, 200%
+        //    (both pixel-perfect integer scales) and the fractional 150%
+        //    step (chunky nearest-neighbour, no blur).
         editor->setActiveTab (Tab::craft);
         pump();
         ok = shoot (*editor, editor->getLocalBounds(),
                     outDir.getChildFile ("craft_tab_1x.png")) && ok;
-        editor->setUiScale (2);
+        editor->setUiScale (200);
         pump();
         ok = shoot (*editor, editor->getLocalBounds(),
                     outDir.getChildFile ("craft_tab_2x.png")) && ok;
-        editor->setUiScale (1);
+        editor->setUiScale (150);
         pump();
+        ok = shoot (*editor, editor->getLocalBounds(),
+                    outDir.getChildFile ("craft_tab_150pct.png")) && ok;
+        // Scale button states: the top-bar cycler reads the CURRENT percent.
+        ok = shoot (*editor, { 0, 0, 1248, 60 },
+                    outDir.getChildFile ("topbar_scale_150pct.png")) && ok;
+        editor->setUiScale (100);
+        pump();
+        ok = shoot (*editor, { 640, 0, 192, 40 },
+                    outDir.getChildFile ("topbar_scale_100pct_1x.png")) && ok;
 
         // 2) Bench loaded with materials (a plain craft, no recipe): the
         //    everyday CRAFT state — stacked ICE, mixed blocks, auto name.
@@ -153,6 +164,8 @@ int main (int argc, char* argv[])
         }
 
         // 4) Discoveries page with a few slots unlocked and the rest locked.
+        //    FOUND rows now show their 3x3 pattern as a 2x mini icon (sharing
+        //    aid); the crop verifies the patterns are screenshot-crisp.
         for (int i = 1; i < juce::jmin (4, book.getNumRecipes()); ++i)
         {
             proc.setCraftGrid (book.getRecipe (i).pattern);
@@ -164,19 +177,21 @@ int main (int argc, char* argv[])
         pump (120);
         ok = shoot (*editor, editor->getLocalBounds(),
                     outDir.getChildFile ("craft_discoveries_1x.png")) && ok;
+        ok = shoot (*editor, { 156, 104, 280, 168 },
+                    outDir.getChildFile ("craft_discoveries_patterns_1x.png")) && ok;
         editor->getCraftTab().showDiscoveries (false);
         pump();
 
-        // 5) TWEAK tab, 1x and 2x.
+        // 5) TWEAK tab, 100% and 200%.
         editor->setActiveTab (Tab::tweak);
         pump();
         ok = shoot (*editor, editor->getLocalBounds(),
                     outDir.getChildFile ("tweak_tab_1x.png")) && ok;
-        editor->setUiScale (2);
+        editor->setUiScale (200);
         pump();
         ok = shoot (*editor, editor->getLocalBounds(),
                     outDir.getChildFile ("tweak_tab_2x.png")) && ok;
-        editor->setUiScale (1);
+        editor->setUiScale (100);
         pump();
 
         // 6) Top bar states: RAW off / on (cropped strip, 1x).
@@ -193,14 +208,29 @@ int main (int argc, char* argv[])
             pump();
         }
 
-        // 7) Preset browser overlay — every row carries its mini 3x3 recipe
-        //    icon (SPEC §UI); the second shot zooms in so the 12x12 icons are
-        //    reviewable at 1x.
+        // 7) Preset browser overlay — Arturia-style two-pane folder
+        //    navigation. First shot: ALL (grouped list, folder tree with
+        //    counts). Second: the FACTORY/PAD category folder selected, list
+        //    filtered. Third: zoom so the 12x12 recipe icons and folder
+        //    icons are reviewable at 1x.
         editor->showPresetBrowser (true);
         pump();
         ok = shoot (*editor, editor->getLocalBounds(),
                     outDir.getChildFile ("preset_browser_1x.png")) && ok;
-        ok = shoot (*editor, { 152, 60, 528, 208 },
+        if (editor->getBrowser().selectFolder (0, "PAD"))
+        {
+            pump();
+            ok = shoot (*editor, editor->getLocalBounds(),
+                        outDir.getChildFile ("preset_browser_folder_pad_1x.png")) && ok;
+        }
+        else
+        {
+            std::cerr << "FACTORY/PAD folder missing — no folder shot\n";
+            ok = false;
+        }
+        editor->getBrowser().selectFolder (-1, {});   // back to ALL
+        pump();
+        ok = shoot (*editor, { 96, 48, 640, 240 },
                     outDir.getChildFile ("preset_browser_icons_1x.png")) && ok;
         editor->showPresetBrowser (false);
         pump();

@@ -19,9 +19,13 @@
 #pragma once
 
 // BLOCKWAVE pixel-art editor (Phase 3). Fixed 832x456 base canvas with a
-// 1x/2x integer scale toggle: the fixed-size content component gets an
-// integer AffineTransform, so every procedurally drawn pixel stays crisp
-// (all art is integer-coordinate fillRects + nearest-neighbour image blits).
+// 100/125/150/175/200 % scale cycler: the fixed-size content component gets
+// an AffineTransform, so all layout/art code stays in canvas coordinates.
+// 100% and 200% are exact integer transforms (pixel-perfect); the fractional
+// steps keep every mark a solid chunky block (integer-coordinate fillRects +
+// low-quality/nearest-neighbour image blits — uneven pixel sizes, no
+// smoothing filter). Scale persists as the session property "uiScale"
+// (percent; values < 10 are legacy 1x/2x integers, migrated on read).
 //
 // Tabs: CRAFT (default per SPEC — the crafting bench, Phase 4) and TWEAK
 // (all 61 parameters). Top bar is always visible. Preset browser and save
@@ -46,12 +50,13 @@ public:
     // Also used by tools/screenshots to render every screen offscreen.
     void setActiveTab (Tab);
     Tab getActiveTab() const { return activeTab; }
-    void setUiScale (int scale);                      // 1 or 2, integer only
-    int getUiScale() const { return uiScale; }
+    void setUiScale (int scalePercent);               // snapped to 100..200 by 25
+    int getUiScale() const { return uiScale; }        // percent
     void showPresetBrowser (bool shouldShow);
     void showSavePanel (bool shouldShow);
     blockwave::ui::TopBar& getTopBar() { return topBar; }
     blockwave::ui::CraftTab& getCraftTab() { return craftTab; }
+    blockwave::ui::PresetBrowser& getBrowser() { return browser; }
 
     void resized() override {}                        // fixed canvas
 
@@ -75,7 +80,7 @@ private:
     juce::TooltipWindow tooltips;
 
     Tab activeTab = Tab::craft;
-    int uiScale = 1;
+    int uiScale = 100;                                // percent
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BlockwaveAudioProcessorEditor)
 };

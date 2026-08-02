@@ -342,8 +342,8 @@ juce::Rectangle<int> DiscoveriesPanel::panelRect() const
 {
     const int n = juce::jmax (1, recipes.getNumRecipes());
     const int rowsPerCol = (n + 1) / 2;
-    const int h = 32 + rowsPerCol * 20 + 24;
-    return { (getWidth() - 480) / 2, (getHeight() - h) / 2, 480, h };
+    const int h = 32 + rowsPerCol * 30 + 24;
+    return { (getWidth() - 520) / 2, (getHeight() - h) / 2, 520, h };
 }
 
 void DiscoveriesPanel::refresh() { repaint(); }
@@ -376,22 +376,25 @@ void DiscoveriesPanel::paint (juce::Graphics& g)
     for (int i = 0; i < n; ++i)
     {
         const int col = i / rowsPerCol, row = i % rowsPerCol;
-        const int x = p.getX() + 12 + col * 232;
-        const int y = p.getY() + 30 + row * 20;
-        const juce::Rectangle<int> slot (x, y, 220, 18);
+        const int x = p.getX() + 12 + col * 252;
+        const int y = p.getY() + 30 + row * 30;
+        const juce::Rectangle<int> slot (x, y, 240, 28);
         drawBevelBox (g, slot, chip, panelLight, panelDark, outline, true);
 
         const auto& rec = recipes.getRecipe (i);
         const bool found = discoveries.isFound (rec.name);
-        drawPixelText (g, juce::String (i + 1), x + 6, y + 7, 1, dimText);
+        drawPixelText (g, juce::String (i + 1), x + 6, y + 10, 1, dimText);
         if (found)
         {
-            drawStar (g, true, x + 22, y + 1, 1, juce::Colour (0xffffcc33));
-            drawPixelText (g, rec.name, x + 42, y + 7, 1, ice);
+            // The 3x3 pattern at 2x (24px, pure fillRects) — a sharing aid:
+            // crisp enough to screenshot and hand to a friend. FOUND only.
+            drawMiniCraftIcon (g, rec.pattern, x + 24, y + 2, 2);
+            drawStar (g, true, x + 56, y + 6, 1, juce::Colour (0xffffcc33));
+            drawPixelText (g, rec.name, x + 74, y + 10, 1, ice);
         }
         else
         {
-            drawPixelText (g, "????????????", x + 42, y + 7, 1, panelDark);
+            drawPixelText (g, "????????????", x + 24, y + 10, 1, panelDark);
         }
     }
 

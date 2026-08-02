@@ -49,7 +49,11 @@
 //      switch  : discrete ON at weight >= 1; switches only ever turn things
 //                ON, so the fixed order resolves all conflicts; STONE's raw
 //                is applied after the material loop ("wins last")
-//  - everything is clamped to the frozen SPEC ranges at the end.
+//  - the accumulated delta on every continuous parameter is soft-kneed
+//    against the frozen SPEC rails (craftdetail::softDelta): linear up to
+//    75% of the headroom, then compressed asymptotically, so stacked copies
+//    keep changing the sound instead of slamming into the range; integer
+//    parameters round and hard-clamp as before.
 
 #include <cmath>
 #include <cstdint>
@@ -348,7 +352,8 @@ inline ParamSnapshot baseSnapshot (CraftBase b) noexcept
 
         case CraftBase::PERC:             // technique 8: chip kick
             p.oscA_level = 1.0f;
-            p.env2_pitch = -30.0f;
+            p.env2_pitch = 30.0f;         // positive = start high, fall to pitch
+                                          // (the falling boom; see SOUND_DESIGN #8)
             p.env2_d = 0.09f; p.env2_s = 0.0f; p.env2_r = 0.05f;
             p.filt_cutoff = 380.0f;
             p.filt_env = 0.2f;
@@ -406,186 +411,312 @@ namespace craftdetail
     }
 
     inline void addW (float& x, float delta, float w) noexcept { x += delta * w; }
+
+    // ---- Soft-knee stacking clamp (CRAFT_GRID.md §Stacking clamp) ----------
+    //
+    // Material stacking used to hard-clamp at the SPEC rails, so copies 3-8
+    // of ICE/OBSIDIAN/TNT/SAND/CLOUD were inaudible no-ops. Instead, the
+    // accumulated delta on each continuous parameter is now compressed as it
+    // approaches the rail:
+    //
+    //   refV : the parameter after base archetype + all 'set' operations
+    //          (deltas suppressed) — this value must stay exactly reachable,
+    //          including values sitting on a rail (sustain 0, cutoff 20k).
+    //   rawV : the parameter after the full delta accumulation, unclamped.
+    //   d = rawV - refV, headroom h = distance from refV to the rail d aims at.
+    //
+    //   |d| <= 0.75*h : identity (returns rawV bit-exactly, so hand-tuned
+    //                   single-copy deltas keep their documented values)
+    //   |d| >  0.75*h : the excess maps through x/(x+c), C1-continuous at the
+    //                   knee, asymptotic to h — monotonic in d, strictly
+    //                   inside the rail, so every extra copy still moves the
+    //                   parameter. Only + - * / — cross-platform exact.
+    constexpr float kStackKneeStart = 0.75f;   // knee begins at 75% of headroom
+
+    inline float softDelta (float refV, float rawV, float lo, float hi) noexcept
+    {
+        const float d = rawV - refV;
+        if (d == 0.0f)
+            return rawV;
+        const float h = d > 0.0f ? hi - refV : refV - lo;
+        if (h <= 0.0f)
+            return refV;                       // ref on the rail: pinned (old behavior)
+        const float a   = d < 0.0f ? -d : d;
+        const float lin = kStackKneeStart * h;
+        if (a <= lin)
+            return rawV;                       // linear region: bit-exact passthrough
+        const float cap    = h - lin;
+        const float excess = a - lin;
+        const float soft   = lin + cap * excess / (excess + cap);
+        return d > 0.0f ? refV + soft : refV - soft;
+    }
+
+    // Snapshot plus the integer fields materials touch, accumulated as floats
+    // and rounded once at the end (shared by the ref and raw passes).
+    struct CraftAccum
+    {
+        ParamSnapshot p;
+        float fUniCount  = 1.0f;
+        float fCrushBits = 16.0f;
+        float fCrushDown = 1.0f;
+        float fOscAOct   = 0.0f;
+        float fOscBOct   = 0.0f;
+        float fOscBSemi  = 0.0f;
+    };
+
+    // The material table, applied in fixed order. Runs twice per craft:
+    // withDeltas == false -> sets/switches only (the soft-knee reference);
+    // withDeltas == true  -> the full accumulation (unclamped raw values).
+    // Keeping one body for both passes is what guarantees they agree on the
+    // set/switch state and only differ by the add/mul deltas.
+    inline void applyMaterials (CraftAccum& A, const int (&copies)[kNumMaterials + 1],
+                                bool withDeltas) noexcept
+    {
+        ParamSnapshot& p = A.p;
+        const auto add = [withDeltas] (float& x, float delta, float w) noexcept
+        {
+            if (withDeltas)
+                addW (x, delta, w);
+        };
+        const auto mul = [withDeltas] (float& x, float factor, int n) noexcept
+        {
+            if (withDeltas)
+                mulW (x, factor, n);
+        };
+
+        for (int m = 1; m <= kNumMaterials; ++m)
+        {
+            const int n = copies[m];
+            if (n == 0)
+                continue;
+            const float w = totalWeight (n);
+
+            switch (static_cast<Material> (m))
+            {
+                case Material::ICE:           // cold, wide, long
+                    add (A.fUniCount, 2.0f, w);
+                    add (p.uni_detune, 12.0f, w);
+                    mul (p.env1_r, 2.5f, n);
+                    mul (p.filt_cutoff, 1.25f, n);
+                    add (p.cave_mix, 0.15f, w);
+                    p.oscA_pw = 38.0f;
+                    p.oscB_pw = 38.0f;
+                    break;
+
+                case Material::LAVA:          // hot, aggressive
+                    add (p.crush_mix, 0.3f, w);
+                    add (A.fCrushBits, -6.0f, w);
+                    add (p.filt_res, 0.2f, w);
+                    add (p.filt_env, 0.4f, w);
+                    p.sub_on = true;          // tuning: +0.2 sub is inaudible with
+                    add (p.sub_level, 0.2f, w);    // the sub off; switch it ON
+                    break;
+
+                case Material::STONE:         // dry, blunt, raw (raw set after loop)
+                    mul (p.env1_r, 0.4f, n);
+                    p.cave_mix = 0.0f;
+                    p.oscA_pw = 50.0f;
+                    p.oscB_pw = 50.0f;
+                    mul (p.filt_cutoff, 0.85f, n);
+                    break;
+
+                case Material::WOOD:          // warm, mellow
+                    mul (p.filt_cutoff, 0.65f, n);
+                    p.oscA_pw = 47.0f;
+                    p.oscB_pw = 47.0f;
+                    add (p.env1_a, 0.008f, w);
+                    add (p.vel_amp, 0.2f, w);
+                    break;
+
+                case Material::GLASS:         // thin, bright, delicate
+                    p.oscA_pw = 14.0f;
+                    p.oscB_pw = 14.0f;
+                    mul (p.filt_cutoff, 1.4f, n);
+                    add (p.dly_mix, 0.2f, w);
+                    add (p.oscA_level, -0.1f, w);
+                    add (p.oscB_level, -0.1f, w);
+                    p.env1_a = 0.001f;
+                    break;
+
+                case Material::GOLD:          // expensive, wide, polished
+                    add (A.fUniCount, 3.0f, w);
+                    add (p.uni_spread, 0.3f, w);
+                    add (p.cave_mix, 0.1f, w);
+                    add (p.oscA_fine, 4.0f, w);    // fine +-4c: A up, B down
+                    add (p.oscB_fine, -4.0f, w);
+                    break;
+
+                case Material::CRYSTAL:       // metallic, singing (technique 5)
+                    p.oscB_on = true;         // sync is inaudible with B off
+                    p.oscB_sync = true;
+                    add (A.fOscBOct, 1.0f, w);     // sync partial up an octave
+                    add (A.fOscBSemi, 7.0f, w);
+                    add (p.env2_pitch, 5.0f, w);
+                    p.env2_d = 0.08f;         // fast decay
+                    mul (p.filt_cutoff, 1.3f, n);
+                    break;
+
+                case Material::VOLT:          // electric, jittery motion
+                    add (p.lfo1_pwm, 0.5f, w);
+                    p.lfo1_rate = 0.0625f;    // 1/16 synced
+                    p.lfo1_sync = true;
+                    p.lfo2_dest = Lfo2Dest::cutoff;
+                    p.lfo2_shape = LfoShape::sampleHold;
+                    p.lfo2_rate = 0.0625f;    // tuning: default 1/4 is too slow
+                    p.lfo2_sync = true;       // for audible jitter
+                    add (p.lfo2_amt, 0.3f, w);
+                    break;
+
+                case Material::SLIME:         // wobbly, gluey
+                    add (p.glide_time, 0.12f, w);
+                    p.lfo2_dest = Lfo2Dest::pw;
+                    p.lfo2_shape = LfoShape::tri;  // tuning: wobble, not steps
+                    p.lfo2_rate = 0.125f;     // 1/8 synced
+                    p.lfo2_sync = true;
+                    add (p.lfo2_amt, 0.4f, w);
+                    p.oscA_pw = 60.0f;
+                    p.oscB_pw = 60.0f;
+                    break;
+
+                case Material::TNT:           // percussive boom
+                    add (p.env2_pitch, 24.0f, w);  // positive = falling drop
+                    p.env2_d = 0.09f;              // (SOUND_DESIGN technique 8)
+                    p.env2_s = 0.0f;
+                    p.env1_s = 0.0f;          // "sustain 0" read as amp sustain:
+                    p.env1_a = 0.002f;        // every base turns percussive
+                    add (p.crush_mix, 0.2f, w);
+                    p.noise_on = true;        // noise burst (gated by the amp env)
+                    add (p.noise_level, 0.25f, w);
+                    break;
+
+                case Material::MOSS:          // lo-fi, chill (technique 11)
+                    add (A.fCrushDown, 8.0f, w);
+                    add (p.crush_mix, 0.25f, w);
+                    mul (p.filt_cutoff, 0.75f, n);
+                    p.lfo2_dest = Lfo2Dest::pitch;
+                    p.lfo2_shape = LfoShape::tri;
+                    p.lfo2_rate = 1.0f;       // 1/1 synced — slow wobble
+                    p.lfo2_sync = true;
+                    p.lfo2_amt = 0.065f;      // quadratic taper: ~ +-5 cents
+                    break;
+
+                case Material::SAND:          // gritty texture
+                    p.noise_on = true;
+                    add (p.noise_level, 0.35f, w);
+                    p.noise_mode = NoiseMode::longMode;
+                    add (p.filt_res, 0.1f, w);
+                    break;
+
+                case Material::OBSIDIAN:      // dark, heavy, deep
+                    mul (p.filt_cutoff, 0.45f, n);
+                    p.sub_on = true;
+                    add (p.sub_level, 0.3f, w);
+                    add (A.fOscAOct, -1.0f, w);    // "oct -1 tendency", both oscs
+                    add (A.fOscBOct, -1.0f, w);
+                    mul (p.env1_r, 1.5f, n);
+                    break;
+
+                case Material::CLOUD:         // soft, airy, distant
+                    add (p.env1_a, 0.3f, w);
+                    add (p.cave_mix, 0.35f, w);
+                    add (p.cave_size, 0.3f, w);
+                    add (p.oscA_level, -0.15f, w);
+                    add (p.oscB_level, -0.15f, w);
+                    mul (p.filt_cutoff, 0.9f, n);
+                    break;
+
+                case Material::none:
+                default:
+                    break;
+            }
+        }
+
+        // STONE's raw wins last (conflict rule).
+        if (copies[static_cast<int> (Material::STONE)] > 0)
+            p.raw = true;
+    }
 }
 
 // craft(base, cells) -> full parameter set. Deterministic; see file header.
+// Two passes over the material table (sets-only reference + full raw), then
+// every continuous parameter goes through the soft-knee stacking clamp.
 inline ParamSnapshot craftApply (const CraftGrid& g) noexcept
 {
     using namespace craftdetail;
-
-    ParamSnapshot p = baseSnapshot (g.base);
 
     int copies[kNumMaterials + 1] = {};
     for (int i = 0; i < kNumCells; ++i)
         ++copies[static_cast<int> (g.cells[i])];
     copies[0] = 0;
 
-    // Integer fields materials touch, accumulated as floats and rounded once.
-    float fUniCount  = static_cast<float> (p.uni_count);
-    float fCrushBits = static_cast<float> (p.crush_bits);
-    float fCrushDown = static_cast<float> (p.crush_down);
-    float fOscAOct   = static_cast<float> (p.oscA_oct);
-    float fOscBOct   = static_cast<float> (p.oscB_oct);
-    float fOscBSemi  = static_cast<float> (p.oscB_semi);
+    CraftAccum ref;
+    ref.p          = baseSnapshot (g.base);
+    ref.fUniCount  = static_cast<float> (ref.p.uni_count);
+    ref.fCrushBits = static_cast<float> (ref.p.crush_bits);
+    ref.fCrushDown = static_cast<float> (ref.p.crush_down);
+    ref.fOscAOct   = static_cast<float> (ref.p.oscA_oct);
+    ref.fOscBOct   = static_cast<float> (ref.p.oscB_oct);
+    ref.fOscBSemi  = static_cast<float> (ref.p.oscB_semi);
+    CraftAccum raw = ref;
 
-    for (int m = 1; m <= kNumMaterials; ++m)
+    applyMaterials (ref, copies, false);   // sets/switches only
+    applyMaterials (raw, copies, true);    // full accumulation, unclamped
+
+    // Bools, enums and 'set' floats come straight from the reference pass
+    // (identical in the raw pass); every continuous field is knee-mapped.
+    // Field list mirrors clampSnapshotToSpecRanges — same frozen SPEC ranges.
+    ParamSnapshot p = ref.p;
+    const auto knee = [&] (float ParamSnapshot::* f, float lo, float hi) noexcept
     {
-        const int n = copies[m];
-        if (n == 0)
-            continue;
-        const float w = totalWeight (n);
+        p.*f = softDelta (ref.p.*f, raw.p.*f, lo, hi);
+    };
+    knee (&ParamSnapshot::oscA_fine, -100.0f, 100.0f);
+    knee (&ParamSnapshot::oscB_fine, -100.0f, 100.0f);
+    knee (&ParamSnapshot::oscA_pw, 1.0f, 99.0f);
+    knee (&ParamSnapshot::oscB_pw, 1.0f, 99.0f);
+    knee (&ParamSnapshot::oscA_level, 0.0f, 1.0f);
+    knee (&ParamSnapshot::oscB_level, 0.0f, 1.0f);
+    knee (&ParamSnapshot::sub_level, 0.0f, 1.0f);
+    knee (&ParamSnapshot::noise_level, 0.0f, 1.0f);
+    knee (&ParamSnapshot::uni_detune, 0.0f, 100.0f);
+    knee (&ParamSnapshot::uni_spread, 0.0f, 1.0f);
+    knee (&ParamSnapshot::glide_time, 0.0f, 2.0f);
+    knee (&ParamSnapshot::filt_cutoff, 20.0f, 20000.0f);
+    knee (&ParamSnapshot::filt_res, 0.0f, 1.0f);
+    knee (&ParamSnapshot::filt_env, -1.0f, 1.0f);
+    knee (&ParamSnapshot::filt_keytrack, 0.0f, 1.0f);
+    knee (&ParamSnapshot::env1_a, 0.0f, 5.0f);
+    knee (&ParamSnapshot::env1_d, 0.0f, 5.0f);
+    knee (&ParamSnapshot::env1_s, 0.0f, 1.0f);
+    knee (&ParamSnapshot::env1_r, 0.0f, 5.0f);
+    knee (&ParamSnapshot::env2_a, 0.0f, 5.0f);
+    knee (&ParamSnapshot::env2_d, 0.0f, 5.0f);
+    knee (&ParamSnapshot::env2_s, 0.0f, 1.0f);
+    knee (&ParamSnapshot::env2_r, 0.0f, 5.0f);
+    knee (&ParamSnapshot::env2_pitch, -48.0f, 48.0f);
+    knee (&ParamSnapshot::lfo1_rate, 0.01f, 40.0f);
+    knee (&ParamSnapshot::lfo1_pwm, 0.0f, 1.0f);
+    knee (&ParamSnapshot::lfo2_rate, 0.01f, 40.0f);
+    knee (&ParamSnapshot::lfo2_amt, -1.0f, 1.0f);
+    knee (&ParamSnapshot::vel_amp, 0.0f, 1.0f);
+    knee (&ParamSnapshot::master_gain, -60.0f, 6.0f);
+    knee (&ParamSnapshot::crush_mix, 0.0f, 1.0f);
+    knee (&ParamSnapshot::dly_fb, 0.0f, 0.9f);
+    knee (&ParamSnapshot::dly_mix, 0.0f, 1.0f);
+    knee (&ParamSnapshot::cave_size, 0.0f, 1.0f);
+    knee (&ParamSnapshot::cave_damp, 0.0f, 1.0f);
+    knee (&ParamSnapshot::cave_mix, 0.0f, 1.0f);
 
-        switch (static_cast<Material> (m))
-        {
-            case Material::ICE:           // cold, wide, long
-                addW (fUniCount, 2.0f, w);
-                addW (p.uni_detune, 12.0f, w);
-                mulW (p.env1_r, 2.5f, n);
-                mulW (p.filt_cutoff, 1.25f, n);
-                addW (p.cave_mix, 0.15f, w);
-                p.oscA_pw = 38.0f;
-                p.oscB_pw = 38.0f;
-                break;
+    // Integer fields: knee in the float domain, then round and hard-clamp —
+    // steps are inherent to integers, a sub-step knee would be inaudible.
+    p.uni_count  = craftClampRound (softDelta (ref.fUniCount,  raw.fUniCount,  1.0f, 8.0f), 1, 8);
+    p.crush_bits = craftClampRound (softDelta (ref.fCrushBits, raw.fCrushBits, 1.0f, 16.0f), 1, 16);
+    p.crush_down = craftClampRound (softDelta (ref.fCrushDown, raw.fCrushDown, 1.0f, 64.0f), 1, 64);
+    p.oscA_oct   = craftClampRound (softDelta (ref.fOscAOct,   raw.fOscAOct,  -2.0f, 2.0f), -2, 2);
+    p.oscB_oct   = craftClampRound (softDelta (ref.fOscBOct,   raw.fOscBOct,  -2.0f, 2.0f), -2, 2);
+    p.oscB_semi  = craftClampRound (softDelta (ref.fOscBSemi,  raw.fOscBSemi, -12.0f, 12.0f), -12, 12);
 
-            case Material::LAVA:          // hot, aggressive
-                addW (p.crush_mix, 0.3f, w);
-                addW (fCrushBits, -6.0f, w);
-                addW (p.filt_res, 0.2f, w);
-                addW (p.filt_env, 0.4f, w);
-                p.sub_on = true;          // tuning: +0.2 sub is inaudible with
-                addW (p.sub_level, 0.2f, w);   // the sub off; switch it ON
-                break;
-
-            case Material::STONE:         // dry, blunt, raw (raw set after loop)
-                mulW (p.env1_r, 0.4f, n);
-                p.cave_mix = 0.0f;
-                p.oscA_pw = 50.0f;
-                p.oscB_pw = 50.0f;
-                mulW (p.filt_cutoff, 0.85f, n);
-                break;
-
-            case Material::WOOD:          // warm, mellow
-                mulW (p.filt_cutoff, 0.65f, n);
-                p.oscA_pw = 47.0f;
-                p.oscB_pw = 47.0f;
-                addW (p.env1_a, 0.008f, w);
-                addW (p.vel_amp, 0.2f, w);
-                break;
-
-            case Material::GLASS:         // thin, bright, delicate
-                p.oscA_pw = 14.0f;
-                p.oscB_pw = 14.0f;
-                mulW (p.filt_cutoff, 1.4f, n);
-                addW (p.dly_mix, 0.2f, w);
-                addW (p.oscA_level, -0.1f, w);
-                addW (p.oscB_level, -0.1f, w);
-                p.env1_a = 0.001f;
-                break;
-
-            case Material::GOLD:          // expensive, wide, polished
-                addW (fUniCount, 3.0f, w);
-                addW (p.uni_spread, 0.3f, w);
-                addW (p.cave_mix, 0.1f, w);
-                addW (p.oscA_fine, 4.0f, w);   // fine +-4c: A up, B down
-                addW (p.oscB_fine, -4.0f, w);
-                break;
-
-            case Material::CRYSTAL:       // metallic, singing (technique 5)
-                p.oscB_on = true;         // sync is inaudible with B off
-                p.oscB_sync = true;
-                addW (fOscBSemi, 7.0f, w);
-                addW (p.env2_pitch, 5.0f, w);
-                p.env2_d = 0.08f;         // fast decay
-                mulW (p.filt_cutoff, 1.3f, n);
-                break;
-
-            case Material::VOLT:          // electric, jittery motion
-                addW (p.lfo1_pwm, 0.5f, w);
-                p.lfo1_rate = 0.0625f;    // 1/16 synced
-                p.lfo1_sync = true;
-                p.lfo2_dest = Lfo2Dest::cutoff;
-                p.lfo2_shape = LfoShape::sampleHold;
-                p.lfo2_rate = 0.0625f;    // tuning: default 1/4 is too slow
-                p.lfo2_sync = true;       // for audible jitter
-                addW (p.lfo2_amt, 0.3f, w);
-                break;
-
-            case Material::SLIME:         // wobbly, gluey
-                addW (p.glide_time, 0.12f, w);
-                p.lfo2_dest = Lfo2Dest::pw;
-                p.lfo2_shape = LfoShape::tri;  // tuning: wobble, not steps
-                p.lfo2_rate = 0.125f;     // 1/8 synced
-                p.lfo2_sync = true;
-                addW (p.lfo2_amt, 0.4f, w);
-                p.oscA_pw = 60.0f;
-                p.oscB_pw = 60.0f;
-                break;
-
-            case Material::TNT:           // percussive boom
-                addW (p.env2_pitch, -24.0f, w);
-                p.env2_d = 0.09f;
-                p.env2_s = 0.0f;
-                p.env1_s = 0.0f;          // "sustain 0" read as amp sustain:
-                p.env1_a = 0.002f;        // every base turns percussive
-                addW (p.crush_mix, 0.2f, w);
-                p.noise_on = true;        // noise burst (gated by the amp env)
-                addW (p.noise_level, 0.25f, w);
-                break;
-
-            case Material::MOSS:          // lo-fi, chill (technique 11)
-                addW (fCrushDown, 8.0f, w);
-                addW (p.crush_mix, 0.25f, w);
-                mulW (p.filt_cutoff, 0.75f, n);
-                p.lfo2_dest = Lfo2Dest::pitch;
-                p.lfo2_shape = LfoShape::tri;
-                p.lfo2_rate = 1.0f;       // 1/1 synced — slow wobble
-                p.lfo2_sync = true;
-                p.lfo2_amt = 0.065f;      // quadratic taper: ~ +-5 cents
-                break;
-
-            case Material::SAND:          // gritty texture
-                p.noise_on = true;
-                addW (p.noise_level, 0.35f, w);
-                p.noise_mode = NoiseMode::longMode;
-                addW (p.filt_res, 0.1f, w);
-                break;
-
-            case Material::OBSIDIAN:      // dark, heavy, deep
-                mulW (p.filt_cutoff, 0.45f, n);
-                p.sub_on = true;
-                addW (p.sub_level, 0.3f, w);
-                addW (fOscAOct, -1.0f, w);     // "oct -1 tendency", both oscs
-                addW (fOscBOct, -1.0f, w);
-                mulW (p.env1_r, 1.5f, n);
-                break;
-
-            case Material::CLOUD:         // soft, airy, distant
-                addW (p.env1_a, 0.3f, w);
-                addW (p.cave_mix, 0.35f, w);
-                addW (p.cave_size, 0.3f, w);
-                addW (p.oscA_level, -0.15f, w);
-                addW (p.oscB_level, -0.15f, w);
-                mulW (p.filt_cutoff, 0.9f, n);
-                break;
-
-            case Material::none:
-            default:
-                break;
-        }
-    }
-
-    // STONE's raw wins last (conflict rule).
-    if (copies[static_cast<int> (Material::STONE)] > 0)
-        p.raw = true;
-
-    p.uni_count  = craftClampRound (fUniCount, 1, 8);
-    p.crush_bits = craftClampRound (fCrushBits, 1, 16);
-    p.crush_down = craftClampRound (fCrushDown, 1, 64);
-    p.oscA_oct   = craftClampRound (fOscAOct, -2, 2);
-    p.oscB_oct   = craftClampRound (fOscBOct, -2, 2);
-    p.oscB_semi  = craftClampRound (fOscBSemi, -12, 12);
-
-    clampSnapshotToSpecRanges (p);
+    clampSnapshotToSpecRanges (p);         // safety net; a no-op after the knee
     return p;
 }
 

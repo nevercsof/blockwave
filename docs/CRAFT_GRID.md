@@ -23,16 +23,18 @@ Deltas below are the design intent and starting values; final numbers are tuned 
 | WOOD | warm, mellow | cutoff −35%, PW 47%, attack +8ms, vel_amp +0.2 |
 | GLASS | thin, bright, delicate | PW→14%, cutoff +40%, dly_mix +0.2, level −0.1, attack 1ms |
 | GOLD | expensive, wide, polished | uni_count +3, uni_spread +0.3, cave_mix +0.1, fine ±4c, master sheen (HP rumble cut) |
-| CRYSTAL | metallic, singing | oscB_sync ON + oscB_semi +7, env2_pitch +5st fast decay, cutoff +30% |
+| CRYSTAL | metallic, singing | oscB_sync ON + oscB_oct +1, oscB_semi +7, env2_pitch +5st fast decay, cutoff +30% |
 | VOLT | electric, jittery motion | lfo1_pwm +0.5, lfo1_rate→1/16, lfo2_dest=cutoff, lfo2_amt +0.3, lfo2_shape=s&h |
 | SLIME | wobbly, gluey | glide +120ms, lfo2_dest=pw, lfo2_amt +0.4, lfo2_rate→1/8, PW→60% |
-| TNT | percussive boom | env2_pitch −24st, env2 decay 90ms, sustain 0, crush_mix +0.2, noise ON burst |
+| TNT | percussive boom | env2_pitch +24st (downward drop), env2 decay 90ms, sustain 0, crush_mix +0.2, noise ON burst |
 | MOSS | lo-fi, chill | crush_down +8×, crush_mix +0.25, cutoff −25%, lfo2 slow tri→pitch ±5c |
 | SAND | gritty texture | noise ON, noise_level +0.35, noise_mode=long, filt_res +0.1 |
 | OBSIDIAN | dark, heavy, deep | cutoff −55%, sub ON +0.3, oct −1 tendency, release ×1.5 |
 | CLOUD | soft, airy, distant | attack +300ms, cave_mix +0.35, cave_size +0.3, level −0.15, cutoff −10% |
 
-Conflict rule: deltas are applied in a fixed material order (table order), multiplicative for × entries, additive-with-clamping for the rest; discrete switches (raw, sync, noise) use "any material at weight ≥1 may switch ON; STONE's raw wins last".
+Conflict rule: deltas are applied in a fixed material order (table order), multiplicative for × entries, additive for the rest; discrete switches (raw, sync, noise) use "any material at weight ≥1 may switch ON; STONE's raw wins last".
+
+Stacking clamp: the accumulated delta on each continuous parameter is soft-kneed against the SPEC rail instead of hard-clamped — linear up to 75% of the headroom between the parameter's post-set reference value and the rail, then compressed so it approaches (never reaches) the rail. Copies 3–8 of a material therefore keep changing the sound monotonically instead of slamming into the parameter range. Integer parameters (unison count, octaves, crush bits/down) still round and hard-clamp — steps are inherent to them.
 
 ## Hidden recipes (position-sensitive)
 
