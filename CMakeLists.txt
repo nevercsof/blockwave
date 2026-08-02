@@ -134,3 +134,7 @@ target_link_libraries(blockwave_state_tests PRIVATE
     juce::juce_audio_utils
     juce::juce_recommended_config_flags)
 add_test(NAME blockwave_state_tests COMMAND blockwave_state_tests)
+if(MSVC)
+    # StateTests.cpp includes TestUtil.h (portable fopen) — same C4996 waiver.
+    target_compile_definitions(blockwave_state_tests PRIVATE _CRT_SECURE_NO_WARNINGS)
+endif()
