@@ -131,8 +131,8 @@ Full patterns, techniques and rationale: `docs/RECIPE_NOTES.md`.
 
 ## Human actions for this review
 
-0. **Windows CI**: this checkpoint's commit must show both `macos-latest` and `windows-latest` green before sign-off — the MSVC `/W4 /WX` build and the Windows pluginval s10 cannot be checked locally. (Being watched automatically; result reported in chat.)
+0. **Windows CI — ✅ already green** on commit `d5cd113`: both `macos-latest` and `windows-latest` passed, MSVC `/W4 /WX` build clean and Windows pluginval s10 SUCCESS. Nothing to check manually.
 1. **Look at the CRAFT screenshots** — taste verdict on the bench, material art, toast and keyboard.
 2. **Play it**: the AU is installed at `~/Library/Audio/Plug-Ins/Components/BLOCKWAVE.component`; drag blocks, hit DICE, try to find a recipe by ear.
 3. **Listen to the craft matrix** if you want to sanity-check materials: `CHECKPOINTS/artifacts/craft_matrix/` (`BASE.wav` vs `BASE_MATERIAL.wav`).
-4. Architect: answer the 7 open questions above — #1 and #6 are the ones that get expensive to change later.
+4. Architect: answer the 9 open questions above — #1 and #6 are the ones that get expensive to change later.
