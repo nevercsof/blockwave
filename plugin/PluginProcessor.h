@@ -41,7 +41,7 @@ public:
     bool acceptsMidi() const override { return true; }
     bool producesMidi() const override { return false; }
     bool isMidiEffect() const override { return false; }
-    double getTailLengthSeconds() const override { return 0.0; }
+    double getTailLengthSeconds() const override;
 
     int getNumPrograms() override { return 1; }
     int getCurrentProgram() override { return 0; }
@@ -82,6 +82,10 @@ private:
 
     blockwave::BlockwaveEngine engine;
     blockwave::RawParams rawParams;
+
+    // Last tempo seen on the audio thread; getTailLengthSeconds (any thread)
+    // uses it for the delay-time part of the honest tail estimate.
+    std::atomic<double> lastBpm { 120.0 };
 
     blockwave::PresetLibrary presetLibrary { blockwave::PresetLibrary::defaultUserFolder() };
 

@@ -77,7 +77,10 @@ void BlockwaveAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     if (auto* ph = getPlayHead())
         if (auto pos = ph->getPosition())
             if (auto bpm = pos->getBpm())
+            {
                 engine.setTempo (*bpm);
+                lastBpm.store (*bpm, std::memory_order_relaxed);
+            }
 
     const int numSamples  = buffer.getNumSamples();
     const int numChannels = buffer.getNumChannels();
@@ -130,6 +133,16 @@ void BlockwaveAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         }
         pos = segmentEnd;
     }
+}
+
+double BlockwaveAudioProcessor::getTailLengthSeconds() const
+{
+    // Honest FX tail: delay feedback decay to -60 dB plus the CAVE RT60, from
+    // the current parameter values (atomics only — callable from any thread).
+    blockwave::ParamSnapshot snap;
+    rawParams.toSnapshot (snap);
+    return blockwave::FxChain::tailSeconds (snap,
+                                            lastBpm.load (std::memory_order_relaxed));
 }
 
 juce::AudioProcessorEditor* BlockwaveAudioProcessor::createEditor()

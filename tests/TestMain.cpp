@@ -68,6 +68,8 @@ using namespace testutil;
 
 static const std::string kTestDir = BLOCKWAVE_TEST_DIR;
 
+#include "FxTests.h"   // Phase-5 FX suite (uses kTestDir; same strict TU)
+
 // ---------------------------------------------------------------------------
 static void test_pitch_accuracy()
 {
@@ -306,6 +308,11 @@ static void test_block_size_invariance()
     p.sub_on = true; p.noise_on = true;
     p.uni_count = 4; p.uni_detune = 20.0f;
     p.filt_cutoff = 2500.0f; p.filt_res = 0.4f; p.filt_env = 0.5f;
+    // Phase 5: the whole FX block on. FX process on the same absolute
+    // 16-sample control grid, so bit-exactness across block sizes must hold.
+    p.crush_bits = 6; p.crush_down = 3; p.crush_mix = 0.7f;
+    p.dly_time = 10; p.dly_fb = 0.5f; p.dly_pingpong = true; p.dly_mix = 0.4f;
+    p.cave_size = 0.6f; p.cave_damp = 0.5f; p.cave_mix = 0.4f;
 
     auto ref = renderNote (p, 48, 48000.0, 0.3, 0.4, 512);
     const int sizes[] = { 16, 61, 128, 1024, 4096 };
@@ -329,6 +336,9 @@ static void test_no_allocation_on_audio_thread()
     ParamSnapshot p;
     p.oscB_on = true; p.oscB_sync = true; p.sub_on = true; p.noise_on = true;
     p.uni_count = 8; p.poly_count = 16; p.lfo1_pwm = 0.5f; p.lfo2_amt = 0.5f;
+    p.crush_bits = 4; p.crush_down = 8; p.crush_mix = 1.0f;      // Phase 5:
+    p.dly_fb = 0.9f; p.dly_pingpong = true; p.dly_mix = 0.5f;    // all FX on
+    p.cave_size = 0.9f; p.cave_damp = 0.5f; p.cave_mix = 0.5f;
     engine.setParams (p);
     engine.prepare (48000.0, 512);
 
@@ -353,12 +363,16 @@ static void test_no_allocation_on_audio_thread()
 static double measureCpuRatio (double sr, int blockSize)
 {
     // Worst realtime patch: everything on, 16 held notes x full 8-way unison
-    // = 128 stacks (kMaxUnisonStacks raised 64 -> 128, Phase-2 amendment).
+    // = 128 stacks (kMaxUnisonStacks raised 64 -> 128, Phase-2 amendment),
+    // plus the entire Phase-5 FX block engaged.
     ParamSnapshot p;
     p.oscB_on = true; p.oscB_sync = true; p.sub_on = true; p.noise_on = true;
     p.uni_count = 8; p.poly_count = 16;
     p.lfo1_pwm = 0.4f; p.lfo2_amt = 0.5f;
     p.env1_s = 1.0f;
+    p.crush_bits = 4; p.crush_down = 2; p.crush_mix = 1.0f;
+    p.dly_fb = 0.9f; p.dly_pingpong = true; p.dly_mix = 0.5f;
+    p.cave_size = 0.9f; p.cave_damp = 0.5f; p.cave_mix = 0.5f;
 
     BlockwaveEngine engine;
     engine.setParams (p);
@@ -381,7 +395,7 @@ static double measureCpuRatio (double sr, int blockSize)
 static void test_cpu_worst_case()
 {
     std::printf ("[cpu_worst_case]\n");
-    std::printf ("  16 voices x full 8-way unison (128 stacks), all sources on:\n");
+    std::printf ("  16 voices x full 8-way unison (128 stacks), all sources + ALL FX on:\n");
     const double r1 = measureCpuRatio (44100.0, 128);
     std::printf ("  %.1f%% of one core @ 44.1k/128 (%.2f%% per voice)\n",
                  r1 * 100.0, r1 * 100.0 / 16.0);
@@ -390,6 +404,12 @@ static void test_cpu_worst_case()
                  r2 * 100.0, r2 * 100.0 / 16.0);
     CHECK_MSG (r1 < 0.9, "worst case not realtime @ 44.1k/128: %.1f%%", r1 * 100.0);
     CHECK_MSG (r2 < 0.9, "worst case not realtime @ 48k/512: %.1f%%", r2 * 100.0);
+#ifdef NDEBUG
+    // Phase-5 FX budget: total must stay under ~3x the Phase-2 3.5% figure.
+    // Optimized builds only — Debug timing is not a meaningful budget signal.
+    CHECK_MSG (r1 < 0.105, "FX budget blown @ 44.1k/128: %.1f%% > 10.5%%", r1 * 100.0);
+    CHECK_MSG (r2 < 0.105, "FX budget blown @ 48k/512: %.1f%% > 10.5%%", r2 * 100.0);
+#endif
 }
 
 // ---------------------------------------------------------------------------
@@ -725,6 +745,16 @@ int main()
     test_unison_cap_128();
     test_master_softclip();
     test_param_smoothing_click_free();
+
+    // Phase-5 FX block (tests/FxTests.h):
+    fxtests::test_fx_bypass_null();
+    fxtests::test_crush_quantize_and_hold();
+    fxtests::test_delay_tempo_lock();
+    fxtests::test_delay_tempo_click_free();
+    fxtests::test_delay_pingpong();
+    fxtests::test_cave_tail();
+    fxtests::test_cave_damp_spectral();
+
     test_cpu_worst_case();
 
     std::printf ("\n%d checks, %d failures\n", state().checks, state().failures);

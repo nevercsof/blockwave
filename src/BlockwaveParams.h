@@ -39,8 +39,8 @@ enum class Lfo2Dest   : int { pitch = 0, cutoff = 1, pw = 2, vol = 3 };
 
 // Plain POD parameter snapshot. Phase 2 maps APVTS parameters (SPEC IDs)
 // onto these fields 1:1; until then the engine ships with SPEC defaults.
-// Field names mirror the SPEC parameter IDs exactly (Phase-1 subset; FX are
-// Phase 5).
+// Field names mirror the SPEC parameter IDs exactly (complete since Phase 5:
+// the FX block fields live at the end of the struct).
 struct ParamSnapshot
 {
     // Oscillators
@@ -97,6 +97,19 @@ struct ParamSnapshot
     float vel_amp     = 0.5f;   // velocity -> amp depth
     bool  raw         = false;  // bypass polyBLEP
     float master_gain = 0.0f;   // dB, -60..+6
+
+    // FX block (Phase 5). IDs frozen since Phase 2; fields appended so the
+    // layout of everything above is untouched.
+    int   crush_bits   = 16;    // 16..1 bit depth
+    int   crush_down   = 1;     // 1..64x sample-rate divide (hold)
+    float crush_mix    = 0.0f;  // 0..1
+    int   dly_time     = 4;     // kDlyTimeChoices index (4 = "1/4"), synced only
+    float dly_fb       = 0.35f; // 0..0.9
+    bool  dly_pingpong = true;
+    float dly_mix      = 0.0f;  // 0..1
+    float cave_size    = 0.5f;  // 0..1 -> FDN loop lengths + RT60
+    float cave_damp    = 0.5f;  // 0..1 -> in-loop damping lowpass
+    float cave_mix     = 0.0f;  // 0..1
 };
 
 // Single-writer (message thread) / single-reader (audio thread) snapshot

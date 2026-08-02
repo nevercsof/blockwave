@@ -101,6 +101,16 @@ static int compareSnapshots (const ParamSnapshot& a, const ParamSnapshot& b,
     num ("vel_amp", a.vel_amp, b.vel_amp);
     exact ("raw", a.raw, b.raw);
     num ("master_gain", a.master_gain, b.master_gain);
+    exact ("crush_bits", a.crush_bits, b.crush_bits);
+    exact ("crush_down", a.crush_down, b.crush_down);
+    num ("crush_mix", a.crush_mix, b.crush_mix);
+    exact ("dly_time", a.dly_time, b.dly_time);
+    num ("dly_fb", a.dly_fb, b.dly_fb);
+    exact ("dly_pingpong", a.dly_pingpong, b.dly_pingpong);
+    num ("dly_mix", a.dly_mix, b.dly_mix);
+    num ("cave_size", a.cave_size, b.cave_size);
+    num ("cave_damp", a.cave_damp, b.cave_damp);
+    num ("cave_mix", a.cave_mix, b.cave_mix);
 
     if (maxRel != nullptr)
         *maxRel = worst;
@@ -522,6 +532,71 @@ static void test_processor_pitch_bend_and_params()
 }
 
 // ---------------------------------------------------------------------------
+// Phase 5: every factory preset must render clean with the FX block live —
+// no NaN/inf, and the master softclip keeps the peak at or below 0 dBFS.
+static void test_factory_presets_render_clean()
+{
+    std::printf ("[factory_presets_render_clean]\n");
+    for (int i = 0; i < BinaryData::namedResourceListSize; ++i)
+    {
+        int size = 0;
+        const char* data = BinaryData::getNamedResource (BinaryData::namedResourceList[i], size);
+        if (data == nullptr)
+            continue;
+        const auto preset = juce::JSON::parse (juce::String::fromUTF8 (data, size));
+        const auto name = preset.getProperty ("name", "?").toString();
+
+        ParamSnapshot p;
+        juce::String err;
+        CHECK_MSG (applyPresetParams (preset, p, err), "'%s': mapping failed: %s",
+                   name.toRawUTF8(), err.toRawUTF8());
+
+        auto r = renderNote (p, 57, 48000.0, 2.0, 5.0);
+        float peak = 0.0f;
+        int badSamples = 0;
+        for (size_t k = 0; k < r.l.size(); ++k)
+        {
+            if (! std::isfinite (r.l[k]) || ! std::isfinite (r.r[k]))
+                ++badSamples;
+            peak = std::max ({ peak, std::abs (r.l[k]), std::abs (r.r[k]) });
+        }
+        std::printf ("  %-18s peak %.4f, non-finite %d\n", name.toRawUTF8(),
+                     static_cast<double> (peak), badSamples);
+        CHECK_MSG (badSamples == 0, "'%s': %d non-finite samples", name.toRawUTF8(), badSamples);
+        CHECK_MSG (peak <= 1.0f, "'%s': peak %.4f exceeds 0 dBFS", name.toRawUTF8(),
+                   static_cast<double> (peak));
+        CHECK_MSG (peak > 1.0e-4f, "'%s': rendered silence", name.toRawUTF8());
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Phase 5: getTailLengthSeconds reports the FX tail honestly.
+static void test_tail_length_report (BlockwaveAudioProcessor& proc)
+{
+    std::printf ("[tail_length_report]\n");
+    blockwave::resetParamsToDefaults (proc.apvts);
+    const double dryTail = proc.getTailLengthSeconds();
+    CHECK_MSG (dryTail == 0.0, "dry patch reports %.3f s tail", dryTail);
+
+    const auto set = [&] (const char* id, float plain)
+    {
+        if (auto* p = proc.apvts.getParameter (id))
+            p->setValueNotifyingHost (p->convertTo0to1 (plain));
+    };
+    set ("dly_mix", 0.5f);                       // 1/4 @ 120 BPM default, fb 0.35
+    const double dlyTail = proc.getTailLengthSeconds();
+    // 0.5 s per hop, log(1e-3)/log(0.35) ~ 6.58 hops ~ 3.3 s.
+    CHECK_MSG (dlyTail > 2.0 && dlyTail < 6.0, "delay tail estimate %.2f s off", dlyTail);
+
+    set ("cave_mix", 0.5f);                      // + RT60(0.5) = 3.3 s
+    const double bothTail = proc.getTailLengthSeconds();
+    CHECK_MSG (bothTail > dlyTail + 2.0 && bothTail < dlyTail + 5.0,
+               "delay+cave tail estimate %.2f s off (delay part %.2f)", bothTail, dlyTail);
+    std::printf ("  dry 0 s, delay %.2f s, delay+cave %.2f s\n", dlyTail, bothTail);
+    blockwave::resetParamsToDefaults (proc.apvts);
+}
+
+// ---------------------------------------------------------------------------
 int main()
 {
     juce::ScopedJuceInitialiser_GUI juceInit;
@@ -533,10 +608,12 @@ int main()
         test_render_plugin_agreement (proc);
         test_preset_save_round_trip (proc);
         test_factory_bank (proc);
+        test_tail_length_report (proc);
     }
     test_preset_library_model();
     test_session_state_round_trip();
     test_processor_pitch_bend_and_params();
+    test_factory_presets_render_clean();
 
     std::printf ("\n%d checks, %d failures\n", state().checks, state().failures);
     return state().failures == 0 ? 0 : 1;

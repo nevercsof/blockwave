@@ -23,6 +23,7 @@
 #include "BlockwaveParams.h"
 #include "Voice.h"
 #include "Lfo.h"
+#include "FxChain.h"
 
 namespace blockwave
 {
@@ -76,6 +77,7 @@ public:
         // chunk length so block-size splits are bit-identical.
         smoothLambda = -1.0f / (0.025f * static_cast<float> (sampleRate));
         store.read (params);
+        fx.prepare (sampleRate, params, tempoBpm.load (std::memory_order_relaxed));
         snapSmoothers();
         reset();
     }
@@ -93,6 +95,7 @@ public:
         anyVoiceSounding = false;
         tBend = 0.0f;
         sBend = 0.0f;
+        fx.reset (params, tempoBpm.load (std::memory_order_relaxed));
         snapSmoothers();
     }
 
@@ -268,6 +271,12 @@ public:
                 sounding = sounding || v.isActive();
             }
 
+            // SPEC signal path: voice sum -> CRUSH -> DELAY -> CAVE, then
+            // master gain and the fixed softclip ceiling. The FX chain always
+            // processes (tails must ring through note-off and transport stop)
+            // and is bit-transparent at mix 0.
+            fx.process (outL + offset, outR + offset, chunk, params, bpm);
+
             for (int i = 0; i < chunk; ++i)
             {
                 // End of chain: master gain, then the fixed softclip ceiling.
@@ -365,6 +374,7 @@ private:
 
     Voice voices[kMaxVoices];
     Lfo lfo1, lfo2;
+    FxChain fx;
 
     float smoothLambda = -0.001f;
     float tBend = 0.0f, sBend = 0.0f;     // pitch bend target / smoothed, semitones

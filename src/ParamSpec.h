@@ -266,8 +266,7 @@ inline juce::var varFromPlain (PId id, float plain)
 
 // Plain value -> ParamSnapshot field. The ONLY place the ID->field mapping
 // exists; used by both the preset JSON path and the APVTS audio-thread path.
-// FX parameters (crush_*, dly_*, cave_*) are stored in the APVTS with frozen
-// IDs but have no engine fields until Phase 5 — intentional no-ops below.
+// Complete since Phase 5 (FX fields included).
 inline void applyToSnapshot (ParamSnapshot& p, PId id, float v) noexcept
 {
     const int  iv = static_cast<int> (std::lround (v));
@@ -338,17 +337,18 @@ inline void applyToSnapshot (ParamSnapshot& p, PId id, float v) noexcept
         case PId::raw:          p.raw = bv; break;
         case PId::master_gain:  p.master_gain = v; break;
 
-        // FX block — Phase 5 (IDs frozen now, engine fields land later):
-        case PId::crush_bits:
-        case PId::crush_down:
-        case PId::crush_mix:
-        case PId::dly_time:
-        case PId::dly_fb:
-        case PId::dly_pingpong:
-        case PId::dly_mix:
-        case PId::cave_size:
-        case PId::cave_damp:
-        case PId::cave_mix:
+        // FX block (Phase 5):
+        case PId::crush_bits:   p.crush_bits = iv; break;
+        case PId::crush_down:   p.crush_down = iv; break;
+        case PId::crush_mix:    p.crush_mix = v; break;
+        case PId::dly_time:     p.dly_time = iv; break;    // kDlyTimeChoices index
+        case PId::dly_fb:       p.dly_fb = v; break;
+        case PId::dly_pingpong: p.dly_pingpong = bv; break;
+        case PId::dly_mix:      p.dly_mix = v; break;
+        case PId::cave_size:    p.cave_size = v; break;
+        case PId::cave_damp:    p.cave_damp = v; break;
+        case PId::cave_mix:     p.cave_mix = v; break;
+
         case PId::count:
         default:
             break;
