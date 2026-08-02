@@ -18,22 +18,137 @@
 
 #include "PluginEditor.h"
 
-BlockwaveAudioProcessorEditor::BlockwaveAudioProcessorEditor (BlockwaveAudioProcessor& p)
-    : AudioProcessorEditor (p)
+using namespace blockwave::ui;
+
+void BlockwaveAudioProcessorEditor::Content::paint (juce::Graphics& g)
 {
-    // Placeholder canvas at the target fixed pixel size (1x). Real pixel-art
-    // UI lands in Phase 3.
-    setSize (640, 360);
+    g.fillAll (colours::night);
+    // Deterministic speckle dither (fixed seed) — subtle depth, still night.
+    juce::Random rnd (0x0b10c0);
+    g.setColour (colours::speckle);
+    for (int i = 0; i < 260; ++i)
+    {
+        const int x = rnd.nextInt (kCanvasW / 2) * 2;
+        const int y = rnd.nextInt (kCanvasH / 2) * 2;
+        g.fillRect (x, y, 2, 2);
+    }
 }
 
-void BlockwaveAudioProcessorEditor::paint (juce::Graphics& g)
+BlockwaveAudioProcessorEditor::BlockwaveAudioProcessorEditor (BlockwaveAudioProcessor& p)
+    : AudioProcessorEditor (p),
+      proc (p),
+      topBar (p),
+      tweakTab (p.apvts),
+      browser (p),
+      tooltips (&content, 700)
 {
-    g.fillAll (juce::Colour (0xff1c1c24));           // "night" from SPEC palette
-    g.setColour (juce::Colour (0xff8b8b8b));         // "stone gray"
-    g.setFont (juce::FontOptions (24.0f, juce::Font::bold));
-    g.drawText (JucePlugin_Name, getLocalBounds(), juce::Justification::centred);
-    g.setColour (juce::Colour (0xff5cab3f));         // "grass green"
-    g.setFont (juce::FontOptions (14.0f));
-    g.drawText ("Phase 0 shell — engine coming in Phase 1",
-                getLocalBounds().removeFromBottom (40), juce::Justification::centred);
+    content.setLookAndFeel (&lnf);
+    addAndMakeVisible (content);
+    content.setBounds (0, 0, kCanvasW, kCanvasH);
+
+    content.addAndMakeVisible (topBar);
+    topBar.setBounds (0, 0, kCanvasW, kTopBarH);
+
+    for (auto* b : { &craftTabBtn, &tweakTabBtn })
+    {
+        b->setComponentID ("tab");
+        b->setClickingTogglesState (false);
+        content.addAndMakeVisible (*b);
+    }
+    craftTabBtn.setTooltip ("place the blocks");
+    tweakTabBtn.setTooltip ("every knob exposed");
+    craftTabBtn.setBounds (8, kTopBarH, 96, kTabStripH);
+    tweakTabBtn.setBounds (112, kTopBarH, 96, kTabStripH);
+    craftTabBtn.onClick = [this] { setActiveTab (Tab::craft); };
+    tweakTabBtn.onClick = [this] { setActiveTab (Tab::tweak); };
+
+    content.addAndMakeVisible (craftTab);
+    craftTab.setBounds (0, kContentY, kCanvasW, kContentH);
+    content.addAndMakeVisible (tweakTab);
+    tweakTab.setBounds (0, kContentY, kCanvasW, kContentH);
+
+    content.addChildComponent (browser);
+    browser.setBounds (0, kTopBarH, kCanvasW, kCanvasH - kTopBarH);
+    content.addChildComponent (savePanel);
+    savePanel.setBounds (0, kTopBarH, kCanvasW, kCanvasH - kTopBarH);
+
+    // ---- wiring (all message thread) ---------------------------------------
+    topBar.onBrowse = [this] { showPresetBrowser (! browser.isVisible()); };
+    topBar.onSave = [this] { showSavePanel (true); };
+    topBar.onPresetChanged = [this] { browser.refresh(); };
+    topBar.onScaleChange = [this] (int s) { setUiScale (s); };
+
+    browser.onLoad = [this] (int index)
+    {
+        juce::String err;
+        proc.loadPresetAtIndex (index, err);
+        topBar.refresh();
+        browser.refresh();
+    };
+    browser.onClose = [this] { showPresetBrowser (false); };
+
+    savePanel.onSave = [this] (const juce::String& name, const juce::String& category)
+    {
+        juce::String err;
+        if (! proc.saveCurrentAsUserPreset (name, category, err))
+        {
+            savePanel.setError (err);
+            return;
+        }
+        showSavePanel (false);
+        topBar.refresh();
+        browser.refresh();
+    };
+    savePanel.onCancel = [this] { showSavePanel (false); };
+
+    setActiveTab (Tab::craft);                        // CRAFT is home (SPEC)
+
+    const int storedScale = static_cast<int> (
+        proc.apvts.state.getProperty ("uiScale", 1));
+    setUiScale (juce::jlimit (1, 2, storedScale));
+}
+
+BlockwaveAudioProcessorEditor::~BlockwaveAudioProcessorEditor()
+{
+    content.setLookAndFeel (nullptr);
+}
+
+void BlockwaveAudioProcessorEditor::setActiveTab (Tab tab)
+{
+    activeTab = tab;
+    craftTab.setVisible (tab == Tab::craft);
+    tweakTab.setVisible (tab == Tab::tweak);
+    craftTabBtn.setToggleState (tab == Tab::craft, juce::dontSendNotification);
+    tweakTabBtn.setToggleState (tab == Tab::tweak, juce::dontSendNotification);
+}
+
+void BlockwaveAudioProcessorEditor::setUiScale (int scale)
+{
+    uiScale = juce::jlimit (1, 2, scale);
+    content.setTransform (juce::AffineTransform::scale (static_cast<float> (uiScale)));
+    setSize (kCanvasW * uiScale, kCanvasH * uiScale);
+    proc.apvts.state.setProperty ("uiScale", uiScale, nullptr);   // session state
+    topBar.setScaleLabel (uiScale);
+}
+
+void BlockwaveAudioProcessorEditor::showPresetBrowser (bool shouldShow)
+{
+    if (shouldShow)
+        savePanel.setVisible (false);
+    browser.setVisible (shouldShow);
+    if (shouldShow)
+        browser.toFront (true);
+}
+
+void BlockwaveAudioProcessorEditor::showSavePanel (bool shouldShow)
+{
+    if (shouldShow)
+    {
+        browser.setVisible (false);
+        savePanel.open (proc.getPresetName(), proc.getPresetCategory());
+    }
+    else
+    {
+        savePanel.setVisible (false);
+    }
 }

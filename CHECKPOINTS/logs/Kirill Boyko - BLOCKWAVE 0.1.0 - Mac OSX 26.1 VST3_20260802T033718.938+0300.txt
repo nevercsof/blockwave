@@ -1,4 +1,3 @@
-Started validating: /Users/kirillboyko/Downloads/blockwave-kickoff/build/release/BLOCKWAVE_artefacts/Release/VST3/BLOCKWAVE.vst3
 Random seed: 0x9dfe3f
 Validation started
 	2 Aug 2026 3:37:03am

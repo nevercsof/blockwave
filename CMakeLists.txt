@@ -57,9 +57,20 @@ juce_add_plugin(${PROJECT_NAME}
     AU_MAIN_TYPE                kAudioUnitType_MusicDevice
 )
 
+set(BLOCKWAVE_UI_SOURCES
+    plugin/ui/PixelFont.cpp
+    plugin/ui/PixelLookAndFeel.cpp
+    plugin/ui/ParamCells.cpp
+    plugin/ui/BlockPanel.cpp
+    plugin/ui/TweakTab.cpp
+    plugin/ui/TopBar.cpp
+    plugin/ui/PresetBrowser.cpp
+)
+
 set(BLOCKWAVE_PLUGIN_SOURCES
     plugin/PluginProcessor.cpp
     plugin/PluginEditor.cpp
+    ${BLOCKWAVE_UI_SOURCES}
 )
 
 target_sources(${PROJECT_NAME} PRIVATE ${BLOCKWAVE_PLUGIN_SOURCES})
@@ -120,8 +131,7 @@ juce_add_console_app(blockwave_state_tests PRODUCT_NAME "blockwave_state_tests")
 set(BLOCKWAVE_STATE_TEST_SOURCES tests/StateTests.cpp)
 target_sources(blockwave_state_tests PRIVATE
     ${BLOCKWAVE_STATE_TEST_SOURCES}
-    plugin/PluginProcessor.cpp
-    plugin/PluginEditor.cpp)
+    ${BLOCKWAVE_PLUGIN_SOURCES})
 blockwave_strict_warnings(${BLOCKWAVE_STATE_TEST_SOURCES})
 target_include_directories(blockwave_state_tests PRIVATE src plugin tools/render)
 target_compile_definitions(blockwave_state_tests PRIVATE
@@ -138,3 +148,24 @@ if(MSVC)
     # StateTests.cpp includes TestUtil.h (portable fopen) — same C4996 waiver.
     target_compile_definitions(blockwave_state_tests PRIVATE _CRT_SECURE_NO_WARNINGS)
 endif()
+
+# --- Phase-3 headless UI screenshot renderer ---------------------------------
+# blockwave_screenshots [outDir] — renders every screen offscreen via
+# Component::createComponentSnapshot so qa-runner / the human can review
+# look-and-feel without launching a host. Default outDir: CHECKPOINTS/screenshots.
+juce_add_console_app(blockwave_screenshots PRODUCT_NAME "blockwave_screenshots")
+set(BLOCKWAVE_SCREENSHOT_SOURCES tools/screenshots/ScreenshotsMain.cpp)
+target_sources(blockwave_screenshots PRIVATE
+    ${BLOCKWAVE_SCREENSHOT_SOURCES}
+    ${BLOCKWAVE_PLUGIN_SOURCES})
+blockwave_strict_warnings(${BLOCKWAVE_SCREENSHOT_SOURCES})
+target_include_directories(blockwave_screenshots PRIVATE src plugin)
+target_compile_definitions(blockwave_screenshots PRIVATE
+    JUCE_WEB_BROWSER=0
+    JUCE_USE_CURL=0
+    JUCE_MODAL_LOOPS_PERMITTED=1
+    JucePlugin_Name="BLOCKWAVE")
+target_link_libraries(blockwave_screenshots PRIVATE
+    BlockwaveFactoryPresets
+    juce::juce_audio_utils
+    juce::juce_recommended_config_flags)
