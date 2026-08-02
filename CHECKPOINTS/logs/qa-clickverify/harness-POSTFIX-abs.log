@@ -1,0 +1,42 @@
+recipe book: 16 recipes
+
+=== RECIPE-AWARE path (craftSnapshotWithRecipes) ===
+case                                         sr/block    slewR    peakR
+REGRESSION  PAD+OBSIDIANx8 -> BASS          48000/512      2.12     0.92  step 0.03800 bound 0.01796
+REGRESSION  PAD+OBSIDIANx8 -> BASS          48000/64       2.12     0.92  step 0.03800 bound 0.01796
+REGRESSION  PAD+OBSIDIANx8 -> BASS          44100/512      1.87     0.98  step 0.03665 bound 0.01956
+REGRESSION  PAD+OBSIDIANx8 -> BASS          44100/64       1.87     0.98  step 0.03664 bound 0.01956
+REGRESSION  PAD+OBSIDIANx8 -> BASS          44100/16       1.56     0.97  step 0.03042 bound 0.01956
+REGRESSION  PAD+OBSIDIANx8 -> BASS          48000/4096     2.12     0.92  step 0.03800 bound 0.01796
+REGRESSION  PAD+OBSIDIANx8 -> BASS          96000/128      1.91     1.03  step 0.01722 bound 0.00901
+REGRESSION  PAD+OBSIDIANx8 -> BASS         192000/1024     3.80     1.02  step 0.01712 bound 0.00451
+REGRESSION  PAD+OBSIDIANx8 -> BASS+LAVA     48000/512      2.05     0.97  step 0.04854 bound 0.02364
+REGRESSION  PAD+OBSIDIANx8 -> BASS+LAVA     48000/64       2.05     0.97  step 0.04854 bound 0.02364
+REGRESSION  PAD+OBSIDIANx8 -> BASS+LAVA     44100/512      1.98     0.97  step 0.09033 bound 0.04574
+REGRESSION  PAD+OBSIDIANx8 -> BASS+LAVA     44100/64       1.97     0.97  step 0.09033 bound 0.04574
+REGRESSION  PAD+OBSIDIANx8 -> BASS+LAVA     44100/16       1.98     0.97  step 0.09048 bound 0.04574
+REGRESSION  PAD+OBSIDIANx8 -> BASS+LAVA     48000/4096     2.05     0.97  step 0.04854 bound 0.02364
+REGRESSION  PAD+OBSIDIANx8 -> BASS+LAVA     96000/128      2.17     0.93  step 0.04608 bound 0.02125
+REGRESSION  PAD+OBSIDIANx8 -> BASS+LAVA    192000/1024     2.70     1.02  step 0.01712 bound 0.00634
+control     PAD -> PAD+ICE                  48000/512      1.35     0.88  step 0.21509 bound 0.15883
+control     PAD -> PAD+ICE                  48000/64       1.35     0.88  step 0.21509 bound 0.15883
+control     PAD -> PAD+ICE                  44100/512      1.50     0.88  step 0.26013 bound 0.17358
+control     PAD -> PAD+ICE                  44100/64       1.50     0.88  step 0.26013 bound 0.17358
+control     PAD -> PAD+ICE                  44100/16       1.50     0.88  step 0.25990 bound 0.17358
+control     PAD -> PAD+ICE                  48000/4096     1.35     0.88  step 0.21509 bound 0.15883
+control     PAD -> PAD+ICE                  96000/128      1.39     0.87  step 0.11016 bound 0.07946
+control     PAD -> PAD+ICE                 192000/1024     1.40     0.86  step 0.05557 bound 0.03977
+control     PAD -> BASS+LAVA                48000/512      1.75     1.13  step 0.15201 bound 0.08696
+control     PAD -> BASS+LAVA                48000/64       1.75     1.13  step 0.15201 bound 0.08696
+control     PAD -> BASS+LAVA                44100/512      1.55     1.13  step 0.14670 bound 0.09465
+control     PAD -> BASS+LAVA                44100/64       1.55     1.13  step 0.14670 bound 0.09465
+control     PAD -> BASS+LAVA                44100/16       1.55     1.13  step 0.14715 bound 0.09465
+control     PAD -> BASS+LAVA                48000/4096     1.75     1.13  step 0.15201 bound 0.08696
+control     PAD -> BASS+LAVA                96000/128      1.66     1.13  step 0.07301 bound 0.04389
+control     PAD -> BASS+LAVA               192000/1024     1.63     1.13  step 0.03587 bound 0.02203
+
+=== RAW path (craftApply, no recipe overrides) — expected to hide the defect ===
+REGRESSION  PAD+OBSIDIANx8 -> BASS          48000/512      1.06     0.91  step 0.04968 bound 0.04666
+REGRESSION  PAD+OBSIDIANx8 -> BASS+LAVA     48000/512      1.24     0.92  step 0.05783 bound 0.04666
+
+WORST regression slewR = 3.80   WORST control slewR = 1.75

@@ -40,6 +40,7 @@
 #include "PresetMapping.h"
 #include "BinaryData.h"
 #include "TestUtil.h"
+#include "CraftCoverageTests.h"
 
 // ---------------------------------------------------------------------------
 // Global allocation guard (same technique as tests/TestMain.cpp) so the
@@ -1331,6 +1332,10 @@ int main()
         test_tail_length_report (proc);
         test_craft_recipe_book (proc);
         test_craft_first_then_params (proc);
+        // Phase-4 follow-up (tests/CraftCoverageTests.h): data-driven recipe
+        // coverage and the grid-change click matrix.
+        craftcoverage::test_recipe_book_coverage (proc);
+        craftcoverage::test_craft_transition_click_free (proc);
     }
     test_preset_library_model();
     test_session_state_round_trip();

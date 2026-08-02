@@ -1,0 +1,42 @@
+recipe book: 16 recipes
+
+=== RECIPE-AWARE path (craftSnapshotWithRecipes) ===
+case                                         sr/block    slewR    peakR
+REGRESSION  PAD+OBSIDIANx8 -> BASS          48000/512      5.29     0.94
+REGRESSION  PAD+OBSIDIANx8 -> BASS          48000/64       5.29     0.94
+REGRESSION  PAD+OBSIDIANx8 -> BASS          44100/512      5.56     0.97
+REGRESSION  PAD+OBSIDIANx8 -> BASS          44100/64       5.56     0.97
+REGRESSION  PAD+OBSIDIANx8 -> BASS          44100/16       5.63     0.97
+REGRESSION  PAD+OBSIDIANx8 -> BASS          48000/4096     5.29     0.94
+REGRESSION  PAD+OBSIDIANx8 -> BASS          96000/128      6.00     1.05
+REGRESSION  PAD+OBSIDIANx8 -> BASS         192000/1024     6.07     1.04
+REGRESSION  PAD+OBSIDIANx8 -> BASS+LAVA     48000/512     11.96     1.01
+REGRESSION  PAD+OBSIDIANx8 -> BASS+LAVA     48000/64      11.96     1.01
+REGRESSION  PAD+OBSIDIANx8 -> BASS+LAVA     44100/512     12.50     1.01
+REGRESSION  PAD+OBSIDIANx8 -> BASS+LAVA     44100/64      12.43     1.01
+REGRESSION  PAD+OBSIDIANx8 -> BASS+LAVA     44100/16      12.80     1.01
+REGRESSION  PAD+OBSIDIANx8 -> BASS+LAVA     48000/4096    11.96     1.01
+REGRESSION  PAD+OBSIDIANx8 -> BASS+LAVA     96000/128     16.88     0.95
+REGRESSION  PAD+OBSIDIANx8 -> BASS+LAVA    192000/1024    17.33     1.03
+control     PAD -> PAD+ICE                  48000/512      1.35     0.88
+control     PAD -> PAD+ICE                  48000/64       1.35     0.88
+control     PAD -> PAD+ICE                  44100/512      1.50     0.88
+control     PAD -> PAD+ICE                  44100/64       1.50     0.88
+control     PAD -> PAD+ICE                  44100/16       1.50     0.88
+control     PAD -> PAD+ICE                  48000/4096     1.35     0.88
+control     PAD -> PAD+ICE                  96000/128      1.39     0.87
+control     PAD -> PAD+ICE                 192000/1024     1.40     0.86
+control     PAD -> BASS+LAVA                48000/512      1.77     1.13
+control     PAD -> BASS+LAVA                48000/64       1.77     1.13
+control     PAD -> BASS+LAVA                44100/512      1.56     1.13
+control     PAD -> BASS+LAVA                44100/64       1.56     1.13
+control     PAD -> BASS+LAVA                44100/16       1.57     1.13
+control     PAD -> BASS+LAVA                48000/4096     1.77     1.13
+control     PAD -> BASS+LAVA                96000/128      1.68     1.13
+control     PAD -> BASS+LAVA               192000/1024     1.64     1.13
+
+=== RAW path (craftApply, no recipe overrides) — expected to hide the defect ===
+REGRESSION  PAD+OBSIDIANx8 -> BASS          48000/512      1.06     0.91
+REGRESSION  PAD+OBSIDIANx8 -> BASS+LAVA     48000/512      1.24     0.92
+
+WORST regression slewR = 17.33   WORST control slewR = 1.77

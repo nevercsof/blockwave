@@ -76,11 +76,19 @@ public:
                 break;
             case State::decay:
                 level += dCoef * (sustain - level);
-                if (level - sustain < 1e-4f) { level = sustain; state = State::sustain; }
+                // abs(): a patch change can raise sustain above the current
+                // level mid-decay. Without it the signed test is immediately
+                // true and the envelope SNAPS up to the new sustain.
+                if (std::fabs (level - sustain) < 1e-4f) { level = sustain; state = State::sustain; }
                 break;
             case State::sustain:
-                level = sustain;
-                if (sustain <= 0.0f) state = State::idle;
+                // A craft/preset change can move the sustain level under a
+                // held note. Glide there at the decay rate instead of
+                // stepping (CRAFT_GRID.md #4: no clicks on grid change).
+                // Bit-exact while sustain is unchanged: the decay stage snaps
+                // level to sustain exactly, so this update adds exactly 0.
+                level += dCoef * (sustain - level);
+                if (sustain <= 0.0f && level <= 1e-5f) { level = 0.0f; state = State::idle; }
                 break;
             case State::release:
                 level += rCoef * (0.0f - level);

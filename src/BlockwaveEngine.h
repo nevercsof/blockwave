@@ -213,6 +213,7 @@ public:
         tLvlSub = params.sub_level; tLvlNoise = params.noise_level;
         tPwA = params.oscA_pw * 0.01f; tPwB = params.oscB_pw * 0.01f;
         tCutLog2 = log2f (params.filt_cutoff < 20.0f ? 20.0f : params.filt_cutoff);
+        tFiltEnv = params.filt_env;
         tMaster = params.master_gain <= -60.0f ? 0.0f
                 : powf (10.0f, params.master_gain * 0.05f);
 
@@ -244,6 +245,7 @@ public:
             sPwA += alpha * (tPwA - sPwA);
             sPwB += alpha * (tPwB - sPwB);
             sCutLog2 += alpha * (tCutLog2 - sCutLog2);
+            sFiltEnv += alpha * (tFiltEnv - sFiltEnv);
             sMaster += alpha * (tMaster - sMaster);
             sBend += alpha * (tBend - sBend);
 
@@ -261,6 +263,7 @@ public:
             ctx.lvlSub = sLvlSub; ctx.lvlNoise = sLvlNoise;
             ctx.pwA = sPwA; ctx.pwB = sPwB;
             ctx.cutoffLog2 = sCutLog2;
+            ctx.filtEnv = sFiltEnv;
             ctx.lfo1 = l1buf; ctx.lfo2 = l2buf;
             ctx.effectiveUnison = effUni;
             ctx.pitchBendSemis = sBend;
@@ -363,6 +366,7 @@ private:
         sPwA = tPwA = params.oscA_pw * 0.01f;
         sPwB = tPwB = params.oscB_pw * 0.01f;
         sCutLog2 = tCutLog2 = log2f (params.filt_cutoff < 20.0f ? 20.0f : params.filt_cutoff);
+        sFiltEnv = tFiltEnv = params.filt_env;
         sMaster = tMaster = params.master_gain <= -60.0f ? 0.0f
                           : powf (10.0f, params.master_gain * 0.05f);
     }
@@ -382,6 +386,7 @@ private:
     float sPwA = 0.5f, sPwB = 0.5f, sCutLog2 = 14.3f, sMaster = 1.0f;
     float tLvlA = 0.8f, tLvlB = 0.8f, tLvlSub = 0.7f, tLvlNoise = 0.5f;
     float tPwA = 0.5f, tPwB = 0.5f, tCutLog2 = 14.3f, tMaster = 1.0f;
+    float sFiltEnv = 0.0f, tFiltEnv = 0.0f;   // ENV2 -> cutoff depth
 
     HeldNote held[kMaxVoices] {};
     int heldCount = 0;

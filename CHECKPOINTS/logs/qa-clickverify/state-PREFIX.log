@@ -1,0 +1,91 @@
+[frozen_parameter_ids]
+  61 parameter IDs verified against the frozen list
+[defaults_match_engine]
+  defaults + range spot checks OK
+[render_plugin_agreement]
+  9 presets agree; worst relative deviation 1.79e-06
+[preset_save_round_trip]
+  save -> reload identical; default patch saves 0 overrides
+[factory_bank]
+  8 dev presets: one per category, ordered, all load
+[tail_length_report]
+  dry 0 s, delay 3.29 s, delay+cave 6.59 s
+[craft_recipe_book]
+  16 recipes parsed; 8 spec patterns in sync with CraftEngine
+[craft_first_then_params]
+  craft-then-params verified on both paths
+[recipe_book_coverage]
+  16 recipes: disk == BinaryData (17307 bytes), 0 duplicate patterns,
+  all reachable via match(), 128 single-cell near-misses rejected,
+  every override changes the craft result
+[craft_transition_click_free]
+  material added (PAD -> PAD+ICE)            step 0.1304 bound 0.1138  ratio  1.15 (t=0.70 s)
+  material removed (PAD+ICE -> PAD)          step 0.0693 bound 0.0884  ratio  0.78 (t=1.28 s)
+  RAW on (PAD -> PAD+STONE)                  step 0.1226 bound 0.1305  ratio  0.94 (t=0.70 s)
+  RAW off (PAD+STONE -> PAD)                 step 0.1168 bound 0.1222  ratio  0.96 (t=0.70 s)
+  noise on (PAD -> PAD+SAND)                 step 0.1531 bound 0.2118  ratio  0.72 (t=1.57 s)
+  sync on (PAD -> PAD+CRYSTAL)               step 0.2526 bound 0.2204  ratio  1.15 (t=0.70 s)
+  crush on (PAD -> PAD+LAVA)                 step 0.1205 bound 0.1782  ratio  0.68 (t=1.86 s)
+  crush off (PAD+LAVA -> PAD)                step 0.1152 bound 0.1861  ratio  0.62 (t=0.42 s)
+  +/-2 oct (PAD -> PAD+OBSIDIANx8)           step 0.1092 bound 0.0990  ratio  1.10 (t=0.99 s)
+  base swap PAD -> KEYS                      step 0.0935 bound 0.0847  ratio  1.10 (t=0.99 s)
+  base swap LEAD -> BASS                     step 0.2158 bound 0.2129  ratio  1.01 (t=1.86 s)
+  base swap PAD -> DRONE                     step 0.1417 bound 0.0932  ratio  1.52 (t=1.28 s)
+  base swap PAD -> BASS+LAVA                 step 0.1313 bound 0.0887  ratio  1.48 (t=1.57 s)
+  REGRESSION PAD+OBSIDIANx8 -> BASS          step 0.1127 bound 0.0174  ratio  6.47 (t=1.57 s)
+  FAIL /Users/kirillboyko/Downloads/blockwave-kickoff/tests/CraftCoverageTests.h:349: REGRESSION PAD+OBSIDIANx8 -> BASS: click — swap step 0.1127 is 6.47x the steady bound 0.0174
+  REGRESSION PAD+OBSIDIANx8 -> BASS+LAVA     step 0.3708 bound 0.0269  ratio 13.80 (t=1.28 s)
+  FAIL /Users/kirillboyko/Downloads/blockwave-kickoff/tests/CraftCoverageTests.h:349: REGRESSION PAD+OBSIDIANx8 -> BASS+LAVA: click — swap step 0.3708 is 13.80x the steady bound 0.0269
+  REGRESSION PAD+OBSIDIANx8 -> BASS          ratio  7.01  @ 44100 Hz / 64
+  FAIL /Users/kirillboyko/Downloads/blockwave-kickoff/tests/CraftCoverageTests.h:375: REGRESSION PAD+OBSIDIANx8 -> BASS @ 44100/64: click — swap step 0.1327 is 7.01x bound 0.0189
+  REGRESSION PAD+OBSIDIANx8 -> BASS          ratio  7.01  @ 44100 Hz / 512
+  FAIL /Users/kirillboyko/Downloads/blockwave-kickoff/tests/CraftCoverageTests.h:375: REGRESSION PAD+OBSIDIANx8 -> BASS @ 44100/512: click — swap step 0.1327 is 7.01x bound 0.0189
+  REGRESSION PAD+OBSIDIANx8 -> BASS          ratio  6.47  @ 48000 Hz / 64
+  FAIL /Users/kirillboyko/Downloads/blockwave-kickoff/tests/CraftCoverageTests.h:375: REGRESSION PAD+OBSIDIANx8 -> BASS @ 48000/64: click — swap step 0.1127 is 6.47x bound 0.0174
+  REGRESSION PAD+OBSIDIANx8 -> BASS+LAVA     ratio 12.08  @ 44100 Hz / 64
+  FAIL /Users/kirillboyko/Downloads/blockwave-kickoff/tests/CraftCoverageTests.h:375: REGRESSION PAD+OBSIDIANx8 -> BASS+LAVA @ 44100/64: click — swap step 0.3121 is 12.08x bound 0.0258
+  REGRESSION PAD+OBSIDIANx8 -> BASS+LAVA     ratio 12.08  @ 44100 Hz / 512
+  FAIL /Users/kirillboyko/Downloads/blockwave-kickoff/tests/CraftCoverageTests.h:375: REGRESSION PAD+OBSIDIANx8 -> BASS+LAVA @ 44100/512: click — swap step 0.3121 is 12.08x bound 0.0258
+  REGRESSION PAD+OBSIDIANx8 -> BASS+LAVA     ratio 13.80  @ 48000 Hz / 64
+  FAIL /Users/kirillboyko/Downloads/blockwave-kickoff/tests/CraftCoverageTests.h:375: REGRESSION PAD+OBSIDIANx8 -> BASS+LAVA @ 48000/64: click — swap step 0.3708 is 13.80x bound 0.0269
+  negative control (hard splice)             step 1.5415 bound 0.0409  ratio 37.65
+  15 transitions clean (gate 2.5x); worst non-regression 1.52, worst overall 13.80
+[preset_library_model]
+  ordering, wrap, lazy folder, save/rescan OK
+[session_state_round_trip]
+  61 params + preset meta + craft survive the round trip
+[processor_pitch_bend_and_params]
+  no bend 220.000 Hz, full wheel 246.938 Hz (target 246.942)
+  open-filter energy 6920.6062 vs cutoff-150Hz energy 68.2312
+[factory_presets_render_clean]
+  DEV BLOCK KICK     peak 0.6608, non-finite 0
+  DEV CAVE DRONE     peak 0.6319, non-finite 0
+  DEV COBBLE BASS    peak 1.0000, non-finite 0
+  DEV GLASS PLUCK    peak 0.5679, non-finite 0
+  DEV HOLLOW KEYS    peak 0.5652, non-finite 0
+  DEV OCTAVE CHIP    peak 0.8643, non-finite 0
+  DEV PWM PAD        peak 1.0000, non-finite 0
+  DEV THIN LEAD      peak 1.0000, non-finite 0
+[processor_craft_api]
+  grid apply, recipe discovery, dice, mutate all OK
+[craft_save_and_session]
+  minimal-diff save, preset + session round trips OK
+[ui_keyboard_path]
+  UI note C4: 261.626 Hz, sustain RMS 0.40477
+  after uiAllNotesOff: RMS 0.00000000 (held was 0.40477)
+  host-only tail RMS 0.40123 vs host+UI-after-panic 0.40123
+  UI note on/off, panic, and host coexistence OK
+[ui_keyboard_buffer_sizes]
+  block sizes 1..4096 mixed: 261.626 Hz, RMS 0.40478, 0 non-finite
+  mixed block sizes and a mid-session re-prepare OK
+[ui_keyboard_fifo_overflow]
+  600 events into a 128-slot ring: peak 0.0000, tail RMS 0.00000000
+  overflow degrades to a released burst, queue recovers
+[discovery_jingle_in_processor]
+  null test: 0 diffs before, 0 after; jingle peak 0.1259
+  hot patch peak: dry 1.000000000, with jingle 1.000000000
+  triggers, decays to silence, <= 0 dBFS, bit-transparent when idle
+[ui_audio_path_no_allocation]
+  0 allocations across 200 processBlock calls
+
+602 checks, 8 failures

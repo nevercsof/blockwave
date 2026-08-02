@@ -44,6 +44,11 @@ struct ModContext
     float lvlA = 0.0f, lvlB = 0.0f, lvlSub = 0.0f, lvlNoise = 0.0f;
     float pwA = 0.5f, pwB = 0.5f;      // 0..1
     float cutoffLog2 = 14.0f;          // log2(Hz)
+    // ENV2 -> cutoff depth, -1..+1. Smoothed by the engine for the same
+    // reason cutoffLog2 is: it is a multiplier on a log-frequency term
+    // (+-5 octaves at full scale), so a stepped change moves the effective
+    // cutoff by octaves in a single control step. See BlockwaveEngine.h.
+    float filtEnv = 0.0f;
     // Per-sample LFO values for this chunk (bipolar -1..+1):
     const float* lfo1 = nullptr;
     const float* lfo2 = nullptr;
@@ -233,7 +238,7 @@ private:
         const float baseHz   = 440.0f * exp2f ((baseNote - 69.0f) / 12.0f);
 
         const float cutLog2 = ctx.cutoffLog2
-                            + 5.0f * p.filt_env * e2
+                            + 5.0f * ctx.filtEnv * e2
                             + cutMod
                             + p.filt_keytrack * (glideNote - 60.0f) / 12.0f;
         const float cutoffHz = exp2f (clampf (cutLog2, 4.32f, 14.4f));  // ~20 Hz..21.6 kHz
