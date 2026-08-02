@@ -15,3 +15,8 @@ compile_commands.json
 
 # Rendered scratch audio (goldens in tests/goldens ARE committed)
 *.wav.tmp
+
+# Craft render matrix: 120 float WAVs (~66 MB), fully regenerable and
+# deterministic — kept local instead of bloating a public repo forever.
+#   render --craft-matrix CHECKPOINTS/artifacts/craft_matrix --sr 48000
+CHECKPOINTS/artifacts/craft_matrix/

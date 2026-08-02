@@ -355,4 +355,77 @@ inline void applyToSnapshot (ParamSnapshot& p, PId id, float v) noexcept
     }
 }
 
+// ParamSnapshot field -> plain parameter value (the exact inverse of
+// applyToSnapshot). Added in Phase 4 so a crafted snapshot can be written
+// into the APVTS field-by-field. Choice fields return their index.
+inline float snapshotToPlain (const ParamSnapshot& p, PId id) noexcept
+{
+    switch (id)
+    {
+        case PId::oscA_on:      return p.oscA_on ? 1.0f : 0.0f;
+        case PId::oscB_on:      return p.oscB_on ? 1.0f : 0.0f;
+        case PId::sub_on:       return p.sub_on ? 1.0f : 0.0f;
+        case PId::noise_on:     return p.noise_on ? 1.0f : 0.0f;
+        case PId::oscA_oct:     return static_cast<float> (p.oscA_oct);
+        case PId::oscB_oct:     return static_cast<float> (p.oscB_oct);
+        case PId::oscA_semi:    return static_cast<float> (p.oscA_semi);
+        case PId::oscB_semi:    return static_cast<float> (p.oscB_semi);
+        case PId::oscA_fine:    return p.oscA_fine;
+        case PId::oscB_fine:    return p.oscB_fine;
+        case PId::oscA_pw:      return p.oscA_pw;
+        case PId::oscB_pw:      return p.oscB_pw;
+        case PId::oscA_level:   return p.oscA_level;
+        case PId::oscB_level:   return p.oscB_level;
+        case PId::oscB_sync:    return p.oscB_sync ? 1.0f : 0.0f;
+        case PId::sub_oct:      return p.sub_oct == -2 ? 1.0f : 0.0f;
+        case PId::sub_level:    return p.sub_level;
+        case PId::noise_mode:   return p.noise_mode == NoiseMode::shortMode ? 1.0f : 0.0f;
+        case PId::noise_level:  return p.noise_level;
+        case PId::uni_count:    return static_cast<float> (p.uni_count);
+        case PId::uni_detune:   return p.uni_detune;
+        case PId::uni_spread:   return p.uni_spread;
+        case PId::voice_mode:   return static_cast<float> (static_cast<int> (p.voice_mode));
+        case PId::poly_count:   return static_cast<float> (p.poly_count);
+        case PId::glide_time:   return p.glide_time;
+        case PId::glide_mode:   return static_cast<float> (static_cast<int> (p.glide_mode));
+        case PId::filt_type:    return static_cast<float> (static_cast<int> (p.filt_type));
+        case PId::filt_cutoff:  return p.filt_cutoff;
+        case PId::filt_res:     return p.filt_res;
+        case PId::filt_env:     return p.filt_env;
+        case PId::filt_keytrack: return p.filt_keytrack;
+        case PId::env1_a:       return p.env1_a;
+        case PId::env1_d:       return p.env1_d;
+        case PId::env1_s:       return p.env1_s;
+        case PId::env1_r:       return p.env1_r;
+        case PId::env2_a:       return p.env2_a;
+        case PId::env2_d:       return p.env2_d;
+        case PId::env2_s:       return p.env2_s;
+        case PId::env2_r:       return p.env2_r;
+        case PId::env2_pitch:   return p.env2_pitch;
+        case PId::lfo1_rate:    return p.lfo1_rate;
+        case PId::lfo1_sync:    return p.lfo1_sync ? 1.0f : 0.0f;
+        case PId::lfo1_pwm:     return p.lfo1_pwm;
+        case PId::lfo2_rate:    return p.lfo2_rate;
+        case PId::lfo2_sync:    return p.lfo2_sync ? 1.0f : 0.0f;
+        case PId::lfo2_shape:   return static_cast<float> (static_cast<int> (p.lfo2_shape));
+        case PId::lfo2_amt:     return p.lfo2_amt;
+        case PId::lfo2_dest:    return static_cast<float> (static_cast<int> (p.lfo2_dest));
+        case PId::crush_bits:   return static_cast<float> (p.crush_bits);
+        case PId::crush_down:   return static_cast<float> (p.crush_down);
+        case PId::crush_mix:    return p.crush_mix;
+        case PId::dly_time:     return static_cast<float> (p.dly_time);
+        case PId::dly_fb:       return p.dly_fb;
+        case PId::dly_pingpong: return p.dly_pingpong ? 1.0f : 0.0f;
+        case PId::dly_mix:      return p.dly_mix;
+        case PId::cave_size:    return p.cave_size;
+        case PId::cave_damp:    return p.cave_damp;
+        case PId::cave_mix:     return p.cave_mix;
+        case PId::vel_amp:      return p.vel_amp;
+        case PId::raw:          return p.raw ? 1.0f : 0.0f;
+        case PId::master_gain:  return p.master_gain;
+        case PId::count:
+        default:                return 0.0f;
+    }
+}
+
 } // namespace blockwave

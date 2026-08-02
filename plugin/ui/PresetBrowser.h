@@ -21,8 +21,8 @@
 // Preset browser overlay: presets grouped by category (LEAD, BASS, PLUCK,
 // PAD, KEYS, CHIP, PERC, FX) from PresetLibrary. Click loads (message
 // thread -> atomic parameter writes), current preset highlighted, keyboard
-// up/down + enter + escape. Each row keeps a 12x12 slot where the Phase-4
-// mini craft-recipe icon will go.
+// up/down + enter + escape. Each row shows its craft recipe as a 12x12 mini
+// 3x3 icon (SPEC §UI: users learn crafting by inspecting factory sounds).
 //
 // SavePanel: minimal pixel-art save dialog — name entry drawn with the
 // bitmap font (own key handling, no native text editor), category cycler,
@@ -30,6 +30,7 @@
 
 #include "../PluginProcessor.h"
 #include "ParamCells.h"
+#include "MaterialArt.h"
 
 namespace blockwave::ui
 {
@@ -59,6 +60,8 @@ private:
         juce::String text;
         int presetIndex = -1;
         bool isFactory = false;
+        bool hasCraft = false;                        // parsed once in refresh()
+        CraftGrid craft;
     };
 
     juce::Rectangle<int> panelRect() const;

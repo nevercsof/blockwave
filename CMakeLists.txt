@@ -65,6 +65,10 @@ set(BLOCKWAVE_UI_SOURCES
     plugin/ui/TweakTab.cpp
     plugin/ui/TopBar.cpp
     plugin/ui/PresetBrowser.cpp
+    plugin/ui/MaterialArt.cpp
+    plugin/ui/CraftBlocks.cpp
+    plugin/ui/CraftTab.cpp
+    plugin/ui/KeyStrip.cpp
 )
 
 set(BLOCKWAVE_PLUGIN_SOURCES
@@ -83,6 +87,12 @@ file(GLOB BLOCKWAVE_FACTORY_PRESETS CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/presets/factory/*.json")
 juce_add_binary_data(BlockwaveFactoryPresets SOURCES ${BLOCKWAVE_FACTORY_PRESETS})
 
+# --- Recipe book (Phase 4; schema in docs/RECIPES_FORMAT.md) -----------------
+juce_add_binary_data(BlockwaveRecipeData
+    HEADER_NAME RecipeData.h
+    NAMESPACE RecipeData
+    SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/data/recipes.json")
+
 target_compile_definitions(${PROJECT_NAME}
     PUBLIC
         JUCE_WEB_BROWSER=0
@@ -93,6 +103,7 @@ target_compile_definitions(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         BlockwaveFactoryPresets
+        BlockwaveRecipeData
         juce::juce_audio_utils
         juce::juce_dsp
     PUBLIC
@@ -107,6 +118,7 @@ blockwave_strict_warnings(${BLOCKWAVE_RENDER_SOURCES})
 target_include_directories(render PRIVATE src)
 target_compile_definitions(render PRIVATE JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0)
 target_link_libraries(render PRIVATE
+    BlockwaveRecipeData
     juce::juce_audio_basics
     juce::juce_audio_formats
     juce::juce_core
@@ -141,6 +153,7 @@ target_compile_definitions(blockwave_state_tests PRIVATE
     BLOCKWAVE_TEST_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests")
 target_link_libraries(blockwave_state_tests PRIVATE
     BlockwaveFactoryPresets
+    BlockwaveRecipeData
     juce::juce_audio_utils
     juce::juce_recommended_config_flags)
 add_test(NAME blockwave_state_tests COMMAND blockwave_state_tests)
@@ -167,5 +180,6 @@ target_compile_definitions(blockwave_screenshots PRIVATE
     JucePlugin_Name="BLOCKWAVE")
 target_link_libraries(blockwave_screenshots PRIVATE
     BlockwaveFactoryPresets
+    BlockwaveRecipeData
     juce::juce_audio_utils
     juce::juce_recommended_config_flags)

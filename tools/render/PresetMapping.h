@@ -18,16 +18,20 @@
 
 #pragma once
 
-// Maps a preset JSON "params" object onto a ParamSnapshot. Since Phase 2 the
-// ID list, ranges, clamping and value quantization all come from
-// src/ParamSpec.h — the same table that builds the plugin's APVTS — so
-// tools/render and the plugin produce identical snapshots for the same JSON.
-// FX parameters (crush/dly/cave) are accepted, validated and stored in the
-// APVTS but have no engine fields until Phase 5.
+// Maps a preset JSON onto a ParamSnapshot. Since Phase 2 the ID list,
+// ranges, clamping and value quantization all come from src/ParamSpec.h —
+// the same table that builds the plugin's APVTS — so tools/render and the
+// plugin produce identical snapshots for the same JSON.
+//
+// Since Phase 4, applyPreset() implements the full SPEC order: the "craft"
+// grid is applied first (deterministic CraftEngine + recipe override from
+// the shared recipe book), then "params" overrides on top. applyPresetParams
+// remains as the params-only step.
 
 #include <juce_core/juce_core.h>
 #include "BlockwaveParams.h"
 #include "ParamSpec.h"
+#include "CraftJson.h"
 
 namespace blockwave
 {
@@ -51,6 +55,20 @@ inline bool applyPresetParams (const juce::var& presetRoot, ParamSnapshot& p, ju
         applyToSnapshot (p, id, plainFromVar (id, prop.value));
     }
     return true;
+}
+
+// Full SPEC §Preset format application: craft first (when the preset carries
+// a valid grid), then params on top. book may be null (no recipe overrides).
+inline bool applyPreset (const juce::var& presetRoot, const RecipeBook* book,
+                         ParamSnapshot& p, juce::String& error)
+{
+    auto* obj = presetRoot.getDynamicObject();
+    if (obj == nullptr) { error = "preset root is not an object"; return false; }
+
+    CraftGrid grid;
+    if (craftGridFromVar (obj->getProperty ("craft"), grid))
+        p = craftSnapshotWithRecipes (grid, book);
+    return applyPresetParams (presetRoot, p, error);
 }
 
 } // namespace blockwave

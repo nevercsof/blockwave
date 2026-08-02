@@ -22,6 +22,9 @@
 #include "BlockwaveEngine.h"
 #include "BlockwaveApvts.h"
 #include "PresetLibrary.h"
+#include "CraftJson.h"
+#include "UiMidiQueue.h"
+#include "DiscoveryJingle.h"
 
 class BlockwaveAudioProcessor final : public juce::AudioProcessor
 {
@@ -75,10 +78,85 @@ public:
 
     juce::String getPresetName() const;
     juce::String getPresetCategory() const;
-    juce::var getCraftData() const;                  // opaque until Phase 4
+    juce::var getCraftData() const;                  // craft grid as preset-JSON var
+
+    // ---- CRAFT grid (Phase 4; message thread only) -------------------------
+    // The grid lives here; every change recomputes the full parameter set on
+    // the message thread and applies it through the APVTS atomic path (the
+    // engine smooths audible parameters over ~25 ms — no clicks).
+
+    // Current grid. Returns false when no grid is set (INIT / craft-less
+    // preset); out is untouched then.
+    bool getCraftGrid (blockwave::CraftGrid& out) const;
+
+    // Applies a user grid edit: craft + recipe detection + (new) discovery
+    // registration. This is the ONLY entry point that registers discoveries.
+    void setCraftGrid (const blockwave::CraftGrid& grid);
+
+    // Forgets the grid (parameters stay as they are).
+    void clearCraftGrid();
+
+    // DICE: random materials into the outer cells, base kept. No-op without
+    // a grid. The seeded variants are deterministic (tests/tools).
+    void diceCraft();
+    void diceCraft (std::uint64_t seed);
+
+    // MUTATE: small random offsets on the CURRENT parameters (on top of the
+    // craft). Grid is kept; the active recipe name is cleared because the
+    // sound has departed from the recipe patch.
+    void mutateCraft();
+    void mutateCraft (std::uint64_t seed);
+
+    // Recipe name when the current grid exactly matches a recipe pattern
+    // ("" otherwise); auto-name = recipe name, else material adjectives +
+    // base noun ("Frozen Golden Lead"), else "" without a grid.
+    juce::String getActiveRecipeName() const;
+    juce::String getCraftAutoName() const;
+
+    // UI poll (e.g. from a Timer): returns true ONCE per new discovery and
+    // fills outName — trigger the toast + jingle on true.
+    bool consumeRecipeDiscovery (juce::String& outName);
+
+    const blockwave::RecipeBook& getRecipeBook() const { return recipeBook; }
+    blockwave::DiscoveryStore& getDiscoveries() { return discoveries; }
+
+    // ---- UI audition keyboard (message thread -> audio thread) -------------
+    // The CRAFT tab's key strip posts note events here; processBlock drains
+    // them at sample offset 0, before the host MIDI walk for that block.
+    // Lock-free SPSC (src/UiMidiQueue.h) — never juce::MidiKeyboardState or
+    // MidiMessageCollector, both of which lock on the audio-thread side.
+    //
+    // SEMANTICS (UI notes vs host notes):
+    //  - UI and host notes share one voice pool; UI events are applied at the
+    //    start of the block, so they are always "earlier" than that block's
+    //    host events. Ordering is deterministic.
+    //  - the processor tracks exactly which notes the UI is holding.
+    //    uiAllNotesOff() releases only those, one engine.noteOff() per note —
+    //    it never calls engine.allNotesOff(), so host-held notes survive.
+    //  - if the host and the UI hold the SAME note number, releasing the UI
+    //    copy also releases the host copy: the voice manager is keyed by note
+    //    number (as on hardware, where one key is one key). Documented, not
+    //    worked around.
+    //  - a host All Notes Off / All Sound Off clears the UI-held set too, so
+    //    no phantom entries survive it.
+    void uiNoteOn (int midiNote, float velocity);
+    void uiNoteOff (int midiNote);
+    void uiAllNotesOff();                        // editor teardown, panic
+
+    // ---- discovery jingle --------------------------------------------------
+    // Message thread; the audio thread's idle cost is one relaxed atomic load.
+    // The jingle is mixed in AFTER the engine's master gain and softclip, so
+    // it is independent of the patch and of the FX chain (src/DiscoveryJingle.h).
+    void triggerDiscoveryJingle();
 
 private:
     void loadFactoryBank();
+    void loadRecipeBook();
+
+    // Audio thread only.
+    void drainUiMidi() noexcept;
+    void releaseUiHeldNotes() noexcept;
+    void mixDiscoveryJingle (juce::AudioBuffer<float>&) noexcept;
 
     blockwave::BlockwaveEngine engine;
     blockwave::RawParams rawParams;
@@ -89,16 +167,34 @@ private:
 
     blockwave::PresetLibrary presetLibrary { blockwave::PresetLibrary::defaultUserFolder() };
 
+    // Recipe book (embedded JSON, parsed once in the constructor) and the
+    // per-user found-recipe set. Message thread only.
+    blockwave::RecipeBook recipeBook;
+    blockwave::DiscoveryStore discoveries { blockwave::DiscoveryStore::defaultFile() };
+
     // Non-automatable state (SPEC): preset identity + craft grid contents.
     // Guarded because hosts may call get/setStateInformation off the message
     // thread; never touched by the audio thread.
     mutable juce::CriticalSection metaLock;
     juce::String presetName { "INIT" }, presetCategory, presetAuthor;
     juce::String craftJson;                          // compact JSON, "" = none
+    bool craftValid = false;                         // craftGrid meaningful?
+    blockwave::CraftGrid craftGrid;
+    juce::String activeRecipeName;                   // "" = no recipe active
+    juce::String pendingDiscovery;                   // consumed by the UI poll
 
     // Stereo scratch the engine renders into; sized in prepareToPlay only
     // (real-time rules: no allocation in processBlock).
     juce::AudioBuffer<float> scratch;
+
+    // ---- UI keyboard + jingle state ----------------------------------------
+    // The queue is a processor member, so an editor closing mid-flight cannot
+    // invalidate what the audio thread is draining. No static mutable state
+    // anywhere: every instance owns its own queue, held-note set and jingle.
+    blockwave::UiMidiQueue uiMidi;
+    std::uint64_t uiHeld[2] { 0, 0 };            // 128-bit note set, AUDIO THREAD
+    blockwave::DiscoveryJingle jingle;           // AUDIO THREAD (prepare aside)
+    std::atomic<int> jingleTrigger { 0 };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BlockwaveAudioProcessor)
 };

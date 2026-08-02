@@ -19,22 +19,31 @@
 // BLOCKWAVE headless renderer.
 //
 //   render <preset.json> <input.mid | notespec> <out.wav> [--sr N] [--bpm N]
+//   render --craft-matrix <outDir> [--sr N]
 //
-// Preset JSON per SPEC §Preset format; "params" is applied through the same
-// frozen table (src/ParamSpec.h) as the plugin's APVTS, so render and plugin
-// agree exactly (craft applies in Phase 4). Missing params = SPEC defaults.
-// Pass "-" as the preset to render the default patch. MIDI pitch-wheel events
-// in .mid inputs drive the engine's ±2 st smoothed pitch bend.
+// Preset JSON per SPEC §Preset format; since Phase 4 the full order applies:
+// the "craft" grid first (deterministic CraftEngine + recipe override from
+// the embedded recipe book), then "params" — through the same frozen table
+// (src/ParamSpec.h) as the plugin's APVTS, so render and plugin agree
+// exactly. Missing params = SPEC defaults. Pass "-" as the preset to render
+// the default patch. MIDI pitch-wheel events in .mid inputs drive the
+// engine's ±2 st smoothed pitch bend.
 //
 // Note spec (test convenience, documented for qa-runner):
 //   note:<name-or-number>:<seconds>s      e.g. note:C4:2s   note:60:1.5s
 // C4 = MIDI 60. Velocity is fixed at 100/127. Sharps use '#'; e.g. note:F#3:1s.
 // A 2-second release tail is rendered after the last note-off.
+//
+// --craft-matrix (Phase 4 DoD): renders every base bare plus base + one of
+// each material (weight 1, cell 0) — 8 + 112 short WAVs. Naming:
+// BASE.wav / BASE_MATERIAL.wav (e.g. PAD.wav, PAD_ICE.wav). Note C2 (MIDI
+// 36) for BASS/DRONE, C3 (MIDI 48) otherwise; 0.9 s note in a 1.5 s render.
 
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_audio_formats/juce_audio_formats.h>
 #include "BlockwaveEngine.h"
 #include "PresetMapping.h"
+#include "RecipeData.h"
 
 #include <iostream>
 
@@ -117,6 +126,99 @@ bool buildEvents (const juce::String& midiArg, std::vector<NoteEvent>& events, d
     return ! events.empty();
 }
 
+bool writeWavFile (const juce::File& outFile, const juce::AudioBuffer<float>& buf, double sr)
+{
+    outFile.deleteFile();
+    juce::WavAudioFormat wav;
+    auto stream = outFile.createOutputStream();
+    if (stream == nullptr)
+        return false;
+    std::unique_ptr<juce::AudioFormatWriter> writer (
+        wav.createWriterFor (stream.get(), sr, 2, 32, {}, 0));
+    if (writer == nullptr)
+        return false;
+    stream.release();   // writer owns it now
+    writer->writeFromAudioSampleBuffer (buf, 0, buf.getNumSamples());
+    return true;
+}
+
+// Single note through a crafted snapshot into a stereo buffer.
+juce::AudioBuffer<float> renderCraftNote (const blockwave::ParamSnapshot& params,
+                                          int note, double sr,
+                                          double noteSec, double totalSec)
+{
+    blockwave::BlockwaveEngine engine;
+    engine.setParams (params);
+    engine.setTempo (120.0);
+    engine.prepare (sr, 512);
+
+    const int total = static_cast<int> (totalSec * sr);
+    const int offAt = static_cast<int> (noteSec * sr);
+    juce::AudioBuffer<float> out (2, total);
+    std::vector<float> l (512), r (512);
+
+    engine.noteOn (note, 100.0f / 127.0f);
+    int pos = 0;
+    bool offSent = false;
+    while (pos < total)
+    {
+        if (! offSent && pos >= offAt) { engine.noteOff (note); offSent = true; }
+        int n = std::min (512, total - pos);
+        if (! offSent && pos + n > offAt)
+            n = offAt - pos;
+        engine.process (l.data(), r.data(), n);
+        out.copyFrom (0, pos, l.data(), n);
+        out.copyFrom (1, pos, r.data(), n);
+        pos += n;
+    }
+    return out;
+}
+
+// Phase-4 DoD render matrix: 8 bare bases + 14x8 base+material combos.
+int runCraftMatrix (const juce::File& outDir, double sr)
+{
+    if (! outDir.isDirectory() && outDir.createDirectory().failed())
+    {
+        std::cerr << "error: cannot create " << outDir.getFullPathName() << "\n";
+        return 1;
+    }
+
+    int written = 0;
+    for (int b = 0; b < blockwave::kNumBases; ++b)
+    {
+        const auto base = static_cast<blockwave::CraftBase> (b);
+        const int note = (base == blockwave::CraftBase::BASS
+                       || base == blockwave::CraftBase::DRONE) ? 36 : 48;   // C2 / C3
+
+        for (int m = 0; m <= blockwave::kNumMaterials; ++m)                 // 0 = bare base
+        {
+            blockwave::CraftGrid grid;
+            grid.base = base;
+            juce::String name (blockwave::baseName (base));
+            if (m > 0)
+            {
+                grid.cells[0] = static_cast<blockwave::Material> (m);
+                name << "_" << blockwave::materialName (grid.cells[0]);
+            }
+
+            const auto buf = renderCraftNote (blockwave::craftApply (grid),
+                                              note, sr, 0.9, 1.5);
+            const auto file = outDir.getChildFile (name + ".wav");
+            if (! writeWavFile (file, buf, sr))
+            {
+                std::cerr << "error: cannot write " << file.getFullPathName() << "\n";
+                return 1;
+            }
+            ++written;
+        }
+    }
+    std::cout << "craft matrix: " << written << " WAVs ("
+              << blockwave::kNumBases << " bases x (bare + "
+              << blockwave::kNumMaterials << " materials)) @ " << sr << " Hz -> "
+              << outDir.getFullPathName() << "\n";
+    return 0;
+}
+
 } // namespace
 
 int main (int argc, char* argv[])
@@ -132,10 +234,27 @@ int main (int argc, char* argv[])
         else if (args[i] == "--bpm") { bpm = args[i + 1].getDoubleValue(); args.removeRange (i, 2); --i; }
     }
 
+    if (args.size() == 2 && args[0] == "--craft-matrix")
+        return runCraftMatrix (
+            juce::File::getCurrentWorkingDirectory().getChildFile (args[1]), sr);
+
     if (args.size() != 3)
     {
-        std::cerr << "usage: render <preset.json|-> <input.mid|note:C4:2s> <out.wav> [--sr N] [--bpm N]\n";
+        std::cerr << "usage: render <preset.json|-> <input.mid|note:C4:2s> <out.wav> [--sr N] [--bpm N]\n"
+                     "       render --craft-matrix <outDir> [--sr N]\n";
         return 1;
+    }
+
+    // Recipe book (embedded; same data as the plugin) — recipe grids render
+    // with their override patch, exactly like the plugin.
+    blockwave::RecipeBook recipeBook;
+    {
+        int size = 0;
+        if (const char* data = RecipeData::getNamedResource ("recipes_json", size))
+        {
+            juce::String err;
+            recipeBook.loadFromJson (juce::String::fromUTF8 (data, size), err);
+        }
     }
 
     blockwave::ParamSnapshot params;   // SPEC defaults
@@ -149,7 +268,7 @@ int main (int argc, char* argv[])
             return 1;
         }
         juce::String err;
-        if (! blockwave::applyPresetParams (parsed, params, err))
+        if (! blockwave::applyPreset (parsed, &recipeBook, params, err))
         {
             std::cerr << "error: " << err << "\n";
             return 1;

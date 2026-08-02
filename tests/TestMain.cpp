@@ -68,7 +68,9 @@ using namespace testutil;
 
 static const std::string kTestDir = BLOCKWAVE_TEST_DIR;
 
-#include "FxTests.h"   // Phase-5 FX suite (uses kTestDir; same strict TU)
+#include "FxTests.h"    // Phase-5 FX suite (uses kTestDir; same strict TU)
+#include "CraftTests.h" // Phase-4 CRAFT suite (pure CraftEngine)
+#include "UiAudioTests.h" // Phase-4 UI MIDI inbox + discovery jingle
 
 // ---------------------------------------------------------------------------
 static void test_pitch_accuracy()
@@ -404,12 +406,21 @@ static void test_cpu_worst_case()
                  r2 * 100.0, r2 * 100.0 / 16.0);
     CHECK_MSG (r1 < 0.9, "worst case not realtime @ 44.1k/128: %.1f%%", r1 * 100.0);
     CHECK_MSG (r2 < 0.9, "worst case not realtime @ 48k/512: %.1f%%", r2 * 100.0);
-#ifdef NDEBUG
     // Phase-5 FX budget: total must stay under ~3x the Phase-2 3.5% figure.
-    // Optimized builds only — Debug timing is not a meaningful budget signal.
-    CHECK_MSG (r1 < 0.105, "FX budget blown @ 44.1k/128: %.1f%% > 10.5%%", r1 * 100.0);
-    CHECK_MSG (r2 < 0.105, "FX budget blown @ 48k/512: %.1f%% > 10.5%%", r2 * 100.0);
+    // Only optimized builds are held to that number — an unoptimized build runs
+    // this patch ~6x slower, so its timing is not a meaningful budget signal.
+    // The threshold is what varies by config, not whether the CHECK runs: the
+    // suite must report the same check count in every build, or a skipped
+    // assertion is indistinguishable from a deleted one.
+#ifdef NDEBUG
+    const double fxBudget = 0.105;      // enforced FX budget
+#else
+    const double fxBudget = 0.9;        // Debug: realtime ceiling only
 #endif
+    CHECK_MSG (r1 < fxBudget, "FX budget blown @ 44.1k/128: %.1f%% > %.1f%%",
+               r1 * 100.0, fxBudget * 100.0);
+    CHECK_MSG (r2 < fxBudget, "FX budget blown @ 48k/512: %.1f%% > %.1f%%",
+               r2 * 100.0, fxBudget * 100.0);
 }
 
 // ---------------------------------------------------------------------------
@@ -754,6 +765,12 @@ int main()
     fxtests::test_delay_pingpong();
     fxtests::test_cave_tail();
     fxtests::test_cave_damp_spectral();
+
+    // Phase-4 CRAFT engine (tests/CraftTests.h):
+    crafttests::runAll();
+
+    // Phase-4 UI audio path (tests/UiAudioTests.h):
+    uitests::runAll();
 
     test_cpu_worst_case();
 

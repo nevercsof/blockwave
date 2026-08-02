@@ -130,11 +130,32 @@ inline bool applyPresetVarToApvts (const juce::var& presetRoot,
     return true;
 }
 
+// ---- crafted snapshot -> APVTS (message thread only, Phase 4) --------------
+
+// Writes every field of a (crafted) ParamSnapshot into the APVTS through
+// setValueNotifyingHost — the same atomic path host automation uses, so the
+// audio thread picks the change up lock-free and smooths it (~25 ms).
+inline void applySnapshotToApvts (const ParamSnapshot& snap,
+                                  juce::AudioProcessorValueTreeState& s)
+{
+    for (int i = 0; i < kNumParams; ++i)
+    {
+        const auto id = static_cast<PId> (i);
+        if (auto* p = s.getParameter (paramDef (id).id))
+            p->setValueNotifyingHost (p->convertTo0to1 (snapshotToPlain (snap, id)));
+    }
+}
+
 // ---- APVTS -> preset JSON (message thread only) ----------------------------
 
-// Minimal-override params object: only values differing from SPEC defaults,
+// Minimal-override params object: only values differing from the baseline,
 // in canonical JSON representation (choices as strings, sub_oct as -1/-2).
-inline juce::var presetParamsVarFromApvts (juce::AudioProcessorValueTreeState& s)
+// The baseline is SPEC defaults for craft-less patches, or the crafted
+// snapshot when a craft grid is set (SPEC: craft first, then params on top —
+// so overrides must be a diff against the craft result, and a factory recipe
+// preset saves near-zero overrides).
+inline juce::var presetParamsVarFromApvts (juce::AudioProcessorValueTreeState& s,
+                                           const ParamSnapshot* baseline = nullptr)
 {
     auto* obj = new juce::DynamicObject();
     for (int i = 0; i < kNumParams; ++i)
@@ -144,25 +165,30 @@ inline juce::var presetParamsVarFromApvts (juce::AudioProcessorValueTreeState& s
         if (auto* raw = s.getRawParameterValue (d.id))
         {
             const float plain = raw->load();
-            // Compare against the default as the APVTS actually stores it
+            // Compare against the baseline as the APVTS actually stores it
             // (normalize/denormalize round trip), not the literal — an
             // untouched parameter must never be written as an override.
-            const float defStored = plainFromVar (id, juce::var (static_cast<double> (d.defaultValue)));
-            if (std::abs (plain - defStored)
-                    > 1.0e-6f * std::max (1.0f, std::abs (defStored)))
+            const float basePlain = baseline != nullptr
+                                  ? snapshotToPlain (*baseline, id)
+                                  : d.defaultValue;
+            const float baseStored = plainFromVar (id, juce::var (static_cast<double> (basePlain)));
+            if (std::abs (plain - baseStored)
+                    > 1.0e-6f * std::max (1.0f, std::abs (baseStored)))
                 obj->setProperty (d.id, varFromPlain (id, plain));
         }
     }
     return juce::var (obj);
 }
 
-// Full preset var per SPEC §Preset format. craft is carried through as
-// opaque data until Phase 4 (empty craft written when none is set).
+// Full preset var per SPEC §Preset format. Since Phase 4 the craft object is
+// meaningful: pass the crafted snapshot as baseline so "params" stays a
+// minimal diff on top of the craft (empty craft written when none is set).
 inline juce::var buildPresetVar (juce::AudioProcessorValueTreeState& s,
                                  const juce::String& name,
                                  const juce::String& category,
                                  const juce::String& author,
-                                 const juce::var& craft)
+                                 const juce::var& craft,
+                                 const ParamSnapshot* craftBaseline = nullptr)
 {
     auto* obj = new juce::DynamicObject();
     obj->setProperty ("formatVersion", 1);
@@ -181,7 +207,7 @@ inline juce::var buildPresetVar (juce::AudioProcessorValueTreeState& s,
         c->setProperty ("cells", cells);
         obj->setProperty ("craft", juce::var (c));
     }
-    obj->setProperty ("params", presetParamsVarFromApvts (s));
+    obj->setProperty ("params", presetParamsVarFromApvts (s, craftBaseline));
     return juce::var (obj);
 }
 

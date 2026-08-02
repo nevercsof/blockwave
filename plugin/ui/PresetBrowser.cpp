@@ -57,10 +57,16 @@ void PresetBrowser::refresh()
             cat = "OTHER";
         if (cat != lastCat)
         {
-            rows.push_back ({ true, cat, -1, false });
+            rows.push_back ({ true, cat, -1, false, false, {} });
             lastCat = cat;
         }
-        rows.push_back ({ false, e.name.toUpperCase(), i, e.isFactory });
+
+        // Mini recipe icon data: parse the preset's craft object once here,
+        // never in paint().
+        Row row { false, e.name.toUpperCase(), i, e.isFactory, false, {} };
+        row.hasCraft = craftGridFromVar (e.root.getProperty ("craft", juce::var()),
+                                         row.craft);
+        rows.push_back (row);
     }
 
     cursor = 0;
@@ -124,9 +130,11 @@ void PresetBrowser::paint (juce::Graphics& g)
             g.drawRect (list.getX(), y, list.getWidth(), kRowH, 1);
         }
 
-        // Recipe-icon slot (mini 3x3 craft icon lands here in Phase 4).
-        g.setColour (panelDark);
-        g.drawRect (list.getX() + 8, y + 2, 12, 12, 1);
+        // Mini 3x3 craft icon: the preset's recipe at a glance.
+        if (row.hasCraft)
+            drawMiniCraftIcon (g, row.craft, list.getX() + 8, y + 2);
+        else
+            drawMiniCraftIconEmpty (g, list.getX() + 8, y + 2);
 
         drawPixelText (g, row.text, list.getX() + 28, y + 5, 1,
                        isCurrent ? label : dimText);

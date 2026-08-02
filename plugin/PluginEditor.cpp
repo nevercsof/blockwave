@@ -38,6 +38,7 @@ BlockwaveAudioProcessorEditor::BlockwaveAudioProcessorEditor (BlockwaveAudioProc
     : AudioProcessorEditor (p),
       proc (p),
       topBar (p),
+      craftTab (p),
       tweakTab (p.apvts),
       browser (p),
       tooltips (&content, 700)
@@ -75,7 +76,11 @@ BlockwaveAudioProcessorEditor::BlockwaveAudioProcessorEditor (BlockwaveAudioProc
     // ---- wiring (all message thread) ---------------------------------------
     topBar.onBrowse = [this] { showPresetBrowser (! browser.isVisible()); };
     topBar.onSave = [this] { showSavePanel (true); };
-    topBar.onPresetChanged = [this] { browser.refresh(); };
+    topBar.onPresetChanged = [this]
+    {
+        browser.refresh();
+        craftTab.refreshFromProcessor();          // preset carries a craft grid
+    };
     topBar.onScaleChange = [this] (int s) { setUiScale (s); };
 
     browser.onLoad = [this] (int index)
@@ -84,6 +89,7 @@ BlockwaveAudioProcessorEditor::BlockwaveAudioProcessorEditor (BlockwaveAudioProc
         proc.loadPresetAtIndex (index, err);
         topBar.refresh();
         browser.refresh();
+        craftTab.refreshFromProcessor();
     };
     browser.onClose = [this] { showPresetBrowser (false); };
 
@@ -101,6 +107,19 @@ BlockwaveAudioProcessorEditor::BlockwaveAudioProcessorEditor (BlockwaveAudioProc
     };
     savePanel.onCancel = [this] { showSavePanel (false); };
 
+    // The discovery toast + pixel flourish fire inside CraftTab; the jingle is
+    // synthesized by the processor after its master stage
+    // (src/DiscoveryJingle.h). Both lambdas capture the processor by pointer,
+    // not the editor: the processor always outlives this component.
+    auto* pp = &proc;
+    craftTab.onDiscovery = [pp] (const juce::String&) { pp->triggerDiscoveryJingle(); };
+
+    // Keyboard strip -> lock-free processor inbox (src/UiMidiQueue.h). Giving
+    // setMidiSink real callbacks is also what makes the strip paint itself as
+    // live instead of tagging itself "NO MIDI PATH".
+    craftTab.setMidiSink ([pp] (int note, float velocity) { pp->uiNoteOn (note, velocity); },
+                          [pp] (int note) { pp->uiNoteOff (note); });
+
     setActiveTab (Tab::craft);                        // CRAFT is home (SPEC)
 
     const int storedScale = static_cast<int> (
@@ -110,13 +129,18 @@ BlockwaveAudioProcessorEditor::BlockwaveAudioProcessorEditor (BlockwaveAudioProc
 
 BlockwaveAudioProcessorEditor::~BlockwaveAudioProcessorEditor()
 {
+    // The editor can be destroyed with a key still down (host closes the
+    // window mid-click). Release everything the UI is holding before the key
+    // strip goes away; the processor releases only ITS notes, so anything the
+    // host is playing keeps sounding.
+    proc.uiAllNotesOff();
     content.setLookAndFeel (nullptr);
 }
 
 void BlockwaveAudioProcessorEditor::setActiveTab (Tab tab)
 {
     activeTab = tab;
-    craftTab.setVisible (tab == Tab::craft);
+    craftTab.setVisible (tab == Tab::craft);   // visibilityChanged resyncs it
     tweakTab.setVisible (tab == Tab::tweak);
     craftTabBtn.setToggleState (tab == Tab::craft, juce::dontSendNotification);
     tweakTabBtn.setToggleState (tab == Tab::tweak, juce::dontSendNotification);

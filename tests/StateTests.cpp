@@ -28,11 +28,48 @@
 //   - host session state round trip (params + preset meta + craft +
 //     formatVersion)
 //   - processBlock wiring: APVTS -> engine, MIDI pitch bend ±2 st
+//   - Phase-4 UI audio path: the lock-free UI keyboard inbox (uiNoteOn /
+//     uiNoteOff / uiAllNotesOff), UI-vs-host note semantics, FIFO overflow,
+//     and the discovery jingle (trigger, level ceiling, null test)
+
+#include <atomic>
+#include <cstdlib>
+#include <new>
 
 #include "PluginProcessor.h"
 #include "PresetMapping.h"
 #include "BinaryData.h"
 #include "TestUtil.h"
+
+// ---------------------------------------------------------------------------
+// Global allocation guard (same technique as tests/TestMain.cpp) so the
+// Phase-4 UI MIDI + jingle path can be proven allocation-free through the real
+// processBlock, not just through the pure components.
+static std::atomic<bool> gAllocGuardArmed { false };
+static std::atomic<long> gGuardedAllocs { 0 };
+
+static void* countedAlloc (std::size_t size)
+{
+    if (gAllocGuardArmed.load (std::memory_order_relaxed))
+        gGuardedAllocs.fetch_add (1, std::memory_order_relaxed);
+    if (void* p = std::malloc (size == 0 ? 1 : size))
+        return p;
+    std::abort();
+}
+
+void* operator new (std::size_t size) { return countedAlloc (size); }
+void* operator new[] (std::size_t size) { return countedAlloc (size); }
+void operator delete (void* p) noexcept { std::free (p); }
+void operator delete[] (void* p) noexcept { std::free (p); }
+void operator delete (void* p, std::size_t) noexcept { std::free (p); }
+void operator delete[] (void* p, std::size_t) noexcept { std::free (p); }
+
+struct AllocGuard
+{
+    AllocGuard()  { gGuardedAllocs.store (0); gAllocGuardArmed.store (true); }
+    ~AllocGuard() { gAllocGuardArmed.store (false); }
+    long count() const { return gGuardedAllocs.load(); }
+};
 
 using namespace blockwave;
 using namespace testutil;
@@ -597,6 +634,689 @@ static void test_tail_length_report (BlockwaveAudioProcessor& proc)
 }
 
 // ---------------------------------------------------------------------------
+// Phase 4: recipe book JSON must exist, parse, and mirror the pure spec
+// patterns (src/CraftEngine.h) exactly — the sync rule in RECIPES_FORMAT.md.
+static void test_craft_recipe_book (BlockwaveAudioProcessor& proc)
+{
+    std::printf ("[craft_recipe_book]\n");
+    const auto& book = proc.getRecipeBook();
+    CHECK_MSG (book.getNumRecipes() >= 8, "recipe book has %d recipes, expected >= 8",
+               book.getNumRecipes());
+
+    int n = 0;
+    const auto* pats = specRecipePatterns (n);
+    for (int i = 0; i < n; ++i)
+    {
+        const auto* r = book.findByName (pats[i].name);
+        CHECK_MSG (r != nullptr, "spec recipe '%s' missing from JSON book", pats[i].name);
+        if (r == nullptr)
+            continue;
+        CHECK_MSG (r->pattern == pats[i].grid,
+                   "'%s': JSON pattern differs from specRecipePatterns()", pats[i].name);
+        CHECK_MSG (r->params.getDynamicObject() != nullptr
+                       && r->params.getDynamicObject()->getProperties().size() > 0,
+                   "'%s': recipe has no override params", pats[i].name);
+        CHECK_MSG (categoryRank (r->category) < 8, "'%s': bad category '%s'",
+                   pats[i].name, r->category.toRawUTF8());
+        // The override must actually change the plain craft result.
+        const auto plain = craftApply (pats[i].grid);
+        auto overridden = plain;
+        applyParamsVarToSnapshot (r->params, overridden);
+        CHECK_MSG (hashSnapshot (plain) != hashSnapshot (overridden),
+                   "'%s': override patch is a no-op", pats[i].name);
+    }
+    std::printf ("  %d recipes parsed; 8 spec patterns in sync with CraftEngine\n",
+                 book.getNumRecipes());
+}
+
+// ---------------------------------------------------------------------------
+// SPEC preset order: craft first (incl. recipe override), then params on
+// top — and the plugin (APVTS path) must agree with tools/render
+// (applyPreset) on the result.
+static void test_craft_first_then_params (BlockwaveAudioProcessor& proc)
+{
+    std::printf ("[craft_first_then_params]\n");
+    const auto preset = juce::JSON::parse (juce::String (R"JSON(
+    {
+      "formatVersion": 1, "name": "CRAFTED", "category": "PAD", "author": "tests",
+      "craft": { "base": "PAD", "cells": ["ICE", "", "", "", "", "", "", ""] },
+      "params": { "filt_cutoff": 777.0 }
+    })JSON"));
+
+    juce::String err;
+    CHECK_MSG (proc.loadPresetVar (preset, err), "load failed: %s", err.toRawUTF8());
+
+    RawParams raw;
+    raw.attach (proc.apvts);
+    ParamSnapshot viaApvts;
+    raw.toSnapshot (viaApvts);
+
+    // Pure expectation: craft(PAD+ICE), then the single override.
+    CraftGrid g;
+    CHECK_MSG (craftGridFromVar (preset.getProperty ("craft", juce::var()), g),
+               "craft grid failed to parse");
+    ParamSnapshot expected = craftApply (g);
+    expected.filt_cutoff = 777.0f;
+    const int bad = compareSnapshots (viaApvts, expected, 1.0e-4, "craft_first");
+    CHECK_MSG (bad == 0, "%d fields differ from craft-then-params expectation", bad);
+    CHECK_MSG (viaApvts.uni_count == 7, "ICE on PAD must give uni_count 7 (got %d)",
+               viaApvts.uni_count);
+
+    // tools/render path must produce the same snapshot.
+    ParamSnapshot viaRender;
+    CHECK_MSG (applyPreset (preset, &proc.getRecipeBook(), viaRender, err),
+               "applyPreset failed: %s", err.toRawUTF8());
+    const int bad2 = compareSnapshots (viaApvts, viaRender, 1.0e-4, "plugin_vs_render");
+    CHECK_MSG (bad2 == 0, "%d fields disagree between plugin and render craft paths", bad2);
+
+    // Grid + recipe state after a preset load; a preset load NEVER discovers.
+    CraftGrid restored;
+    CHECK_MSG (proc.getCraftGrid (restored) && restored == g,
+               "craft grid not restored from preset");
+    CHECK_MSG (proc.getActiveRecipeName().isEmpty(),
+               "PAD+ICE(1) wrongly matched a recipe");
+    std::printf ("  craft-then-params verified on both paths\n");
+}
+
+// ---------------------------------------------------------------------------
+static void test_processor_craft_api()
+{
+    std::printf ("[processor_craft_api]\n");
+    auto tmpDisc = juce::File::getSpecialLocation (juce::File::tempDirectory)
+                       .getChildFile ("blockwave_craft_tests").getChildFile ("Discoveries.json");
+    tmpDisc.getParentDirectory().deleteRecursively();
+
+    BlockwaveAudioProcessor proc;
+    proc.getDiscoveries().setFile (tmpDisc);         // never touch the real file
+    CHECK_MSG (proc.getDiscoveries().getNumFound() == 0, "temp discoveries not empty");
+
+    // INIT state: no grid.
+    CraftGrid g;
+    CHECK_MSG (! proc.getCraftGrid (g), "fresh processor claims a craft grid");
+    CHECK_MSG (proc.getCraftAutoName().isEmpty(), "fresh processor has an auto-name");
+
+    // Plain craft: params land in the APVTS, auto-name from the tables.
+    CraftGrid pad;
+    pad.base = CraftBase::PAD;
+    pad.cells[0] = Material::ICE;
+    proc.setCraftGrid (pad);
+    CHECK_MSG (proc.apvts.getRawParameterValue ("uni_count")->load() == 7.0f,
+               "setCraftGrid did not reach the APVTS (uni_count)");
+    CHECK_MSG (proc.getCraftAutoName() == "Frozen Pad", "auto-name '%s'",
+               proc.getCraftAutoName().toRawUTF8());
+    CHECK_MSG (proc.getActiveRecipeName().isEmpty(), "non-recipe grid claims a recipe");
+    juce::String discovered;
+    CHECK_MSG (! proc.consumeRecipeDiscovery (discovered), "phantom discovery");
+
+    // Recipe grid: override applies, discovery fires exactly once, persists.
+    int n = 0;
+    const auto* pats = specRecipePatterns (n);
+    proc.setCraftGrid (pats[0].grid);                // PERMAFROST (PAD + 3xICE)
+    CHECK_MSG (proc.getActiveRecipeName() == "PERMAFROST", "recipe not detected: '%s'",
+               proc.getActiveRecipeName().toRawUTF8());
+    CHECK_MSG (proc.getCraftAutoName() == "PERMAFROST", "recipe name must win auto-name");
+    CHECK_MSG (proc.consumeRecipeDiscovery (discovered) && discovered == "PERMAFROST",
+               "discovery flag missing");
+    CHECK_MSG (! proc.consumeRecipeDiscovery (discovered), "discovery flag not one-shot");
+    CHECK_MSG (proc.getDiscoveries().isFound ("PERMAFROST"), "discovery not stored");
+    CHECK_MSG (tmpDisc.existsAsFile(), "discoveries file not written");
+
+    // Re-crafting the same recipe is NOT a new discovery.
+    proc.setCraftGrid (pats[0].grid);
+    CHECK_MSG (! proc.consumeRecipeDiscovery (discovered), "re-discovery fired");
+
+    // The store survives a reload (fresh processor, same file).
+    {
+        BlockwaveAudioProcessor proc2;
+        proc2.getDiscoveries().setFile (tmpDisc);
+        CHECK_MSG (proc2.getDiscoveries().getNumFound() == 1
+                       && proc2.getDiscoveries().isFound ("PERMAFROST"),
+                   "discoveries did not persist across instances");
+    }
+
+    // DICE: deterministic per seed, base kept, grid applied.
+    proc.setCraftGrid (pad);
+    proc.diceCraft (4242);
+    CraftGrid d1;
+    CHECK_MSG (proc.getCraftGrid (d1), "grid lost after dice");
+    proc.setCraftGrid (pad);
+    proc.diceCraft (4242);
+    CraftGrid d2;
+    proc.getCraftGrid (d2);
+    CHECK_MSG (d1 == d2, "diceCraft(seed) not deterministic");
+    CHECK_MSG (d1.base == CraftBase::PAD, "dice changed the base");
+
+    // MUTATE: params move, stay in range, grid kept, recipe cleared.
+    proc.setCraftGrid (pats[0].grid);
+    RawParams raw;
+    raw.attach (proc.apvts);
+    ParamSnapshot before;
+    raw.toSnapshot (before);
+    proc.mutateCraft (99);
+    ParamSnapshot after;
+    raw.toSnapshot (after);
+    CHECK_MSG (hashSnapshot (before) != hashSnapshot (after), "mutate changed nothing");
+    ParamSnapshot clamped = after;
+    clampSnapshotToSpecRanges (clamped);
+    const int outOfRange = compareSnapshots (after, clamped, 1.0e-6, "mutate_range");
+    CHECK_MSG (outOfRange == 0, "mutate left %d params out of SPEC range", outOfRange);
+    CraftGrid kept;
+    CHECK_MSG (proc.getCraftGrid (kept) && kept == pats[0].grid, "mutate lost the grid");
+    CHECK_MSG (proc.getActiveRecipeName().isEmpty(), "mutate must clear the active recipe");
+
+    tmpDisc.getParentDirectory().deleteRecursively();
+    std::printf ("  grid apply, recipe discovery, dice, mutate all OK\n");
+}
+
+// ---------------------------------------------------------------------------
+// Craft save/restore: user preset = craft + minimal diff; session state keeps
+// the grid without re-applying it over tweaked params.
+static void test_craft_save_and_session()
+{
+    std::printf ("[craft_save_and_session]\n");
+    BlockwaveAudioProcessor a;
+    a.getDiscoveries().setFile (
+        juce::File::getSpecialLocation (juce::File::tempDirectory)
+            .getChildFile ("blockwave_craft_tests2").getChildFile ("Discoveries.json"));
+
+    CraftGrid g;
+    g.base = CraftBase::KEYS;
+    g.cells[2] = Material::WOOD;
+    a.setCraftGrid (g);
+    if (auto* p = a.apvts.getParameter ("filt_cutoff"))
+        p->setValueNotifyingHost (p->convertTo0to1 (777.0f));
+
+    // Save: params must be a minimal diff against the CRAFT baseline.
+    const auto preset = a.buildCurrentPresetVar ("WOODY", "KEYS", "tests");
+    auto* params = preset.getProperty ("params", juce::var()).getDynamicObject();
+    CHECK_MSG (params != nullptr && params->getProperties().size() == 1
+                   && params->hasProperty ("filt_cutoff"),
+               "craft save wrote %d overrides, expected exactly filt_cutoff",
+               params != nullptr ? params->getProperties().size() : -1);
+
+    // Reload -> identical patch (craft first, diff on top).
+    BlockwaveAudioProcessor b;
+    juce::String err;
+    CHECK_MSG (b.loadPresetVar (preset, err), "reload failed: %s", err.toRawUTF8());
+    RawParams rawA, rawB;
+    rawA.attach (a.apvts);
+    rawB.attach (b.apvts);
+    ParamSnapshot sa, sb;
+    rawA.toSnapshot (sa);
+    rawB.toSnapshot (sb);
+    CHECK_MSG (compareSnapshots (sa, sb, 1.0e-5, "craft_save") == 0,
+               "craft save round trip drifted");
+    CraftGrid gb;
+    CHECK_MSG (b.getCraftGrid (gb) && gb == g, "craft grid lost in preset round trip");
+
+    // Session: params authoritative, grid restored, no re-apply, no discovery.
+    juce::MemoryBlock blob;
+    a.getStateInformation (blob);
+    BlockwaveAudioProcessor c;
+    c.setStateInformation (blob.getData(), static_cast<int> (blob.getSize()));
+    ParamSnapshot sc;
+    RawParams rawC;
+    rawC.attach (c.apvts);
+    rawC.toSnapshot (sc);
+    CHECK_MSG (compareSnapshots (sa, sc, 0.0, "craft_session") == 0,
+               "session round trip changed params (craft re-applied?)");
+    CraftGrid gc;
+    CHECK_MSG (c.getCraftGrid (gc) && gc == g, "craft grid lost in session state");
+    juce::String dummy;
+    CHECK_MSG (! c.consumeRecipeDiscovery (dummy), "session restore fired a discovery");
+
+    a.getDiscoveries().getFile().getParentDirectory().deleteRecursively();
+    std::printf ("  minimal-diff save, preset + session round trips OK\n");
+}
+
+// ---------------------------------------------------------------------------
+// Phase 4: the UI audition keyboard path (processor side) and the discovery
+// jingle. Everything below drives the REAL processBlock.
+// ---------------------------------------------------------------------------
+
+struct ProcRender { std::vector<float> l, r; };
+
+// Renders `blocks` fixed-size blocks. `before(blockIndex, midi)` runs where the
+// message thread would: it may fill the host MidiBuffer and/or call the
+// uiNoteOn/uiNoteOff/triggerDiscoveryJingle producers.
+template <typename Fn>
+static ProcRender renderProcessor (BlockwaveAudioProcessor& proc, double sr,
+                                   int blockSize, int blocks, Fn&& before)
+{
+    proc.prepareToPlay (sr, blockSize);          // resets the engine
+    juce::AudioBuffer<float> buf (2, blockSize);
+    ProcRender out;
+    out.l.reserve (static_cast<size_t> (blockSize) * static_cast<size_t> (blocks));
+    out.r.reserve (static_cast<size_t> (blockSize) * static_cast<size_t> (blocks));
+    for (int i = 0; i < blocks; ++i)
+    {
+        juce::MidiBuffer midi;
+        before (i, midi);
+        buf.clear();
+        proc.processBlock (buf, midi);
+        const float* l = buf.getReadPointer (0);
+        const float* r = buf.getReadPointer (1);
+        out.l.insert (out.l.end(), l, l + blockSize);
+        out.r.insert (out.r.end(), r, r + blockSize);
+    }
+    return out;
+}
+
+static double rmsOver (const std::vector<float>& x, double sr, double t0, double t1)
+{
+    const size_t a = static_cast<size_t> (t0 * sr);
+    const size_t b = std::min (x.size(), static_cast<size_t> (t1 * sr));
+    if (b <= a)
+        return 0.0;
+    double acc = 0.0;
+    for (size_t i = a; i < b; ++i)
+        acc += static_cast<double> (x[i]) * x[i];
+    return std::sqrt (acc / static_cast<double> (b - a));
+}
+
+static float peakOf (const std::vector<float>& x)
+{
+    float p = 0.0f;
+    for (float v : x)
+        p = std::max (p, std::abs (v));
+    return p;
+}
+
+// ---------------------------------------------------------------------------
+static void test_ui_keyboard_path()
+{
+    std::printf ("[ui_keyboard_path]\n");
+    const double sr = 48000.0;
+    const int bs = 512;
+    const int blocks = static_cast<int> (2.0 * sr / bs);      // ~2 s
+    BlockwaveAudioProcessor proc;
+
+    // 1) A UI note-on makes sound, at the right pitch (C4 = 261.626 Hz).
+    const auto held = renderProcessor (proc, sr, bs, blocks,
+        [&] (int i, juce::MidiBuffer&) { if (i == 0) proc.uiNoteOn (60, 0.8f); });
+    const double f0 = measureF0 (held.l, static_cast<int> (0.6 * sr),
+                                 static_cast<int> (1.4 * sr), sr);
+    const double rmsHeld = rmsOver (held.l, sr, 1.0, 1.9);
+    std::printf ("  UI note C4: %.3f Hz, sustain RMS %.5f\n", f0, rmsHeld);
+    CHECK_MSG (rmsHeld > 1.0e-3, "UI note produced no sustained sound (RMS %.7f)", rmsHeld);
+    CHECK_MSG (std::abs (centsDiff (f0, 261.6256)) <= 1.0,
+               "UI note pitch off by %.2f cents", centsDiff (f0, 261.6256));
+
+    // 2) uiAllNotesOff kills a held UI note (editor-teardown path).
+    const auto panicked = renderProcessor (proc, sr, bs, blocks,
+        [&] (int i, juce::MidiBuffer&)
+        {
+            if (i == 0) proc.uiNoteOn (60, 0.8f);
+            if (i == 47) proc.uiAllNotesOff();                // ~0.5 s
+        });
+    const double rmsAfterPanic = rmsOver (panicked.l, sr, 1.0, 1.9);
+    std::printf ("  after uiAllNotesOff: RMS %.8f (held was %.5f)\n",
+                 rmsAfterPanic, rmsHeld);
+    CHECK_MSG (rmsOver (panicked.l, sr, 0.2, 0.45) > 1.0e-3,
+               "UI note was not sounding before the panic");
+    CHECK_MSG (rmsAfterPanic < 1.0e-6, "uiAllNotesOff left a stuck UI note (RMS %.8f)",
+               rmsAfterPanic);
+
+    // 3) A plain uiNoteOff releases the note too.
+    const auto released = renderProcessor (proc, sr, bs, blocks,
+        [&] (int i, juce::MidiBuffer&)
+        {
+            if (i == 0) proc.uiNoteOn (60, 0.8f);
+            if (i == 47) proc.uiNoteOff (60);
+        });
+    CHECK_MSG (rmsOver (released.l, sr, 1.0, 1.9) < 1.0e-6,
+               "uiNoteOff left the note sounding");
+
+    // 4) UI notes must NOT cancel host notes. Host holds C4 for the whole
+    //    render; the UI plays G4 and then panics. The tail must match the
+    //    host-only render.
+    const auto hostOnly = renderProcessor (proc, sr, bs, blocks,
+        [&] (int i, juce::MidiBuffer& midi)
+        {
+            if (i == 0)
+                midi.addEvent (juce::MidiMessage::noteOn (1, 60, (juce::uint8) 100), 0);
+        });
+    const auto hostPlusUi = renderProcessor (proc, sr, bs, blocks,
+        [&] (int i, juce::MidiBuffer& midi)
+        {
+            if (i == 0)
+                midi.addEvent (juce::MidiMessage::noteOn (1, 60, (juce::uint8) 100), 0);
+            if (i == 20) proc.uiNoteOn (67, 0.8f);
+            if (i == 47) proc.uiAllNotesOff();
+        });
+    const double rmsHostOnly = rmsOver (hostOnly.l, sr, 1.2, 1.9);
+    const double rmsCoexist  = rmsOver (hostPlusUi.l, sr, 1.2, 1.9);
+    std::printf ("  host-only tail RMS %.5f vs host+UI-after-panic %.5f\n",
+                 rmsHostOnly, rmsCoexist);
+    CHECK_MSG (rmsHostOnly > 1.0e-3, "host note produced no sound");
+    CHECK_MSG (std::abs (rmsCoexist - rmsHostOnly) < 0.02 * rmsHostOnly,
+               "uiAllNotesOff disturbed the host note (%.6f vs %.6f)",
+               rmsCoexist, rmsHostOnly);
+    CHECK_MSG (rmsOver (hostPlusUi.l, sr, 0.3, 0.45) > rmsHostOnly,
+               "the UI note never joined the host note");
+
+    // 5) A host All Notes Off clears the UI-held set: the later uiAllNotesOff
+    //    must not resurrect or disturb anything.
+    const auto hostPanic = renderProcessor (proc, sr, bs, blocks,
+        [&] (int i, juce::MidiBuffer& midi)
+        {
+            if (i == 0) proc.uiNoteOn (60, 0.8f);
+            if (i == 20)
+                midi.addEvent (juce::MidiMessage::allNotesOff (1), 0);
+            if (i == 40) proc.uiAllNotesOff();
+        });
+    CHECK_MSG (rmsOver (hostPanic.l, sr, 1.0, 1.9) < 1.0e-6,
+               "host all-notes-off did not silence the UI note");
+
+    std::printf ("  UI note on/off, panic, and host coexistence OK\n");
+}
+
+// ---------------------------------------------------------------------------
+// Buffer-size changes: the FIFO and the held-note set must survive wildly
+// varying block sizes, and a host re-prepare must leave no stuck state.
+static void test_ui_keyboard_buffer_sizes()
+{
+    std::printf ("[ui_keyboard_buffer_sizes]\n");
+    const double sr = 48000.0;
+    BlockwaveAudioProcessor proc;
+    proc.prepareToPlay (sr, 4096);
+
+    const int sizes[] = { 16, 512, 4096, 37, 1, 2048, 128, 4096, 3, 1024 };
+    juce::AudioBuffer<float> buf (2, 4096);
+    std::vector<float> out;
+    out.reserve (static_cast<size_t> (2.0 * sr));
+
+    proc.uiNoteOn (60, 0.8f);                     // held for the whole render
+    int cursor = 0;
+    while (out.size() < static_cast<size_t> (1.6 * sr))
+    {
+        const int n = sizes[cursor++ % 10];
+        juce::AudioBuffer<float> view (buf.getArrayOfWritePointers(), 2, n);
+        view.clear();
+        juce::MidiBuffer midi;
+        proc.processBlock (view, midi);
+        const float* l = view.getReadPointer (0);
+        out.insert (out.end(), l, l + n);
+    }
+
+    const double f0 = measureF0 (out, static_cast<int> (0.6 * sr),
+                                 static_cast<int> (1.4 * sr), sr);
+    int nonFinite = 0;
+    for (float v : out)
+        if (! std::isfinite (v))
+            ++nonFinite;
+    std::printf ("  block sizes 1..4096 mixed: %.3f Hz, RMS %.5f, %d non-finite\n",
+                 f0, rmsOver (out, sr, 1.0, 1.5), nonFinite);
+    CHECK_MSG (nonFinite == 0, "%d non-finite samples across mixed block sizes", nonFinite);
+    CHECK_MSG (rmsOver (out, sr, 1.0, 1.5) > 1.0e-3,
+               "UI note did not survive the block-size changes");
+    CHECK_MSG (std::abs (centsDiff (f0, 261.6256)) <= 1.0,
+               "pitch drifted across block sizes: %.2f cents", centsDiff (f0, 261.6256));
+
+    // Host re-prepare mid-note: documented semantics — prepareToPlay resets
+    // every voice, so the note stops; what must NOT happen is a stuck note or
+    // a poisoned queue afterwards.
+    proc.prepareToPlay (sr, 256);
+    juce::AudioBuffer<float> small (2, 256);
+    std::vector<float> afterPrepare;
+    for (int i = 0; i < 100; ++i)                 // ~0.53 s
+    {
+        small.clear();
+        juce::MidiBuffer midi;
+        if (i == 10) proc.uiNoteOff (60);         // the note-off for the dead note
+        proc.processBlock (small, midi);
+        const float* l = small.getReadPointer (0);
+        afterPrepare.insert (afterPrepare.end(), l, l + 256);
+    }
+    CHECK_MSG (peakOf (afterPrepare) == 0.0f,
+               "engine still sounding after prepareToPlay (peak %.6f)",
+               static_cast<double> (peakOf (afterPrepare)));
+
+    // ...and a fresh UI note still plays.
+    std::vector<float> revived;
+    proc.uiNoteOn (64, 0.8f);
+    for (int i = 0; i < 100; ++i)
+    {
+        small.clear();
+        juce::MidiBuffer midi;
+        proc.processBlock (small, midi);
+        const float* l = small.getReadPointer (0);
+        revived.insert (revived.end(), l, l + 256);
+    }
+    CHECK_MSG (rmsOver (revived, sr, 0.2, 0.5) > 1.0e-3,
+               "UI keyboard dead after a buffer-size change");
+    proc.uiAllNotesOff();
+
+    std::printf ("  mixed block sizes and a mid-session re-prepare OK\n");
+}
+
+// ---------------------------------------------------------------------------
+// Overflow policy (src/UiMidiQueue.h): the ring drops the newest events and
+// raises a flag; the audio thread turns that into a release of every UI-held
+// note, in the same drain that applied the survivors. The burst therefore
+// never reaches the output: silence, never a stuck note, never a crash.
+static void test_ui_keyboard_fifo_overflow()
+{
+    std::printf ("[ui_keyboard_fifo_overflow]\n");
+    const double sr = 48000.0;
+    const int bs = 512;
+    const int blocks = static_cast<int> (2.0 * sr / bs);
+    BlockwaveAudioProcessor proc;
+
+    const auto flooded = renderProcessor (proc, sr, bs, blocks,
+        [&] (int i, juce::MidiBuffer&)
+        {
+            if (i != 0)
+                return;
+            // 600 events into a 128-slot ring, all note-ONs: 128 land, the
+            // rest are dropped, and the overflow flag releases the lot.
+            for (int n = 0; n < 600; ++n)
+                proc.uiNoteOn (36 + n % 48, 0.8f);
+        });
+
+    int nonFinite = 0;
+    for (float v : flooded.l)
+        if (! std::isfinite (v))
+            ++nonFinite;
+    const double rmsTail = rmsOver (flooded.l, sr, 1.0, 1.9);
+    std::printf ("  600 events into a 128-slot ring: peak %.4f, tail RMS %.8f\n",
+                 static_cast<double> (peakOf (flooded.l)), rmsTail);
+    CHECK_MSG (nonFinite == 0, "%d non-finite samples after a FIFO overflow", nonFinite);
+    CHECK_MSG (rmsTail < 1.0e-6, "FIFO overflow left notes stuck on (RMS %.8f)", rmsTail);
+    CHECK_MSG (peakOf (flooded.l) == 0.0f,
+               "overflow burst reached the output (peak %.6f); policy is release-in-"
+               "the-same-drain, i.e. silence",
+               static_cast<double> (peakOf (flooded.l)));
+
+    // The queue is usable again straight afterwards.
+    const auto after = renderProcessor (proc, sr, bs, blocks,
+        [&] (int i, juce::MidiBuffer&) { if (i == 0) proc.uiNoteOn (60, 0.8f); });
+    CHECK_MSG (rmsOver (after.l, sr, 1.0, 1.9) > 1.0e-3,
+               "UI keyboard dead after an overflow");
+    proc.uiAllNotesOff();
+
+    std::printf ("  overflow degrades to a released burst, queue recovers\n");
+}
+
+// ---------------------------------------------------------------------------
+static void test_discovery_jingle_in_processor()
+{
+    std::printf ("[discovery_jingle_in_processor]\n");
+    const double sr = 48000.0;
+    const int bs = 512;
+    const int blocks = static_cast<int> (2.0 * sr / bs);
+    const int triggerBlock = 47;                              // ~0.5 s
+    const int jingleStart = triggerBlock * bs;
+    const int jingleLen = DiscoveryJingle::kNumSteps
+                        * static_cast<int> (std::lround (DiscoveryJingle::kStepSeconds * sr));
+
+    BlockwaveAudioProcessor proc;
+
+    const auto plain = renderProcessor (proc, sr, bs, blocks,
+        [&] (int i, juce::MidiBuffer& midi)
+        {
+            if (i == 0)
+                midi.addEvent (juce::MidiMessage::noteOn (1, 60, (juce::uint8) 100), 0);
+        });
+    const auto withJingle = renderProcessor (proc, sr, bs, blocks,
+        [&] (int i, juce::MidiBuffer& midi)
+        {
+            if (i == 0)
+                midi.addEvent (juce::MidiMessage::noteOn (1, 60, (juce::uint8) 100), 0);
+            if (i == triggerBlock)
+                proc.triggerDiscoveryJingle();
+        });
+
+    // Null test: bit-identical everywhere the jingle is not sounding. This is
+    // what keeps every existing golden render valid — nothing in any render
+    // path triggers the jingle.
+    int beforeDiffs = 0, afterDiffs = 0;
+    double maxDiff = 0.0;
+    for (size_t i = 0; i < plain.l.size(); ++i)
+    {
+        const bool diff = plain.l[i] != withJingle.l[i] || plain.r[i] != withJingle.r[i];
+        if (i < static_cast<size_t> (jingleStart))
+        {
+            if (diff) ++beforeDiffs;
+        }
+        else if (i >= static_cast<size_t> (jingleStart + jingleLen))
+        {
+            if (diff) ++afterDiffs;
+        }
+        else
+        {
+            maxDiff = std::max (maxDiff,
+                                std::abs (static_cast<double> (withJingle.l[i] - plain.l[i])));
+        }
+    }
+    std::printf ("  null test: %d diffs before, %d after; jingle peak %.4f\n",
+                 beforeDiffs, afterDiffs, maxDiff);
+    CHECK_MSG (beforeDiffs == 0, "%d samples differ BEFORE the jingle (not bit-transparent)",
+               beforeDiffs);
+    CHECK_MSG (afterDiffs == 0, "%d samples differ AFTER the jingle (it never let go)",
+               afterDiffs);
+    CHECK_MSG (maxDiff > 0.10 && maxDiff < 0.16,
+               "jingle contribution %.4f is not near -18 dBFS", maxDiff);
+    CHECK_MSG (peakOf (withJingle.l) <= 1.0f && peakOf (withJingle.r) <= 1.0f,
+               "jingle pushed the output past 0 dBFS");
+
+    // Untriggered renders are identical to each other too (no hidden state).
+    const auto plain2 = renderProcessor (proc, sr, bs, blocks,
+        [&] (int i, juce::MidiBuffer& midi)
+        {
+            if (i == 0)
+                midi.addEvent (juce::MidiMessage::noteOn (1, 60, (juce::uint8) 100), 0);
+        });
+    int repeatDiffs = 0;
+    for (size_t i = 0; i < plain.l.size(); ++i)
+        if (plain.l[i] != plain2.l[i])
+            ++repeatDiffs;
+    CHECK_MSG (repeatDiffs == 0, "untriggered renders are not reproducible (%d diffs)",
+               repeatDiffs);
+
+    // Silent patch: the jingle is the only thing in the buffer, and it decays
+    // to bitwise silence.
+    const auto solo = renderProcessor (proc, sr, bs, blocks,
+        [&] (int i, juce::MidiBuffer&) { if (i == triggerBlock) proc.triggerDiscoveryJingle(); });
+    int preNonZero = 0, postNonZero = 0;
+    for (int i = 0; i < jingleStart; ++i)
+        if (solo.l[static_cast<size_t> (i)] != 0.0f)
+            ++preNonZero;
+    for (size_t i = static_cast<size_t> (jingleStart + jingleLen); i < solo.l.size(); ++i)
+        if (solo.l[i] != 0.0f)
+            ++postNonZero;
+    CHECK_MSG (preNonZero == 0, "%d non-zero samples before the trigger", preNonZero);
+    CHECK_MSG (postNonZero == 0, "%d non-zero samples after the jingle decayed", postNonZero);
+    CHECK_MSG (rmsOver (solo.l, sr, 0.52, 0.75) > 1.0e-3, "the triggered jingle was silent");
+    CHECK_MSG (solo.l[static_cast<size_t> (jingleStart)] == 0.0f,
+               "the jingle does not start from zero (click)");
+
+    // Patch-independence + ceiling: a deliberately hot patch (everything on,
+    // +6 dB master, 8 notes) must still not exceed 0 dBFS with the jingle on.
+    const auto setP = [&] (const char* id, float v)
+    {
+        if (auto* p = proc.apvts.getParameter (id))
+            p->setValueNotifyingHost (p->convertTo0to1 (v));
+    };
+    setP ("oscB_on", 1.0f); setP ("sub_on", 1.0f); setP ("noise_on", 1.0f);
+    setP ("master_gain", 6.0f); setP ("uni_count", 4.0f);
+    const auto hotNotes = [&] (int i, juce::MidiBuffer& midi)
+    {
+        if (i == 0)
+            for (int n = 0; n < 8; ++n)
+                midi.addEvent (juce::MidiMessage::noteOn (1, 48 + n * 2,
+                                                          (juce::uint8) 127), 0);
+    };
+    const auto hotDry = renderProcessor (proc, sr, bs, blocks, hotNotes);
+    const auto hot = renderProcessor (proc, sr, bs, blocks,
+        [&] (int i, juce::MidiBuffer& midi)
+        {
+            hotNotes (i, midi);
+            if (i == triggerBlock)
+                proc.triggerDiscoveryJingle();
+        });
+    // This patch already sits on the engine's softclip ceiling (tanhf saturates
+    // to exactly 1.0f in float32, the same bound tests/TestMain.cpp asserts for
+    // masterSoftclip), so the meaningful claim is that the jingle does not push
+    // the peak any higher.
+    std::printf ("  hot patch peak: dry %.9f, with jingle %.9f\n",
+                 static_cast<double> (peakOf (hotDry.l)),
+                 static_cast<double> (peakOf (hot.l)));
+    CHECK_MSG (peakOf (hot.l) <= 1.0f && peakOf (hot.r) <= 1.0f,
+               "hot patch + jingle peaked at %.9f (> 0 dBFS)",
+               static_cast<double> (peakOf (hot.l)));
+    CHECK_MSG (peakOf (hot.l) <= peakOf (hotDry.l) && peakOf (hot.r) <= peakOf (hotDry.r),
+               "the jingle raised the peak of an already-clipping patch (%.9f -> %.9f)",
+               static_cast<double> (peakOf (hotDry.l)),
+               static_cast<double> (peakOf (hot.l)));
+    int hotNonFinite = 0;
+    for (float v : hot.l)
+        if (! std::isfinite (v))
+            ++hotNonFinite;
+    CHECK_MSG (hotNonFinite == 0, "%d non-finite samples on the hot patch", hotNonFinite);
+
+    std::printf ("  triggers, decays to silence, <= 0 dBFS, bit-transparent when idle\n");
+}
+
+// ---------------------------------------------------------------------------
+// The real processBlock, with UI MIDI traffic and the jingle live, must not
+// allocate. (The pure components get the same treatment in TestMain.cpp.)
+static void test_ui_audio_path_no_allocation()
+{
+    std::printf ("[ui_audio_path_no_allocation]\n");
+    BlockwaveAudioProcessor proc;
+    proc.prepareToPlay (48000.0, 512);
+    juce::AudioBuffer<float> buf (2, 512);
+    juce::MidiBuffer midi;                          // reused: no per-block alloc
+
+    // Warm up once outside the guard: the first processBlock touches lazily
+    // initialised JUCE state that has nothing to do with our path.
+    proc.processBlock (buf, midi);
+
+    long allocs = 0;
+    {
+        AllocGuard guard;
+        for (int block = 0; block < 200; ++block)
+        {
+            if (block % 5 == 0) proc.uiNoteOn (48 + block % 18, 0.8f);
+            if (block % 7 == 0) proc.uiNoteOff (48 + (block - 5) % 18);
+            if (block == 100) proc.uiAllNotesOff();
+            if (block == 120) proc.triggerDiscoveryJingle();
+            if (block == 150)
+                for (int n = 0; n < 600; ++n)       // force the overflow branch
+                    proc.uiNoteOn (36 + n % 48, 0.7f);
+            buf.clear();
+            proc.processBlock (buf, midi);
+        }
+        allocs = guard.count();
+    }
+    CHECK_MSG (allocs == 0, "processBlock allocated %ld times with UI MIDI + jingle",
+               allocs);
+    proc.uiAllNotesOff();
+    std::printf ("  0 allocations across 200 processBlock calls\n");
+}
+
+// ---------------------------------------------------------------------------
 int main()
 {
     juce::ScopedJuceInitialiser_GUI juceInit;
@@ -609,11 +1329,22 @@ int main()
         test_preset_save_round_trip (proc);
         test_factory_bank (proc);
         test_tail_length_report (proc);
+        test_craft_recipe_book (proc);
+        test_craft_first_then_params (proc);
     }
     test_preset_library_model();
     test_session_state_round_trip();
     test_processor_pitch_bend_and_params();
     test_factory_presets_render_clean();
+    test_processor_craft_api();
+    test_craft_save_and_session();
+
+    // Phase 4: UI audition keyboard + discovery jingle.
+    test_ui_keyboard_path();
+    test_ui_keyboard_buffer_sizes();
+    test_ui_keyboard_fifo_overflow();
+    test_discovery_jingle_in_processor();
+    test_ui_audio_path_no_allocation();
 
     std::printf ("\n%d checks, %d failures\n", state().checks, state().failures);
     return state().failures == 0 ? 0 : 1;

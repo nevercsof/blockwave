@@ -23,7 +23,7 @@
 // integer AffineTransform, so every procedurally drawn pixel stays crisp
 // (all art is integer-coordinate fillRects + nearest-neighbour image blits).
 //
-// Tabs: CRAFT (default per SPEC — placeholder until Phase 4) and TWEAK
+// Tabs: CRAFT (default per SPEC — the crafting bench, Phase 4) and TWEAK
 // (all 61 parameters). Top bar is always visible. Preset browser and save
 // dialog are overlays. Everything runs on the message thread; parameter
 // traffic goes exclusively through APVTS attachments.
@@ -33,7 +33,7 @@
 #include "ui/TopBar.h"
 #include "ui/TweakTab.h"
 #include "ui/PresetBrowser.h"
-#include "ui/CraftPlaceholder.h"
+#include "ui/CraftTab.h"
 
 class BlockwaveAudioProcessorEditor final : public juce::AudioProcessorEditor
 {
@@ -51,6 +51,7 @@ public:
     void showPresetBrowser (bool shouldShow);
     void showSavePanel (bool shouldShow);
     blockwave::ui::TopBar& getTopBar() { return topBar; }
+    blockwave::ui::CraftTab& getCraftTab() { return craftTab; }
 
     void resized() override {}                        // fixed canvas
 
@@ -67,7 +68,7 @@ private:
     Content content;
     blockwave::ui::TopBar topBar;
     juce::TextButton craftTabBtn { "CRAFT" }, tweakTabBtn { "TWEAK" };
-    blockwave::ui::CraftPlaceholder craftTab;
+    blockwave::ui::CraftTab craftTab;
     blockwave::ui::TweakTab tweakTab;
     blockwave::ui::PresetBrowser browser;
     blockwave::ui::SavePanel savePanel;
