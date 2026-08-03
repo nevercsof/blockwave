@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "STEEL CATHEDRAL",
+  "category": "FX",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 5+13 \u2014 synced partial singing in a vast cave, chirp removed",
+  "craft": {
+    "base": "DRONE",
+    "cells": [
+      "",
+      "CRYSTAL",
+      "",
+      "",
+      "CLOUD",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env2_pitch": 0,
+    "cave_size": 0.9,
+    "master_gain": -7.8
+  }
+}

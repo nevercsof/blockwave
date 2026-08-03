@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "MOTH DUST",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 11 \u2014 lo-fi pad, slow tape wobble",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "MOSS",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_a": 0.6,
+    "env1_r": 1.5
+  }
+}

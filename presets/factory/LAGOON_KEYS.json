@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "LAGOON KEYS",
+  "category": "KEYS",
+  "author": "BLOCKWAVE Factory",
+  "note": "thin EP keys with a dotted quarter echo",
+  "craft": {
+    "base": "KEYS",
+    "cells": [
+      "",
+      "",
+      "",
+      "GLASS",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_keytrack": 0.5,
+    "dly_time": "1/4D",
+    "master_gain": 6.0
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "TUNDRA CALL",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "triple ICE \u2014 6-voice frozen wall lead (soft-knee stacking at work)",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "ICE",
+      "",
+      "ICE",
+      "ICE",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_a": 0.05,
+    "master_gain": -2.7
+  }
+}

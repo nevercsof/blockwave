@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "MAGMA FLOOR",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "hidden-recipe showcase: technique 6 sub-anchored bass + 6-bit LAVA grind, mono micro-glide",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "",
+      "",
+      "OBSIDIAN",
+      "OBSIDIAN",
+      "",
+      "LAVA",
+      ""
+    ]
+  },
+  "params": {
+    "master_gain": -5.0
+  }
+}

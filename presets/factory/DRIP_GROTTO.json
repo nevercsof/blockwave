@@ -1,0 +1,29 @@
+{
+  "formatVersion": 1,
+  "name": "DRIP GROTTO",
+  "category": "FX",
+  "author": "BLOCKWAVE Factory",
+  "note": "cave drips \u2014 chirp plucks scattered by feedback delay in a huge cave",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "",
+      "",
+      "GLASS",
+      "",
+      "",
+      "CLOUD",
+      ""
+    ]
+  },
+  "params": {
+    "env1_a": 0.001,
+    "env2_pitch": 25,
+    "env2_d": 0.04,
+    "dly_fb": 0.6,
+    "dly_mix": 0.5,
+    "cave_size": 0.9,
+    "master_gain": 6.0
+  }
+}

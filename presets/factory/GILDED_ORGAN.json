@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "GILDED ORGAN",
+  "category": "KEYS",
+  "author": "BLOCKWAVE Factory",
+  "note": "RAW wide organ \u2014 GOLD width, STONE dryness",
+  "craft": {
+    "base": "KEYS",
+    "cells": [
+      "",
+      "",
+      "",
+      "GOLD",
+      "STONE",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_s": 1.0,
+    "env1_r": 0.07,
+    "master_gain": -6.1
+  }
+}

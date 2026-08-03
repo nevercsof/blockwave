@@ -228,10 +228,14 @@ int main (int argc, char* argv[])
         args.add (juce::String (argv[i]));
 
     double sr = 44100.0, bpm = 120.0;
-    for (int i = 0; i < args.size() - 1; ++i)
+    bool dumpParams = false;                  // --dump: print resolved snapshot
+    for (int i = 0; i < args.size(); ++i)
     {
-        if (args[i] == "--sr")  { sr  = args[i + 1].getDoubleValue(); args.removeRange (i, 2); --i; }
-        else if (args[i] == "--bpm") { bpm = args[i + 1].getDoubleValue(); args.removeRange (i, 2); --i; }
+        if (args[i] == "--dump") { dumpParams = true; args.remove (i); --i; }
+        else if (i < args.size() - 1 && args[i] == "--sr")
+            { sr  = args[i + 1].getDoubleValue(); args.removeRange (i, 2); --i; }
+        else if (i < args.size() - 1 && args[i] == "--bpm")
+            { bpm = args[i + 1].getDoubleValue(); args.removeRange (i, 2); --i; }
     }
 
     if (args.size() == 2 && args[0] == "--craft-matrix")
@@ -240,7 +244,7 @@ int main (int argc, char* argv[])
 
     if (args.size() != 3)
     {
-        std::cerr << "usage: render <preset.json|-> <input.mid|note:C4:2s> <out.wav> [--sr N] [--bpm N]\n"
+        std::cerr << "usage: render <preset.json|-> <input.mid|note:C4:2s> <out.wav> [--sr N] [--bpm N] [--dump]\n"
                      "       render --craft-matrix <outDir> [--sr N]\n";
         return 1;
     }
@@ -272,6 +276,18 @@ int main (int argc, char* argv[])
         {
             std::cerr << "error: " << err << "\n";
             return 1;
+        }
+    }
+
+    // --dump (QC aid): print the fully resolved snapshot (craft + overrides)
+    // as "id value" lines, exactly what the engine will run.
+    if (dumpParams)
+    {
+        for (int i = 0; i < blockwave::kNumParams; ++i)
+        {
+            const auto id = static_cast<blockwave::PId> (i);
+            std::cout << blockwave::paramDef (id).id << " "
+                      << blockwave::snapshotToPlain (params, id) << "\n";
         }
     }
 

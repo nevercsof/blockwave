@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "name": "GRIT SNARE",
+  "category": "PERC",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 8 snare \u2014 long-LFSR burst + small pitch drop",
+  "craft": {
+    "base": "PERC",
+    "cells": [
+      "",
+      "",
+      "",
+      "SAND",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_cutoff": 1600,
+    "env2_pitch": 10,
+    "env1_d": 0.15,
+    "master_gain": -2.2
+  }
+}

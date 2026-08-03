@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "LANTERN OIL",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "nasal thin-pulse bass floated on a big sub",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "",
+      "",
+      "WOOD",
+      "GLASS",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "sub_level": 0.85,
+    "master_gain": -1.6
+  }
+}

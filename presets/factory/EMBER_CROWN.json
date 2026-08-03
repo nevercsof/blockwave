@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "EMBER CROWN",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "hidden-recipe showcase: technique 5+12 forge lead \u2014 6-bit grind under a hard-sync scream, legato glide",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "LAVA",
+      "LAVA",
+      "LAVA",
+      "LAVA",
+      "LAVA",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "master_gain": -9.7
+  }
+}

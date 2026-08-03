@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "HOLLOW HALL",
+  "category": "KEYS",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 3 \u2014 the hollow 50% clarinet keys, keytracked",
+  "craft": {
+    "base": "KEYS",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_keytrack": 0.5,
+    "dly_mix": 0.1,
+    "master_gain": 1.5
+  }
+}

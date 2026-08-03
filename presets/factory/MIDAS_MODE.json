@@ -1,0 +1,21 @@
+{
+  "formatVersion": 1,
+  "name": "MIDAS MODE",
+  "category": "CHIP",
+  "author": "BLOCKWAVE Factory",
+  "note": "hidden-recipe showcase: technique 4 \u2014 gold-plated 8-voice supersquare chip with bloom",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "GOLD",
+      "",
+      "GOLD",
+      "GOLD",
+      "",
+      "GOLD",
+      ""
+    ]
+  },
+  "params": {}
+}

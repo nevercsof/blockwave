@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "name": "BOULDER ROLL",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "deeper, slower TNT boom \u2014 rolling downhill",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "",
+      "",
+      "TNT",
+      "OBSIDIAN",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_d": 0.6,
+    "env2_pitch": 16,
+    "noise_level": 0.1,
+    "master_gain": -5.4
+  }
+}

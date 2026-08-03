@@ -179,6 +179,11 @@ inline void test_fx_bypass_null()
         { "all",   [] (ParamSnapshot& p) { p.crush_bits = 1; p.crush_down = 64; p.dly_fb = 0.9f;
                                            p.cave_size = 1.0f; p.crush_mix = 0.0f;
                                            p.dly_mix = 0.0f; p.cave_mix = 0.0f; } },
+        // Addendum params cranked with every mix at 0: the wet-path HP must
+        // never leak into the dry signal.
+        { "hp",    [] (ParamSnapshot& p) { p.crush_hp = 2000.0f; p.dly_hp = 2000.0f;
+                                           p.cave_hp = 2000.0f; p.crush_mix = 0.0f;
+                                           p.dly_mix = 0.0f; p.cave_mix = 0.0f; } },
     };
     for (const auto& v : variants)
     {
@@ -498,6 +503,118 @@ inline void test_cave_damp_spectral()
     CHECK_MSG (hfHi - midHi > (hfLo - midLo) + 2.0,
                "raising damp does not increase relative HF decay (%.1f vs %.1f)",
                hfHi - midHi, hfLo - midLo);
+}
+
+// ---------------------------------------------------------------------------
+// Frozen-table addendum (cave_hp / dly_hp / crush_hp): at the 20 Hz default
+// the HP is a hard bypass, so a render with every FX WET and all three params
+// at default must be bit-identical forever. The golden below locks that; the
+// one-off pre/post-change equivalence was proven externally with tools/render
+// (same preset, pre-change binary vs post-change binary, byte-identical WAVs
+// — see the Phase-6 feedback report).
+inline void test_fx_hp_default_transparent()
+{
+    std::printf ("[fx_hp_default_transparent]\n");
+    ParamSnapshot p;
+    p.oscB_on = true; p.oscB_sync = true; p.oscB_semi = 7;
+    p.sub_on = true;  p.noise_on = true;
+    p.filt_cutoff = 3000.0f; p.filt_res = 0.3f;
+    p.crush_bits = 6; p.crush_down = 3; p.crush_mix = 0.6f;
+    p.dly_time = 6; p.dly_fb = 0.5f; p.dly_mix = 0.5f;
+    p.cave_size = 0.6f; p.cave_damp = 0.5f; p.cave_mix = 0.5f;
+    // cave_hp / dly_hp / crush_hp stay at the 20 Hz default = bypass.
+
+    const auto r = renderNote (p, 45, 48000.0, 0.5, 1.0);
+
+    const std::string f32Path = kTestDir + "/golden/fx_wet_default_48k.f32";
+    const std::string wavPath = kTestDir + "/golden/fx_wet_default_48k.wav";
+    std::vector<float> golden;
+    if (! readF32 (f32Path, golden))
+    {
+        writeF32 (f32Path, r.l);
+        writeWav16 (wavPath, r.l, r.r, 48000);
+        std::printf ("  created golden %s — re-run to verify\n", f32Path.c_str());
+        return;
+    }
+    CHECK_MSG (golden.size() == r.l.size(), "golden length %zu != render %zu",
+               golden.size(), r.l.size());
+    float maxDiff = 0.0f;
+    const size_t n = std::min (golden.size(), r.l.size());
+    for (size_t i = 0; i < n; ++i)
+        maxDiff = std::max (maxDiff, std::abs (golden[i] - r.l[i]));
+    std::printf ("  wet FX @ default HP vs golden: max |diff| = %.3g\n",
+                 static_cast<double> (maxDiff));
+    CHECK_MSG (maxDiff == 0.0f, "default HP not bit-transparent (diff %.3g)",
+               static_cast<double> (maxDiff));
+}
+
+// ---------------------------------------------------------------------------
+// The audible contract: each *_hp removes sub-100 Hz energy from its FX's WET
+// output (measured on an A1 note, fundamental 55 Hz) while leaving the
+// effect's mid band essentially untouched — HP the rumble, keep the body.
+inline void test_fx_hp_wet_rumble_cut()
+{
+    std::printf ("[fx_hp_wet_rumble_cut]\n");
+    const double sr = 48000.0;
+    const size_t fftN = 32768;
+    const double binHz = sr / static_cast<double> (fftN);
+
+    struct Case
+    {
+        const char* name;
+        void (*base) (ParamSnapshot&);        // FX wet-only, hp default
+        void (*hp) (ParamSnapshot&);          // same + hp engaged
+        double t0;                            // spectrum window start (s)
+        double minSubDrop, maxMidDrop;        // dB gates
+    };
+    const Case cases[] =
+    {
+        { "cave",
+          [] (ParamSnapshot& p) { p.cave_mix = 1.0f; p.cave_size = 0.7f;
+                                  p.env1_s = 1.0f; p.env1_r = 0.05f; },
+          [] (ParamSnapshot& p) { p.cave_hp = 200.0f; },
+          1.2, 8.0, 3.0 },
+        { "delay",
+          [] (ParamSnapshot& p) { p.dly_mix = 1.0f; p.dly_time = 6;   // 1/8
+                                  p.dly_fb = 0.5f; p.dly_pingpong = false;
+                                  p.env1_s = 1.0f; },
+          [] (ParamSnapshot& p) { p.dly_hp = 250.0f; },
+          1.0, 8.0, 3.5 },
+        { "crush",
+          [] (ParamSnapshot& p) { p.crush_mix = 1.0f; p.crush_bits = 16;
+                                  p.crush_down = 1; p.env1_s = 1.0f; },
+          [] (ParamSnapshot& p) { p.crush_hp = 400.0f; },
+          0.6, 12.0, 3.0 },
+    };
+
+    for (const auto& c : cases)
+    {
+        ParamSnapshot pBase;
+        c.base (pBase);
+        ParamSnapshot pHp = pBase;
+        c.hp (pHp);
+
+        const auto rBase = renderNote (pBase, 33, sr, 2.0, 2.2);   // A1, 55 Hz
+        const auto rHp   = renderNote (pHp,   33, sr, 2.0, 2.2);
+
+        const int from = static_cast<int> (c.t0 * sr);
+        const auto dbBase = spectrumDb (rBase.l.data() + from, fftN);
+        const auto dbHp   = spectrumDb (rHp.l.data()   + from, fftN);
+
+        const double subDrop = 10.0 * std::log10 (
+            (bandPower (dbBase, binHz, 20.0, 100.0) + 1.0e-20)
+          / (bandPower (dbHp,   binHz, 20.0, 100.0) + 1.0e-20));
+        const double midDrop = 10.0 * std::log10 (
+            (bandPower (dbBase, binHz, 300.0, 1200.0) + 1.0e-20)
+          / (bandPower (dbHp,   binHz, 300.0, 1200.0) + 1.0e-20));
+        std::printf ("  %-5s hp: sub(20-100 Hz) drop %5.1f dB (need >= %.0f), "
+                     "mid(300-1200) drop %4.1f dB (allow <= %.1f)\n",
+                     c.name, subDrop, c.minSubDrop, midDrop, c.maxMidDrop);
+        CHECK_MSG (subDrop >= c.minSubDrop,
+                   "%s hp cut only %.1f dB of sub energy", c.name, subDrop);
+        CHECK_MSG (midDrop <= c.maxMidDrop,
+                   "%s hp ate %.1f dB of the effect's mid band", c.name, midDrop);
+    }
 }
 
 } // namespace fxtests

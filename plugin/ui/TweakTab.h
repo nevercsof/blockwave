@@ -18,10 +18,10 @@
 
 #pragma once
 
-// TWEAK tab: the full synth. All 61 SPEC parameters reachable and readable,
-// grouped into block panels (OSC A/B/SUB/NOISE, VOICE, FILTER, MASTER,
-// ENV1/2, LFO1/2, CRUSH/DELAY/CAVE). FX controls are live APVTS parameters
-// with frozen IDs; the FX engine itself lands in Phase 5.
+// TWEAK tab: the full synth. All 64 SPEC parameters (61 + the three FX
+// high-pass addendum IDs) reachable and readable, grouped into block panels
+// (OSC A/B/SUB/NOISE, VOICE, FILTER, MASTER, ENV1/2, LFO1/2,
+// CRUSH/DELAY/CAVE). FX controls are live APVTS parameters with frozen IDs.
 // Fixed pixel layout on the 832x392 content area — no dynamic layout.
 
 #include "BlockPanel.h"

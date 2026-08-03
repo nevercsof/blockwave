@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "name": "BLIP BROOK",
+  "category": "CHIP",
+  "author": "BLOCKWAVE Factory",
+  "note": "pure blip into a feedback brook of echoes",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "",
+      "",
+      "GLASS",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_s": 0.0,
+    "env1_d": 0.07,
+    "dly_fb": 0.5,
+    "dly_mix": 0.35,
+    "master_gain": 6.0
+  }
+}

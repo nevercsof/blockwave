@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "FROST CHIME",
+  "category": "KEYS",
+  "author": "BLOCKWAVE Factory",
+  "note": "cold bell keys \u2014 ICE stretches the ring",
+  "craft": {
+    "base": "KEYS",
+    "cells": [
+      "",
+      "CRYSTAL",
+      "",
+      "",
+      "",
+      "",
+      "ICE",
+      ""
+    ]
+  },
+  "params": {
+    "env1_s": 0.1,
+    "env1_r": 1.0,
+    "master_gain": 4.3
+  }
+}

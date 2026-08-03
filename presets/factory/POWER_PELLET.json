@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "name": "POWER PELLET",
+  "category": "CHIP",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 10 \u2014 narrow +/-3 st trill at 1/16, arcade pellet",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "VOLT",
+      "",
+      "GLASS",
+      ""
+    ]
+  },
+  "params": {
+    "lfo2_dest": "pitch",
+    "lfo2_shape": "square",
+    "lfo2_amt": 0.5,
+    "env1_s": 0.4,
+    "master_gain": 6.0
+  }
+}

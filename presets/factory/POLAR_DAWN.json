@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "POLAR DAWN",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 1 \u2014 double ICE, 6/1 PWM, huge cave",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "ICE",
+      "ICE",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "lfo1_rate": 6.0,
+    "cave_size": 0.85,
+    "master_gain": -1.8
+  }
+}

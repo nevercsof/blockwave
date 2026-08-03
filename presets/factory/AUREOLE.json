@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "AUREOLE",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 4 \u2014 7-voice supersquare halo",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "GOLD",
+      "GOLD",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "uni_count": 7,
+    "master_gain": 2.6
+  }
+}

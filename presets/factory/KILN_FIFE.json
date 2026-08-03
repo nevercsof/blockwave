@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "KILN FIFE",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "thin hot fife \u2014 GLASS bite over LAVA crackle",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "LAVA",
+      "",
+      "GLASS",
+      ""
+    ]
+  },
+  "params": {
+    "dly_mix": 0.2,
+    "master_gain": -4.8
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "SPARK VEIN",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "bright thin sync pluck \u2014 sparks off the vein",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "CRYSTAL",
+      "",
+      "",
+      "",
+      "",
+      "GLASS",
+      ""
+    ]
+  },
+  "params": {
+    "filt_keytrack": 0.4,
+    "dly_hp": 150.0,
+    "master_gain": 4.3
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "CAVE MOUTH",
+  "category": "FX",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 13 \u2014 three CLOUDs shy of STRATOSPHERE; the entrance, not the sky",
+  "craft": {
+    "base": "DRONE",
+    "cells": [
+      "",
+      "CLOUD",
+      "",
+      "",
+      "CLOUD",
+      "",
+      "CLOUD",
+      ""
+    ]
+  },
+  "params": {
+    "cave_damp": 0.8,
+    "filt_cutoff": 600,
+    "master_gain": -5.8
+  }
+}

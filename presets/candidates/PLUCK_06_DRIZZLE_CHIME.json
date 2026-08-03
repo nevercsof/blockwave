@@ -19,6 +19,7 @@
   },
   "params": {
     "dly_time": "1/8D",
-    "dly_fb": 0.5
+    "dly_fb": 0.5,
+    "dly_hp": 150.0
   }
 }

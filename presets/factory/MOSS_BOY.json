@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "MOSS BOY",
+  "category": "CHIP",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 11 \u2014 handheld-console chip through tape haze",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "",
+      "",
+      "MOSS",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "dly_mix": 0.12,
+    "master_gain": -4.4
+  }
+}

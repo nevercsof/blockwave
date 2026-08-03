@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "PERMAFROST",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "hidden-recipe showcase: technique 1 PWM money pad inside a damped ice cavern",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "ICE",
+      "ICE",
+      "ICE",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "master_gain": 2.6
+  }
+}

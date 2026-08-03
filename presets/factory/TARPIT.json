@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "TARPIT",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "hidden-recipe showcase: technique 14 wub \u2014 LFO2 cutoff wobble + free-running PW drag",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "SLIME",
+      "SLIME",
+      "SLIME"
+    ]
+  },
+  "params": {
+    "master_gain": -7.9
+  }
+}

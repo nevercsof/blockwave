@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "name": "PIXEL ANCHOR",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "chip bass straight from the base \u2014 6-bit crush on the SPEC defaults",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "crush_bits": 6,
+    "crush_mix": 0.35,
+    "env1_s": 0.4,
+    "master_gain": -4.3
+  }
+}

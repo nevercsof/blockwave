@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "name": "SNOW GLOCKEN",
+  "category": "KEYS",
+  "author": "BLOCKWAVE Factory",
+  "note": "glockenspiel \u2014 an octave up, no sustain, cold ring",
+  "craft": {
+    "base": "KEYS",
+    "cells": [
+      "",
+      "ICE",
+      "",
+      "",
+      "CRYSTAL",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "oscA_oct": 1,
+    "env1_s": 0.05,
+    "env1_d": 0.8,
+    "master_gain": 2.4
+  }
+}

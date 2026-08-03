@@ -1,7 +1,7 @@
 Started validating: /Users/kirillboyko/Downloads/blockwave-kickoff/build/release/BLOCKWAVE_artefacts/Release/VST3/BLOCKWAVE.vst3
-Random seed: 0x7521d74
+Random seed: 0x6f9ab95
 Validation started
-	2 Aug 2026 3:26:49pm
+	3 Aug 2026 3:58:17am
 
 Strictness level: 10
 -----------------------------------------------------------------
@@ -14,12 +14,12 @@ Completed tests in pluginval / Scan for plugins located in: /Users/kirillboyko/D
 -----------------------------------------------------------------
 Starting tests in: pluginval / Open plugin (cold)...
 
-Time taken to open plugin (cold): 162 ms
+Time taken to open plugin (cold): 168 ms
 Completed tests in pluginval / Open plugin (cold)
 -----------------------------------------------------------------
 Starting tests in: pluginval / Open plugin (warm)...
 
-Time taken to open plugin (warm): 3 ms
+Time taken to open plugin (warm): 11 ms
 Running tests 1 times
 Completed tests in pluginval / Open plugin (warm)
 -----------------------------------------------------------------
@@ -43,10 +43,10 @@ Completed tests in pluginval / Plugin programs
 -----------------------------------------------------------------
 Starting tests in: pluginval / Editor...
 
-Time taken to open editor (cold): 231 ms
-Time taken to open editor (warm): 206 ms
+Time taken to open editor (cold): 230 ms
+Time taken to open editor (warm): 204 ms
 
-Time taken to run test: 442 ms
+Time taken to run test: 445 ms
 Completed tests in pluginval / Editor
 -----------------------------------------------------------------
 Starting tests in: pluginval / Open editor whilst processing...
@@ -71,7 +71,7 @@ Testing with sample rate [96000] and block size [256]
 Testing with sample rate [96000] and block size [512]
 Testing with sample rate [96000] and block size [1024]
 
-Time taken to run test: 8 ms
+Time taken to run test: 6 ms
 Completed tests in pluginval / Audio processing
 -----------------------------------------------------------------
 Starting tests in: pluginval / Non-releasing audio processing...
@@ -91,7 +91,7 @@ Testing with sample rate [96000] and block size [256]
 Testing with sample rate [96000] and block size [512]
 Testing with sample rate [96000] and block size [1024]
 
-Time taken to run test: 6 ms
+Time taken to run test: 5 ms
 Completed tests in pluginval / Non-releasing audio processing
 -----------------------------------------------------------------
 Starting tests in: pluginval / Plugin state...
@@ -101,7 +101,7 @@ Completed tests in pluginval / Plugin state
 -----------------------------------------------------------------
 Starting tests in: pluginval / Plugin state restoration...
 
-Time taken to run test: 11 ms
+Time taken to run test: 10 ms
 Completed tests in pluginval / Plugin state restoration
 -----------------------------------------------------------------
 Starting tests in: pluginval / Automation...
@@ -121,12 +121,12 @@ Testing with sample rate [96000] and block size [256] and sub-block size [32]
 Testing with sample rate [96000] and block size [512] and sub-block size [32]
 Testing with sample rate [96000] and block size [1024] and sub-block size [32]
 
-Time taken to run test: 5 ms
+Time taken to run test: 4 ms
 Completed tests in pluginval / Automation
 -----------------------------------------------------------------
 Starting tests in: pluginval / Editor Automation...
 
-Time taken to run test: 13 secs
+Time taken to run test: 12 secs
 Completed tests in pluginval / Editor Automation
 -----------------------------------------------------------------
 Starting tests in: pluginval / Automatable Parameters...
@@ -375,7 +375,19 @@ Testing parameter: 60 - master_gain
 Parameter info: index - 60, paramName - master_gain, defaultValue - 0.909091, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
 Testing accessors
 
-Time taken to run test: 7 ms
+Testing parameter: 61 - cave_hp
+Parameter info: index - 61, paramName - cave_hp, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 62 - dly_hp
+Parameter info: index - 62, paramName - dly_hp, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 63 - crush_hp
+Parameter info: index - 63, paramName - crush_hp, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Time taken to run test: 4 ms
 Completed tests in pluginval / Automatable Parameters
 -----------------------------------------------------------------
 Starting tests in: pluginval / Parameters...
@@ -624,6 +636,18 @@ Testing parameter: 60 - master_gain
 Parameter info: index - 60, paramName - master_gain, defaultValue - 0.909091, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
 Testing accessors
 
+Testing parameter: 61 - cave_hp
+Parameter info: index - 61, paramName - cave_hp, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 62 - dly_hp
+Parameter info: index - 62, paramName - dly_hp, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 63 - crush_hp
+Parameter info: index - 63, paramName - crush_hp, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
 Time taken to run test: 3 ms
 Completed tests in pluginval / Parameters
 -----------------------------------------------------------------
@@ -634,7 +658,7 @@ Completed tests in pluginval / Background thread state
 -----------------------------------------------------------------
 Starting tests in: pluginval / Parameter thread safety...
 
-Time taken to run test: 19 ms
+Time taken to run test: 16 ms
 Completed tests in pluginval / Parameter thread safety
 -----------------------------------------------------------------
 Starting tests in: pluginval / auval...
@@ -672,7 +696,7 @@ Starting tests in: pluginval / Restoring default layout...
 Main bus num input channels: 0
 Main bus num output channels: 2
 
-Time taken to run test: 1 ms
+Time taken to run test: 0
 Completed tests in pluginval / Restoring default layout
 -----------------------------------------------------------------
 Starting tests in: pluginval / Fuzz parameters...
@@ -737,9 +761,12 @@ Fuzz testing parameter: 57 - cave_mix
 Fuzz testing parameter: 58 - vel_amp
 Fuzz testing parameter: 59 - raw
 Fuzz testing parameter: 60 - master_gain
+Fuzz testing parameter: 61 - cave_hp
+Fuzz testing parameter: 62 - dly_hp
+Fuzz testing parameter: 63 - crush_hp
 
 Time taken to run test: 9 ms
 
-Time taken to run all tests: 16 secs
+Time taken to run all tests: 15 secs
 Completed tests in pluginval / Fuzz parameters
 SUCCESS

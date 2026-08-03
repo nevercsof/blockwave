@@ -1,0 +1,28 @@
+{
+  "formatVersion": 1,
+  "name": "FLINT HAT",
+  "category": "PERC",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 8 LFSR short hat \u2014 closed, HP-filtered, bone dry",
+  "craft": {
+    "base": "PERC",
+    "cells": [
+      "",
+      "SAND",
+      "",
+      "",
+      "",
+      "",
+      "STONE",
+      ""
+    ]
+  },
+  "params": {
+    "oscA_on": false,
+    "noise_mode": "short",
+    "filt_type": "HP",
+    "filt_cutoff": 6500,
+    "env1_d": 0.04,
+    "master_gain": 6.0
+  }
+}

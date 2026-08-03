@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "name": "MALLET FALLS",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 7 in its purest form \u2014 +14 st chirp on the bare base",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env2_pitch": 14,
+    "env2_d": 0.05,
+    "filt_keytrack": 0.6,
+    "master_gain": 2.5
+  }
+}

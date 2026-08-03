@@ -49,7 +49,11 @@ TweakTab::TweakTab (juce::AudioProcessorValueTreeState& s) : state (s)
     setSize (kCanvasW, kContentH);
 
     // Row 1 — sound sources. Panel x/w values are 8-px grid constants; the
-    // whole 61-parameter table fits this canvas (no SPEC layout compromises).
+    // whole 64-parameter table fits this canvas. Panels are exact-fit
+    // (16 + 48*cells), so the three FX HP cells forced a row rebalance:
+    // LFO1 joins row 2, MASTER ends row 4 after the FX chain — the only
+    // 8-px-grid partition that keeps ENV1/ENV2 adjacent and FX in
+    // signal order. Flagged in the checkpoint notes.
     auto& oscA = panel ("OSC A", 8, 8, 256, "oscA_on", "square voice one");
     cell (oscA, PId::oscA_oct,   "OCT");
     cell (oscA, PId::oscA_semi,  "SEMI");
@@ -73,7 +77,7 @@ TweakTab::TweakTab (juce::AudioProcessorValueTreeState& s) : state (s)
     cell (noise, PId::noise_mode,  "MODE", "long or metallic");
     cell (noise, PId::noise_level, "LEVEL");
 
-    // Row 2 — voice + filter + master.
+    // Row 2 — voice + filter + LFO1 (PWM).
     auto& voice = panel ("VOICE", 8, 104, 352);
     cell (voice, PId::uni_count,  "UNISON", "stacked square clones");
     cell (voice, PId::uni_detune, "DETUNE");
@@ -83,59 +87,62 @@ TweakTab::TweakTab (juce::AudioProcessorValueTreeState& s) : state (s)
     cell (voice, PId::glide_time, "GLIDE",  "note slide time");
     cell (voice, PId::glide_mode, "G.MODE");
 
-    auto& filt = panel ("FILTER", 408, 104, 256);
+    auto& filt = panel ("FILTER", 384, 104, 256);
     cell (filt, PId::filt_type,     "TYPE");
     cell (filt, PId::filt_cutoff,   "CUTOFF", "brightness cap");
     cell (filt, PId::filt_res,      "RES",    "filter squeal");
     cell (filt, PId::filt_env,      "ENVAMT", "env two depth");
     cell (filt, PId::filt_keytrack, "KEYTRK", "follows the keys");
 
-    auto& master = panel ("MASTER", 712, 104, 112);
-    cell (master, PId::vel_amp,     "VELO", "velocity to volume");
-    cell (master, PId::master_gain, "GAIN", "final output level");
+    auto& lfo1 = panel ("LFO1 PWM", 664, 104, 160);
+    lfo1RateCell = &cell (lfo1, PId::lfo1_rate, "RATE");
+    cell (lfo1, PId::lfo1_sync, "SYNC", "locks to tempo");
+    cell (lfo1, PId::lfo1_pwm,  "PWM",  "square width wobble");
 
-    // Row 3 — envelopes + LFO1.
+    // Row 3 — envelopes + LFO2.
     auto& env1 = panel ("ENV1 AMP", 8, 200, 208);
     cell (env1, PId::env1_a, "ATTACK");
     cell (env1, PId::env1_d, "DECAY");
     cell (env1, PId::env1_s, "SUSTAIN");
     cell (env1, PId::env1_r, "RELEASE");
 
-    auto& env2 = panel ("ENV2 MOD", 312, 200, 256);
+    auto& env2 = panel ("ENV2 MOD", 264, 200, 256);
     cell (env2, PId::env2_a, "ATTACK");
     cell (env2, PId::env2_d, "DECAY");
     cell (env2, PId::env2_s, "SUSTAIN");
     cell (env2, PId::env2_r, "RELEASE");
     cell (env2, PId::env2_pitch, "PITCH", "pitch drop blast");
 
-    auto& lfo1 = panel ("LFO1 PWM", 664, 200, 160);
-    lfo1RateCell = &cell (lfo1, PId::lfo1_rate, "RATE");
-    cell (lfo1, PId::lfo1_sync, "SYNC", "locks to tempo");
-    cell (lfo1, PId::lfo1_pwm,  "PWM",  "square width wobble");
-
-    // Row 4 — LFO2 + FX block (engine hookup lands in Phase 5).
-    auto& lfo2 = panel ("LFO2", 8, 296, 256);
+    auto& lfo2 = panel ("LFO2", 568, 200, 256);
     lfo2RateCell = &cell (lfo2, PId::lfo2_rate, "RATE");
     cell (lfo2, PId::lfo2_sync,  "SYNC", "locks to tempo");
     cell (lfo2, PId::lfo2_shape, "SHAPE");
     cell (lfo2, PId::lfo2_amt,   "AMOUNT");
     cell (lfo2, PId::lfo2_dest,  "DEST", "what it wobbles");
 
-    auto& crush = panel ("CRUSH", 272, 296, 160);
+    // Row 4 — FX chain in signal order, master gain at the end.
+    auto& crush = panel ("CRUSH", 8, 296, 208);
     cell (crush, PId::crush_bits, "BITS", "bit depth dirt");
     cell (crush, PId::crush_down, "DOWN", "sample rate divide");
+    cell (crush, PId::crush_hp,   "HP",   "trims crushed lows");
     cell (crush, PId::crush_mix,  "MIX");
 
-    auto& dly = panel ("DELAY", 448, 296, 208);
+    auto& dly = panel ("DELAY", 224, 296, 256);
     cell (dly, PId::dly_time,     "TIME", "tempo synced echo");
     cell (dly, PId::dly_fb,       "FEEDB");
     cell (dly, PId::dly_pingpong, "PING", "bounces left right");
+    cell (dly, PId::dly_hp,       "HP",   "trims echo lows");
     cell (dly, PId::dly_mix,      "MIX");
 
-    auto& cave = panel ("CAVE", 664, 296, 160);
+    auto& cave = panel ("CAVE", 488, 296, 208);
     cell (cave, PId::cave_size, "SIZE", "cavern hugeness");
     cell (cave, PId::cave_damp, "DAMP", "darkens the tail");
+    cell (cave, PId::cave_hp,   "HP",   "trims cave rumble");
     cell (cave, PId::cave_mix,  "MIX");
+
+    auto& master = panel ("MASTER", 712, 296, 112);
+    cell (master, PId::vel_amp,     "VELO", "velocity to volume");
+    cell (master, PId::master_gain, "GAIN", "final output level");
 
     if (auto* p1 = state.getParameter ("lfo1_sync"))
         lfo1SyncWatch = std::make_unique<juce::ParameterAttachment> (

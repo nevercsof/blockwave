@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "name": "GLINT CELESTA",
+  "category": "KEYS",
+  "author": "BLOCKWAVE Factory",
+  "note": "bright celesta \u2014 thin pulse under the sync partial",
+  "craft": {
+    "base": "KEYS",
+    "cells": [
+      "",
+      "",
+      "",
+      "CRYSTAL",
+      "GLASS",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_d": 0.7,
+    "env1_s": 0.1,
+    "filt_keytrack": 0.6,
+    "master_gain": 6.0
+  }
+}

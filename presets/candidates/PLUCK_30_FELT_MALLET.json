@@ -19,6 +19,7 @@
   },
   "params": {
     "env1_a": 0.002,
-    "filt_keytrack": 0.5
+    "filt_keytrack": 0.5,
+    "cave_hp": 180.0
   }
 }

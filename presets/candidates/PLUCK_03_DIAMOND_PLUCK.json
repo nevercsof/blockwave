@@ -20,6 +20,8 @@
   "params": {
     "env2_pitch": 12,
     "env2_d": 0.06,
-    "filt_keytrack": 0.5
+    "filt_keytrack": 0.5,
+    "cave_hp": 150.0,
+    "dly_hp": 150.0
   }
 }

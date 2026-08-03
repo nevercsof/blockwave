@@ -90,6 +90,7 @@ juce::String formatParamValue (PId id, float v,
             return timeText (v);
 
         case PId::filt_cutoff:
+        case PId::crush_hp: case PId::dly_hp: case PId::cave_hp:
             return v >= 1000.0f ? juce::String (v / 1000.0f, v >= 10000.0f ? 1 : 2) + "K"
                                 : juce::String (static_cast<int> (std::lround (v))) + "HZ";
 

@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "JINGLE SPRING",
+  "category": "CHIP",
+  "author": "BLOCKWAVE Factory",
+  "note": "game-jingle chip \u2014 GOLD width with an 1/8 echo",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "",
+      "",
+      "GOLD",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "dly_time": "1/8",
+    "dly_mix": 0.3,
+    "env1_s": 0.6
+  }
+}

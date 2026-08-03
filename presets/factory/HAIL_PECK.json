@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "HAIL PECK",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "cold dry peck \u2014 RAW, zero reverb, quick chirp",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "",
+      "",
+      "ICE",
+      "STONE",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env2_pitch": 10,
+    "env2_d": 0.04,
+    "master_gain": 1.8
+  }
+}

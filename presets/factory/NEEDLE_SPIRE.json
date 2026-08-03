@@ -1,0 +1,28 @@
+{
+  "formatVersion": 1,
+  "name": "NEEDLE SPIRE",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 2 thin pulse, 14% nasal bite + light unsynced vibrato",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "GLASS",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "lfo2_dest": "pitch",
+    "lfo2_shape": "tri",
+    "lfo2_sync": false,
+    "lfo2_rate": 5.5,
+    "lfo2_amt": 0.14,
+    "master_gain": 1.6
+  }
+}

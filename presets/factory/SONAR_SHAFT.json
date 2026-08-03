@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "name": "SONAR SHAFT",
+  "category": "FX",
+  "author": "BLOCKWAVE Factory",
+  "note": "sonar ping \u2014 high pluck echoing down a half-note delay well",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "CLOUD",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "oscA_oct": 1,
+    "dly_time": "1/2",
+    "dly_fb": 0.7,
+    "dly_mix": 0.45,
+    "master_gain": 6.0
+  }
+}

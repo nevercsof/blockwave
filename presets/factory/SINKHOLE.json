@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "SINKHOLE",
+  "category": "FX",
+  "author": "BLOCKWAVE Factory",
+  "note": "hidden-recipe showcase: the FX drop \u2014 hold a chord and the floor gives way",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "OBSIDIAN",
+      "OBSIDIAN",
+      "OBSIDIAN",
+      "OBSIDIAN",
+      "OBSIDIAN",
+      "OBSIDIAN",
+      "OBSIDIAN",
+      "OBSIDIAN"
+    ]
+  },
+  "params": {
+    "master_gain": -4.6
+  }
+}

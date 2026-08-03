@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "name": "RESONANT LODE",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 5 sync lead under a slow 1/1 triangle filter tide",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "CRYSTAL",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "lfo2_dest": "cutoff",
+    "lfo2_amt": 0.45,
+    "lfo2_rate": 1.0,
+    "lfo2_shape": "tri",
+    "master_gain": -9.9
+  }
+}

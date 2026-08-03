@@ -352,6 +352,9 @@ static void test_block_size_invariance()
     p.crush_bits = 6; p.crush_down = 3; p.crush_mix = 0.7f;
     p.dly_time = 10; p.dly_fb = 0.5f; p.dly_pingpong = true; p.dly_mix = 0.4f;
     p.cave_size = 0.6f; p.cave_damp = 0.5f; p.cave_mix = 0.4f;
+    // Phase-6 addendum: wet-path HP engaged on all three FX — the smoothed
+    // cutoffs and engage gates must also be block-size invariant.
+    p.crush_hp = 400.0f; p.dly_hp = 150.0f; p.cave_hp = 150.0f;
 
     auto ref = renderNote (p, 48, 48000.0, 0.3, 0.4, 512);
     const int sizes[] = { 16, 61, 128, 1024, 4096 };
@@ -807,6 +810,180 @@ static void test_poly_chord_headroom()
 }
 
 // ---------------------------------------------------------------------------
+// Noise polyphony fix, part 1 (LfsrNoise.h): the precomputed per-voice seed
+// tables must equal live advancement by i * 7919 raw steps from seed 1 in the
+// matching mode — the table is a cache, never a second source of truth. Also
+// proves voice 0 keeps seed 1 (golden safety) and all seeds are distinct.
+static void test_lfsr_voice_seeds()
+{
+    std::printf ("[lfsr_voice_seeds]\n");
+    for (int mode = 0; mode < 2; ++mode)
+    {
+        const bool shortMode = mode == 1;
+        const std::uint16_t* table = shortMode ? LfsrNoise::kVoiceSeedShort
+                                               : LfsrNoise::kVoiceSeedLong;
+        LfsrNoise walker;
+        walker.prepare (48000.0);            // reg = 1
+        int mismatches = 0;
+        for (int i = 0; i < LfsrNoise::kMaxSeedVoices; ++i)
+        {
+            if (walker.state() != table[i])
+                ++mismatches;
+            LfsrNoise n;
+            n.prepare (48000.0);
+            n.resetForVoice (i, shortMode);
+            if (n.state() != table[i])
+                ++mismatches;
+            for (int s = 0; s < 7919; ++s)
+                walker.step (shortMode);
+        }
+        int dupes = 0;
+        for (int i = 0; i < LfsrNoise::kMaxSeedVoices; ++i)
+            for (int j = i + 1; j < LfsrNoise::kMaxSeedVoices; ++j)
+                dupes += table[i] == table[j] ? 1 : 0;
+        std::printf ("  %s mode: %d mismatches vs live stepping, %d duplicate seeds\n",
+                     shortMode ? "short" : "long", mismatches, dupes);
+        CHECK_MSG (mismatches == 0, "%s-mode seed table drifted from step()",
+                   shortMode ? "short" : "long");
+        CHECK_MSG (dupes == 0, "%s-mode seed table has duplicates",
+                   shortMode ? "short" : "long");
+        CHECK_MSG (table[0] == 1, "voice 0 must keep seed 1 (golden safety)");
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Noise polyphony fix, part 2 (BlockwaveEngine.h): noise-band loudness must
+// stay at ONE level regardless of how many voices are held — within ±1 dB for
+// 1 vs 4 vs 8 voices, both for a same-sample chord (the hardest case: only
+// the per-voice seeds make it uncorrelated) and for staggered entries. Tonal
+// content must still sum normally, and the compensation path must stay
+// bit-identical across host block sizes.
+static void test_noise_poly_loudness()
+{
+    std::printf ("[noise_poly_loudness]\n");
+    const double sr = 48000.0;
+
+    ParamSnapshot p;                          // noise-only patch
+    p.oscA_on = false;
+    p.noise_on = true;
+    p.noise_level = 0.8f;
+    p.env1_a = 0.005f; p.env1_s = 1.0f;
+    p.poly_count = 16;
+
+    const auto rmsDb = [] (const std::vector<float>& x, double srr,
+                           double t0, double t1)
+    {
+        double s = 0.0;
+        const int a = static_cast<int> (t0 * srr), b = static_cast<int> (t1 * srr);
+        for (int i = a; i < b; ++i)
+            s += static_cast<double> (x[static_cast<size_t> (i)])
+               * x[static_cast<size_t> (i)];
+        return 10.0 * std::log10 (s / (b - a) + 1.0e-20);
+    };
+
+    const std::vector<int> chord8 { 40, 43, 47, 50, 53, 57, 60, 64 };
+    const std::vector<int> chord4 { 40, 47, 53, 60 };
+
+    // Same-sample chords: 1 vs 4 vs 8 held voices.
+    const auto r1 = renderChord (p, { 52 }, sr, 2.0, 2.0);
+    const auto r4 = renderChord (p, chord4, sr, 2.0, 2.0);
+    const auto r8 = renderChord (p, chord8, sr, 2.0, 2.0);
+    const double db1 = rmsDb (r1.l, sr, 0.5, 1.9);
+    const double db4 = rmsDb (r4.l, sr, 0.5, 1.9);
+    const double db8 = rmsDb (r8.l, sr, 0.5, 1.9);
+    std::printf ("  simultaneous noise RMS: 1 voice %.2f dB, 4: %.2f dB (%+.2f), "
+                 "8: %.2f dB (%+.2f)\n", db1, db4, db4 - db1, db8, db8 - db1);
+    CHECK_MSG (std::abs (db4 - db1) <= 1.0,
+               "4-voice noise off by %+.2f dB (spec ±1 dB)", db4 - db1);
+    CHECK_MSG (std::abs (db8 - db1) <= 1.0,
+               "8-voice noise off by %+.2f dB (spec ±1 dB)", db8 - db1);
+
+    // Staggered entries (60 ms apart) — the smoothed scale must track without
+    // stepping; steady-state after the last entry must sit at the same level.
+    {
+        BlockwaveEngine e;
+        e.setParams (p);
+        e.prepare (sr, 512);
+        const int total = static_cast<int> (2.5 * sr);
+        std::vector<float> l (static_cast<size_t> (total)),
+                           r (static_cast<size_t> (total));
+        size_t next = 0;
+        int pos = 0;
+        while (pos < total)
+        {
+            while (next < chord8.size()
+                   && static_cast<int> (0.06 * static_cast<double> (next) * sr) <= pos)
+                e.noteOn (chord8[next++], 1.0f);
+            int n = std::min (512, total - pos);
+            if (next < chord8.size())
+            {
+                const int at = static_cast<int> (0.06 * static_cast<double> (next) * sr);
+                if (pos + n > at)
+                    n = at - pos > 0 ? at - pos : 1;
+            }
+            e.process (l.data() + pos, r.data() + pos, n);
+            pos += n;
+        }
+        const double dbStag = rmsDb (l, sr, 1.2, 2.4);
+        std::printf ("  staggered 8-voice noise RMS %.2f dB (%+.2f vs 1 voice)\n",
+                     dbStag, dbStag - db1);
+        CHECK_MSG (std::abs (dbStag - db1) <= 1.0,
+                   "staggered 8-voice noise off by %+.2f dB", dbStag - db1);
+    }
+
+    // Tonal control: pitched content must still sum normally (no squash).
+    {
+        ParamSnapshot t = p;
+        t.oscA_on = true;  t.oscA_level = 0.4f;
+        t.noise_on = false;
+        const auto t1 = renderChord (t, { 48 }, sr, 2.0, 2.0);
+        const auto t4 = renderChord (t, { 48, 52, 55, 59 }, sr, 2.0, 2.0);
+        const double tDb1 = rmsDb (t1.l, sr, 0.5, 1.9);
+        const double tDb4 = rmsDb (t4.l, sr, 0.5, 1.9);
+        std::printf ("  tonal RMS: 1 note %.2f dB, 4-note chord %.2f dB (%+.2f)\n",
+                     tDb1, tDb4, tDb4 - tDb1);
+        CHECK_MSG (tDb4 - tDb1 > 3.0,
+                   "tonal chord only %+.2f dB above single note — tonal sum damaged",
+                   tDb4 - tDb1);
+    }
+
+    // Compensation path is block-size invariant (count sampled on the
+    // absolute control grid).
+    {
+        const auto render4 = [&] (int blockSize)
+        {
+            BlockwaveEngine e;
+            e.setParams (p);
+            e.prepare (sr, blockSize);
+            for (int n : chord4)
+                e.noteOn (n, 1.0f);
+            const int total = static_cast<int> (1.0 * sr);
+            std::vector<float> l (static_cast<size_t> (total)),
+                               r (static_cast<size_t> (total));
+            for (int pos = 0; pos < total; )
+            {
+                const int n = std::min (blockSize, total - pos);
+                e.process (l.data() + pos, r.data() + pos, n);
+                pos += n;
+            }
+            return l;
+        };
+        const auto ref = render4 (512);
+        for (const int bs : { 16, 61, 1024 })
+        {
+            const auto x = render4 (bs);
+            float maxDiff = 0.0f;
+            for (size_t i = 0; i < ref.size(); ++i)
+                maxDiff = std::max (maxDiff, std::abs (ref[i] - x[i]));
+            CHECK_MSG (maxDiff == 0.0f,
+                       "noise-poly path not block-size invariant at %d (%.3g)",
+                       bs, static_cast<double> (maxDiff));
+        }
+        std::printf ("  4-voice noise render bit-identical at block 16/61/1024\n");
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Phase-2 DoD: host automation of cutoff/PW is click-free (engine smoothing).
 // A stepped parameter change mid-note must not add a discontinuity beyond the
 // waveform's own steady-state slew; an unsmoothed switch (spliced renders)
@@ -898,6 +1075,8 @@ int main()
     test_unison_cap_128();
     test_master_softclip();
     test_poly_chord_headroom();
+    test_lfsr_voice_seeds();
+    test_noise_poly_loudness();
     test_param_smoothing_click_free();
 
     // Phase-5 FX block (tests/FxTests.h):
@@ -908,6 +1087,8 @@ int main()
     fxtests::test_delay_pingpong();
     fxtests::test_cave_tail();
     fxtests::test_cave_damp_spectral();
+    fxtests::test_fx_hp_default_transparent();
+    fxtests::test_fx_hp_wet_rumble_cut();
 
     // Phase-4 CRAFT engine (tests/CraftTests.h):
     crafttests::runAll();

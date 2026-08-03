@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "BOW SNAP",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "reverse chirp \u2014 bends up into the note (negative env2_pitch)",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "STONE",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env2_pitch": -5,
+    "env2_d": 0.03,
+    "master_gain": 1.7
+  }
+}

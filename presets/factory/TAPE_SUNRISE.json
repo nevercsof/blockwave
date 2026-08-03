@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "TAPE SUNRISE",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 11 \u2014 heavy cassette crush, slow warm rise",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "MOSS",
+      "MOSS",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_a": 0.9
+  }
+}

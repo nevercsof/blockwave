@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "CRT SUNRISE",
+  "category": "CHIP",
+  "author": "BLOCKWAVE Factory",
+  "note": "warm wide lo-fi chip \u2014 phosphor glow at dawn",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "MOSS",
+      "",
+      "GOLD",
+      ""
+    ]
+  },
+  "params": {
+    "env1_r": 0.2,
+    "master_gain": -5.1
+  }
+}

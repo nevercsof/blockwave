@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "TAUT WIRE",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 2 thin-pulse top over a heavy sub anchor",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "GLASS",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_cutoff": 700,
+    "sub_level": 0.9,
+    "master_gain": -2.5
+  }
+}

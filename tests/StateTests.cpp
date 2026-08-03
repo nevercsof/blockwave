@@ -23,7 +23,7 @@
 //   - preset JSON -> APVTS -> snapshot agrees with tools/render's
 //     PresetMapping path (plugin and renderer produce identical patches)
 //   - preset save round trip (minimal overrides, canonical representations)
-//   - factory bank (8 temporary dev presets, one per category)
+//   - factory bank (128 presets, fixed per-category quotas)
 //   - PresetLibrary browser model: ordering, next/prev wrap, lazy user folder
 //   - host session state round trip (params + preset meta + craft +
 //     formatVersion)
@@ -39,6 +39,7 @@
 #include "PluginProcessor.h"
 #include "PresetMapping.h"
 #include "BinaryData.h"
+#include "RecipeData.h"
 #include "TestUtil.h"
 #include "CraftCoverageTests.h"
 
@@ -149,6 +150,9 @@ static int compareSnapshots (const ParamSnapshot& a, const ParamSnapshot& b,
     num ("cave_size", a.cave_size, b.cave_size);
     num ("cave_damp", a.cave_damp, b.cave_damp);
     num ("cave_mix", a.cave_mix, b.cave_mix);
+    num ("cave_hp", a.cave_hp, b.cave_hp);
+    num ("dly_hp", a.dly_hp, b.dly_hp);
+    num ("crush_hp", a.crush_hp, b.crush_hp);
 
     if (maxRel != nullptr)
         *maxRel = worst;
@@ -156,8 +160,10 @@ static int compareSnapshots (const ParamSnapshot& a, const ParamSnapshot& b,
 }
 
 // ---------------------------------------------------------------------------
-// The FROZEN parameter ID list — 61 IDs in SPEC-table order. This array is a
-// deliberate, independent copy: if src/ParamSpec.h ever drifts, this fails.
+// The FROZEN parameter ID list — 61 IDs in SPEC-table order plus the 3-ID
+// Phase-6 addendum (cave_hp/dly_hp/crush_hp, appended only — no existing
+// index moved). This array is a deliberate, independent copy: if
+// src/ParamSpec.h ever drifts, this fails.
 static const char* const kFrozenIds[] =
 {
     "oscA_on", "oscB_on", "sub_on", "noise_on",
@@ -176,13 +182,14 @@ static const char* const kFrozenIds[] =
     "dly_time", "dly_fb", "dly_pingpong", "dly_mix",
     "cave_size", "cave_damp", "cave_mix",
     "vel_amp", "raw", "master_gain",
+    "cave_hp", "dly_hp", "crush_hp",        // frozen-table addendum (Phase 6)
 };
 
 static void test_frozen_parameter_ids (BlockwaveAudioProcessor& proc)
 {
     std::printf ("[frozen_parameter_ids]\n");
     constexpr int expected = static_cast<int> (std::size (kFrozenIds));
-    CHECK_MSG (expected == 61, "frozen list itself must have 61 entries (has %d)", expected);
+    CHECK_MSG (expected == 64, "frozen list itself must have 64 entries (has %d)", expected);
     CHECK_MSG (kNumParams == expected, "ParamSpec has %d params, frozen list %d",
                kNumParams, expected);
 
@@ -240,6 +247,13 @@ static void test_defaults_match_engine (BlockwaveAudioProcessor& proc)
     CHECK_MSG (range ("dly_fb").end == 0.9f, "dly_fb range wrong");
     CHECK_MSG (range ("env2_pitch").start == -48.0f && range ("env2_pitch").end == 48.0f,
                "env2_pitch range wrong");
+    // Frozen-table addendum (Phase 6): FX wet-path HP cutoffs.
+    for (const char* id : { "cave_hp", "dly_hp", "crush_hp" })
+    {
+        CHECK_MSG (range (id).start == 20.0f && range (id).end == 2000.0f,
+                   "%s range wrong", id);
+        CHECK_MSG (range (id).skew < 1.0f, "%s must be log-tapered", id);
+    }
     std::printf ("  defaults + range spot checks OK\n");
 }
 
@@ -271,7 +285,8 @@ static const char* kStressPresetJson = R"JSON(
     "crush_bits": 8, "crush_down": 16, "crush_mix": 0.5,
     "dly_time": "1/8D", "dly_fb": 0.5, "dly_pingpong": false, "dly_mix": 0.3,
     "cave_size": 0.7, "cave_damp": 0.2, "cave_mix": 0.4,
-    "vel_amp": 0.9, "raw": true, "master_gain": -66.5
+    "vel_amp": 0.9, "raw": true, "master_gain": -66.5,
+    "cave_hp": 150.0, "dly_hp": 95.5, "crush_hp": 2500.0
   }
 }
 )JSON";
@@ -306,7 +321,7 @@ static void test_render_plugin_agreement (BlockwaveAudioProcessor& proc)
         raw.toSnapshot (viaApvts);
 
         ParamSnapshot viaMapping;                       // tools/render path
-        CHECK_MSG (applyPresetParams (preset, viaMapping, err),
+        CHECK_MSG (applyPreset (preset, &proc.getRecipeBook(), viaMapping, err),
                    "PresetMapping failed: %s", err.toRawUTF8());
 
         double worst = 0.0;
@@ -328,6 +343,8 @@ static void test_render_plugin_agreement (BlockwaveAudioProcessor& proc)
                static_cast<double> (s.lfo2_rate));
     CHECK_MSG (std::abs (s.master_gain + 60.0f) < 1.0e-3f, "master_gain clamp: %f",
                static_cast<double> (s.master_gain));
+    CHECK_MSG (std::abs (s.crush_hp - 2000.0f) < 1.0e-3f, "crush_hp clamp: %f",
+               static_cast<double> (s.crush_hp));
 }
 
 // ---------------------------------------------------------------------------
@@ -377,18 +394,33 @@ static void test_factory_bank (BlockwaveAudioProcessor& proc)
 {
     std::printf ("[factory_bank]\n");
     auto& lib = proc.getPresetLibrary();
-    CHECK_MSG (lib.getNumPresets() >= 8, "factory bank has %d presets, expected 8",
-               lib.getNumPresets());
 
-    static const char* categories[] = { "LEAD", "BASS", "PLUCK", "PAD",
-                                        "KEYS", "CHIP", "PERC", "FX" };
-    for (const char* cat : categories)
+    // Phase-6 factory bank quota (docs/SOUND_DESIGN.md): 128 presets total,
+    // fixed count per category. Data-driven: counts come from the library,
+    // expectations from this table.
+    struct Quota { const char* category; int expected; };
+    static const Quota kQuota[] = { { "LEAD", 24 }, { "BASS", 20 },
+                                    { "PLUCK", 16 }, { "PAD", 16 },
+                                    { "KEYS", 12 }, { "CHIP", 16 },
+                                    { "PERC", 12 }, { "FX", 12 } };
+    int quotaTotal = 0, factoryTotal = 0;
+    for (const auto& q : kQuota)
+        quotaTotal += q.expected;
+    for (int i = 0; i < lib.getNumPresets(); ++i)
+        if (lib.getPreset (i).isFactory)
+            ++factoryTotal;
+    CHECK_MSG (quotaTotal == 128, "quota table sums to %d, expected 128", quotaTotal);
+    CHECK_MSG (factoryTotal == quotaTotal, "factory bank has %d presets, expected %d",
+               factoryTotal, quotaTotal);
+
+    for (const auto& q : kQuota)
     {
         int count = 0;
         for (int i = 0; i < lib.getNumPresets(); ++i)
-            if (lib.getPreset (i).isFactory && lib.getPreset (i).category == cat)
+            if (lib.getPreset (i).isFactory && lib.getPreset (i).category == q.category)
                 ++count;
-        CHECK_MSG (count == 1, "category %s has %d factory presets, expected 1", cat, count);
+        CHECK_MSG (count == q.expected, "category %s has %d factory presets, expected %d",
+                   q.category, count, q.expected);
     }
 
     // Category-grouped order + every preset loads.
@@ -404,10 +436,13 @@ static void test_factory_bank (BlockwaveAudioProcessor& proc)
         CHECK_MSG (proc.loadPresetAtIndex (i, err), "preset %d failed to load: %s",
                    i, err.toRawUTF8());
         CHECK_MSG (proc.getPresetName() == e.name, "loaded name mismatch at %d", i);
-        CHECK_MSG (e.author.contains ("TEMPORARY"),
-                   "dev preset '%s' not marked temporary", e.name.toRawUTF8());
+        if (e.isFactory)
+            CHECK_MSG (e.author == "BLOCKWAVE Factory",
+                       "factory preset '%s' has author '%s', expected \"BLOCKWAVE Factory\"",
+                       e.name.toRawUTF8(), e.author.toRawUTF8());
     }
-    std::printf ("  8 dev presets: one per category, ordered, all load\n");
+    std::printf ("  %d factory presets: category quotas met, ordered, all load\n",
+                 factoryTotal);
 }
 
 // ---------------------------------------------------------------------------
@@ -504,7 +539,12 @@ static void test_session_state_round_trip()
                "crush_bits lost in session state");
     CHECK_MSG (b.apvts.getRawParameterValue ("dly_time")->load() == 5.0f,
                "dly_time (choice '1/8D' = index 5) lost in session state");
-    std::printf ("  61 params + preset meta + craft survive the round trip\n");
+    // The Phase-6 addendum params must survive too (off-default in stress).
+    CHECK_MSG (std::abs (b.apvts.getRawParameterValue ("cave_hp")->load() - 150.0f) < 0.5f,
+               "cave_hp lost in session state");
+    CHECK_MSG (std::abs (b.apvts.getRawParameterValue ("dly_hp")->load() - 95.5f) < 0.5f,
+               "dly_hp lost in session state");
+    std::printf ("  64 params + preset meta + craft survive the round trip\n");
 }
 
 // ---------------------------------------------------------------------------
@@ -575,6 +615,18 @@ static void test_processor_pitch_bend_and_params()
 static void test_factory_presets_render_clean()
 {
     std::printf ("[factory_presets_render_clean]\n");
+    // Presets must be applied exactly like the plugin does (SPEC order:
+    // craft grid + recipe override first, then params), so load the shared
+    // recipe book and go through applyPreset, not applyPresetParams.
+    RecipeBook book;
+    {
+        int size = 0;
+        juce::String err;
+        const char* data = RecipeData::getNamedResource ("recipes_json", size);
+        CHECK_MSG (data != nullptr
+                       && book.loadFromJson (juce::String::fromUTF8 (data, size), err),
+                   "recipe book failed to load: %s", err.toRawUTF8());
+    }
     for (int i = 0; i < BinaryData::namedResourceListSize; ++i)
     {
         int size = 0;
@@ -586,7 +638,7 @@ static void test_factory_presets_render_clean()
 
         ParamSnapshot p;
         juce::String err;
-        CHECK_MSG (applyPresetParams (preset, p, err), "'%s': mapping failed: %s",
+        CHECK_MSG (applyPreset (preset, &book, p, err), "'%s': mapping failed: %s",
                    name.toRawUTF8(), err.toRawUTF8());
 
         auto r = renderNote (p, 57, 48000.0, 2.0, 5.0);

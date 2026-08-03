@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "name": "FELT MALLET",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "soft felt strike with distant air, attack pinned",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "",
+      "",
+      "WOOD",
+      "",
+      "",
+      "CLOUD",
+      ""
+    ]
+  },
+  "params": {
+    "env1_a": 0.002,
+    "filt_keytrack": 0.5,
+    "cave_hp": 180.0,
+    "master_gain": 6.0
+  }
+}

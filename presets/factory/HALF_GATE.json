@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "HALF GATE",
+  "category": "CHIP",
+  "author": "BLOCKWAVE Factory",
+  "note": "STONE alone on CHIP \u2014 hollow 50% duty, RAW and dry",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "STONE",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "vel_amp": 0.35,
+    "master_gain": -8.8
+  }
+}

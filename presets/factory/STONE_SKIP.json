@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "name": "STONE SKIP",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "dry STONE pluck \u2014 technique 7 chirp, RAW, zero reverb",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "",
+      "",
+      "STONE",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env2_pitch": 7,
+    "env2_d": 0.035,
+    "env1_d": 0.22,
+    "master_gain": 1.6
+  }
+}

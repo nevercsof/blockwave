@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "VELVET GLACIER",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "warm-cold PWM \u2014 WOOD rounds the ICE edge",
+  "craft": {
+    "base": "PAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "ICE",
+      "WOOD",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env1_r": 2.0,
+    "master_gain": 2.8
+  }
+}

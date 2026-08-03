@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "name": "DRIZZLE CHIME",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "glassy pluck into a dotted-1/8 feedback drizzle",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "",
+      "GLASS",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "dly_time": "1/8D",
+    "dly_fb": 0.5,
+    "dly_hp": 150.0,
+    "master_gain": 6.0
+  }
+}

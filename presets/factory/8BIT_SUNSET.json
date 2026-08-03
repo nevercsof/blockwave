@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "8BIT SUNSET",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 12+11 \u2014 RAW aliasing over lo-fi crush and slow pitch wobble",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "STONE",
+      "MOSS",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "dly_mix": 0.15,
+    "env1_r": 0.4,
+    "master_gain": -3.3
+  }
+}

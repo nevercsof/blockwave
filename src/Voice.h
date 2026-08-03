@@ -73,6 +73,10 @@ struct ModContext
 class Voice
 {
 public:
+    // The engine assigns each pool slot its index once (prepare); the index
+    // selects this voice's LFSR decorrelation seed (see LfsrNoise.h).
+    void setVoiceIndex (int idx) noexcept { voiceIndex = idx; }
+
     void prepare (double sampleRate) noexcept
     {
         sr = sampleRate;
@@ -85,6 +89,7 @@ public:
         env2.prepare (sampleRate);
         active = false;
         needsControlUpdate = true;
+        noiseResetPending = false;
     }
 
     void noteOn (int midiNote, float vel, std::uint32_t serialIn,
@@ -109,7 +114,12 @@ public:
                     stacks[i].b.reset (ph - std::floor (ph));
                 }
                 subOsc.reset();
-                noise.reset();
+                // Noise reset is deferred to the first control update: the
+                // decorrelation seed depends on noise_mode, which lives in the
+                // ParamSnapshot the render call carries. No noise sample is
+                // produced before that update runs (needsControlUpdate is set
+                // below), so the timing is identical to resetting here.
+                noiseResetPending = true;
                 svfL.reset();
                 svfR.reset();
             }
@@ -205,6 +215,12 @@ private:
     void updateControls (const ModContext& ctx) noexcept
     {
         const ParamSnapshot& p = *ctx.p;
+
+        if (noiseResetPending)
+        {
+            noise.resetForVoice (voiceIndex, p.noise_mode == NoiseMode::shortMode);
+            noiseResetPending = false;
+        }
 
         env1.setTimes (p.env1_a, p.env1_d, p.env1_s, p.env1_r);
         env2.setTimes (p.env2_a, p.env2_d, p.env2_s, p.env2_r);
@@ -304,6 +320,8 @@ private:
     std::uint32_t serial = 0;
     bool  active = false;
     bool  needsControlUpdate = true;
+    bool  noiseResetPending = false;
+    int   voiceIndex = 0;
 
     // Control-rate cache (valid between grid updates):
     double cIncA[kMaxUnison] {}, cIncB[kMaxUnison] {};

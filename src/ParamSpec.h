@@ -64,10 +64,14 @@ enum class PId : int
     dly_time, dly_fb, dly_pingpong, dly_mix,
     cave_size, cave_damp, cave_mix,
     vel_amp, raw, master_gain,
+    // FROZEN-TABLE ADDENDUM (Phase-6 producer feedback, pre-release): FX
+    // wet-path high-pass cutoffs, appended at the end per the append-only
+    // rule — every pre-existing index is untouched. Architect ack pending.
+    cave_hp, dly_hp, crush_hp,
     count
 };
 
-constexpr int kNumParams = static_cast<int> (PId::count);   // 61
+constexpr int kNumParams = static_cast<int> (PId::count);   // 64
 
 enum class PKind : int { boolean, integer, floating, choice };
 
@@ -162,6 +166,10 @@ inline const ParamDef& paramDef (PId id) noexcept
         { "vel_amp",       PKind::floating, 0.0f,    1.0f,    0.5f,    0.0f,  nullptr,            0 },
         { "raw",           PKind::boolean,  0.0f,    1.0f,    0.0f,    0.0f,  nullptr,            0 },
         { "master_gain",   PKind::floating, -60.0f,  6.0f,    0.0f,    0.0f,  nullptr,            0 },
+        // Frozen-table addendum (see PId): 20 Hz default = hard bypass.
+        { "cave_hp",       PKind::floating, 20.0f,   2000.0f, 20.0f,   200.0f, nullptr,           0 },
+        { "dly_hp",        PKind::floating, 20.0f,   2000.0f, 20.0f,   200.0f, nullptr,           0 },
+        { "crush_hp",      PKind::floating, 20.0f,   2000.0f, 20.0f,   200.0f, nullptr,           0 },
     };
     return defs[static_cast<int> (id)];
 }
@@ -349,6 +357,11 @@ inline void applyToSnapshot (ParamSnapshot& p, PId id, float v) noexcept
         case PId::cave_damp:    p.cave_damp = v; break;
         case PId::cave_mix:     p.cave_mix = v; break;
 
+        // FX wet-path HP (frozen-table addendum):
+        case PId::cave_hp:      p.cave_hp = v; break;
+        case PId::dly_hp:       p.dly_hp = v; break;
+        case PId::crush_hp:     p.crush_hp = v; break;
+
         case PId::count:
         default:
             break;
@@ -423,6 +436,9 @@ inline float snapshotToPlain (const ParamSnapshot& p, PId id) noexcept
         case PId::vel_amp:      return p.vel_amp;
         case PId::raw:          return p.raw ? 1.0f : 0.0f;
         case PId::master_gain:  return p.master_gain;
+        case PId::cave_hp:      return p.cave_hp;
+        case PId::dly_hp:       return p.dly_hp;
+        case PId::crush_hp:     return p.crush_hp;
         case PId::count:
         default:                return 0.0f;
     }

@@ -67,6 +67,46 @@ public:
         dcY1   = 0.0f;
     }
 
+    // ---- per-voice decorrelation (noise-polyphony fix, Phase-6 feedback) ----
+    //
+    // Every voice used to reset to seed 1, so a quantized chord played N
+    // perfectly IDENTICAL noise streams that summed coherently (+6 dB per
+    // doubling) — the engine's 1/sqrt(N) polyphony compensation assumes
+    // UNCORRELATED streams. Fix: voice k starts k * 7919 raw steps into the
+    // sequence of its current mode.
+    //   long  mode: an m-sequence's periodic autocorrelation at any nonzero
+    //               lag is -1/32767, so any distinct offsets decorrelate;
+    //               7919 steps ≈ 239 ms keeps comb spacing ~4 Hz (inaudible).
+    //               gcd(7919, 32767) = 1 -> all 16 offsets are distinct.
+    //   short mode: advancing from seed 1 stays inside the same 93-step
+    //               metallic loop (same timbre), phase-shifted by
+    //               (k * 7919) mod 93 = 14k mod 93 — distinct for k = 0..15.
+    // The offsets are PRECOMPUTED register states (table below) so a noteOn
+    // costs O(1) on the audio thread; the table is verified against live
+    // step() advancement by tests/TestMain.cpp (test_lfsr_voice_seeds).
+    // Voice 0 keeps seed 1 in both modes — single-note renders (all goldens)
+    // are bit-identical to the pre-fix engine.
+    static constexpr int kMaxSeedVoices = 16;
+    static constexpr std::uint16_t kVoiceSeedLong[kMaxSeedVoices] =
+        { 1, 12738, 29188, 24803, 10768, 9117, 22023, 25241,
+          2312, 29028, 27123, 89, 8759, 23524, 18921, 25922 };
+    static constexpr std::uint16_t kVoiceSeedShort[kMaxSeedVoices] =
+        { 1, 1026, 16420, 4681, 9216, 2336, 520, 1024,
+          18464, 4609, 146, 16672, 4169, 16, 16416, 577 };
+
+    // reset() with the voice's decorrelation seed for the given mode.
+    // voiceIndex 0 (and any out-of-range index) is plain reset().
+    void resetForVoice (int voiceIndex, bool shortMode) noexcept
+    {
+        reset();
+        if (voiceIndex > 0 && voiceIndex < kMaxSeedVoices)
+        {
+            reg    = shortMode ? kVoiceSeedShort[voiceIndex]
+                               : kVoiceSeedLong[voiceIndex];
+            curOut = outputBit();
+        }
+    }
+
     // shortMode selects the alternate tap (bit 6).
     float tick (bool shortMode) noexcept
     {

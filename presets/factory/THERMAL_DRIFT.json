@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "THERMAL DRIFT",
+  "category": "LEAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 14 \u2014 slow airborne glide, quarter-second slur",
+  "craft": {
+    "base": "LEAD",
+    "cells": [
+      "",
+      "",
+      "",
+      "",
+      "SLIME",
+      "",
+      "CLOUD",
+      ""
+    ]
+  },
+  "params": {
+    "voice_mode": "legato",
+    "glide_time": 0.25
+  }
+}

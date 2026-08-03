@@ -46,6 +46,24 @@ namespace blockwave
 // oscillators, re-measured comfortably realtime in the Phase-2 checkpoint.
 // The cap is deterministic and documented here — single source.
 //
+// NOISE POLYPHONY COMPENSATION (Phase-6 producer feedback): the LFSR noise is
+// pitch-independent, so unlike the tonal oscillators every extra held voice
+// piles the SAME noise band on top — polyphony made presets noisier
+// (+~1.5 dB per doubling uncorrelated, +6 dB for quantized chords with the
+// old shared seed). Fix, two halves:
+//   1. per-voice LFSR seeds decorrelate the streams (LfsrNoise.h), making
+//      the uncorrelated-power model true even for same-sample chords;
+//   2. the engine scales every voice's noise level by 1/sqrt(N), N = voices
+//      active at the control-chunk start (releasing voices still emit noise,
+//      so they stay counted until their envelope frees the voice). The scale
+//      rides the same ~25 ms one-pole as the other audible smoothers — note
+//      on/off never steps the noise floor.
+// Edge cases: mono/legato use one voice -> N = 1 -> scale 1 (no change).
+// Unison stacks share their voice's single LFSR (Voice.h), so unison needs no
+// compensation. Voice stealing keeps N constant (steal = still active). With
+// N = 1 the scale is exactly 1.0 from the first sample, so every single-note
+// render — including all goldens — is bit-identical to the pre-fix engine.
+//
 // MASTER SOFTCLIP: the engine chain ends in a fixed transparent softclip
 // (masterSoftclip below) — bit-exact unity below -0.3 dBFS, tanh-shaped
 // above, output strictly < 1.0 (0 dBFS). Always on, allocation-free. It is
@@ -71,13 +89,18 @@ public:
     void prepare (double sampleRate, int /*maxBlockSize*/) noexcept
     {
         sr = sampleRate;
-        for (auto& v : voices)
-            v.prepare (sampleRate);
+        for (int i = 0; i < kMaxVoices; ++i)
+        {
+            voices[i].setVoiceIndex (i);
+            voices[i].prepare (sampleRate);
+        }
         lfo1.prepare (sampleRate);
         lfo2.prepare (sampleRate);
         // ~25 ms one-pole smoothing; per-chunk alpha derived from the exact
         // chunk length so block-size splits are bit-identical.
         smoothLambda = -1.0f / (0.025f * static_cast<float> (sampleRate));
+        // Fixed one-control-grid-step alpha (see the noise-poly smoother).
+        alphaCtrl = 1.0f - std::exp (smoothLambda * static_cast<float> (kCtrlSamples));
         store.read (params);
         fx.prepare (sampleRate, params, tempoBpm.load (std::memory_order_relaxed));
         snapSmoothers();
@@ -251,6 +274,25 @@ public:
             sMaster += alpha * (tMaster - sMaster);
             sBend += alpha * (tBend - sBend);
 
+            // Noise polyphony compensation (see class comment). Unlike the
+            // smoothers above — whose targets are constant within a process()
+            // call, so per-chunk float exponentials compose bit-identically —
+            // this target moves whenever a voice starts or ends. It therefore
+            // steps exactly ONCE per absolute 16-sample grid interval with a
+            // fixed alpha (voices only sample it on grid-aligned control
+            // updates anyway), keeping renders bit-identical for every host
+            // block size. Voice active flags are settled at every grid
+            // boundary (chunks never span one), so the count is absolute too.
+            if (gridAligned)
+            {
+                int noisyVoices = 0;
+                for (const auto& v : voices)
+                    noisyVoices += v.isActive() ? 1 : 0;
+                const float tNoisePoly = 1.0f / std::sqrt (static_cast<float> (
+                                             noisyVoices < 1 ? 1 : noisyVoices));
+                sNoisePoly += alphaCtrl * (tNoisePoly - sNoisePoly);
+            }
+
             float l1buf[kCtrlSamples], l2buf[kCtrlSamples];
             for (int i = 0; i < chunk; ++i)
             {
@@ -262,7 +304,7 @@ public:
             ctx.p = &params;
             ctx.updateControls = gridAligned;
             ctx.lvlA = sLvlA; ctx.lvlB = sLvlB;
-            ctx.lvlSub = sLvlSub; ctx.lvlNoise = sLvlNoise;
+            ctx.lvlSub = sLvlSub; ctx.lvlNoise = sLvlNoise * sNoisePoly;
             ctx.pwA = sPwA; ctx.pwB = sPwB;
             ctx.cutoffLog2 = sCutLog2;
             ctx.filtEnv = sFiltEnv;
@@ -371,6 +413,7 @@ private:
         sFiltEnv = tFiltEnv = params.filt_env;
         sMaster = tMaster = params.master_gain <= -60.0f ? 0.0f
                           : powf (10.0f, params.master_gain * 0.05f);
+        sNoisePoly = 1.0f;      // no voices sounding after prepare()/reset()
     }
 
     double sr = 44100.0;
@@ -383,12 +426,14 @@ private:
     FxChain fx;
 
     float smoothLambda = -0.001f;
+    float alphaCtrl = 0.01f;              // fixed 16-sample smoothing step
     float tBend = 0.0f, sBend = 0.0f;     // pitch bend target / smoothed, semitones
     float sLvlA = 0.8f, sLvlB = 0.8f, sLvlSub = 0.7f, sLvlNoise = 0.5f;
     float sPwA = 0.5f, sPwB = 0.5f, sCutLog2 = 14.3f, sMaster = 1.0f;
     float tLvlA = 0.8f, tLvlB = 0.8f, tLvlSub = 0.7f, tLvlNoise = 0.5f;
     float tPwA = 0.5f, tPwB = 0.5f, tCutLog2 = 14.3f, tMaster = 1.0f;
     float sFiltEnv = 0.0f, tFiltEnv = 0.0f;   // ENV2 -> cutoff depth
+    float sNoisePoly = 1.0f;                  // smoothed 1/sqrt(active voices)
 
     HeldNote held[kMaxVoices] {};
     int heldCount = 0;

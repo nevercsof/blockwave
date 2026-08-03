@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "name": "STRATOSPHERE",
+  "category": "PAD",
+  "author": "BLOCKWAVE Factory",
+  "note": "hidden-recipe showcase: technique 13 \u2014 the vast high-altitude drone, 16-second PWM cycle",
+  "craft": {
+    "base": "DRONE",
+    "cells": [
+      "CLOUD",
+      "CLOUD",
+      "CLOUD",
+      "CLOUD",
+      "CLOUD",
+      "CLOUD",
+      "CLOUD",
+      "CLOUD"
+    ]
+  },
+  "params": {
+    "master_gain": -2.9
+  }
+}

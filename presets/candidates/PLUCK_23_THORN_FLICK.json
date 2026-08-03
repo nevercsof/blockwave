@@ -20,6 +20,7 @@
   "params": {
     "oscA_oct": 1,
     "env2_pitch": 7,
-    "env2_d": 0.03
+    "env2_d": 0.03,
+    "dly_hp": 150.0
   }
 }

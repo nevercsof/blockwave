@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "name": "ZAP TRENCH",
+  "category": "PERC",
+  "author": "BLOCKWAVE Factory",
+  "note": "technique 8 zap \u2014 +48 st laser fall with VOLT sparks",
+  "craft": {
+    "base": "PERC",
+    "cells": [
+      "",
+      "",
+      "",
+      "VOLT",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "env2_pitch": 48,
+    "env2_d": 0.15,
+    "filt_cutoff": 2500,
+    "master_gain": 2.3
+  }
+}

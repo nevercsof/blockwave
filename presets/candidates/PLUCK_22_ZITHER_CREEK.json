@@ -18,6 +18,8 @@
     ]
   },
   "params": {
-    "filt_keytrack": 0.5
+    "filt_keytrack": 0.5,
+    "cave_hp": 150.0,
+    "dly_hp": 150.0
   }
 }

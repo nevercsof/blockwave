@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "DOT MATRIX",
+  "category": "CHIP",
+  "author": "BLOCKWAVE Factory",
+  "note": "RAW + lo-fi crush \u2014 dot-matrix printhead lead",
+  "craft": {
+    "base": "CHIP",
+    "cells": [
+      "",
+      "STONE",
+      "",
+      "",
+      "MOSS",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "dly_mix": 0.15,
+    "master_gain": -5.5
+  }
+}

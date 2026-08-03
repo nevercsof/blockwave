@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "LOAM FLOOR",
+  "category": "BASS",
+  "author": "BLOCKWAVE Factory",
+  "note": "very dark, very warm \u2014 soil-deep",
+  "craft": {
+    "base": "BASS",
+    "cells": [
+      "",
+      "",
+      "",
+      "WOOD",
+      "OBSIDIAN",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_cutoff": 320,
+    "filt_keytrack": 0.7,
+    "master_gain": -9.8
+  }
+}

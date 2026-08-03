@@ -73,6 +73,14 @@ All oscillators are square/pulse. NOISE is an NES-style **LFSR** (1-bit linear f
 | vel_amp | 0..1 | 0.5 | velocity→amp depth |
 | raw | bool | off | polyBLEP bypass |
 | master_gain | −60..+6 dB | 0 | + fixed transparent softclip ceiling |
+| cave_hp | 20..2000 Hz | 20 | *(addendum, Phase-6 feedback)* HP on the CAVE wet input; 20 = bit-exact off; log taper, smoothed |
+| dly_hp | 20..2000 Hz | 20 | *(addendum)* HP on the DELAY line input (echoes filtered once, not per repeat); 20 = off |
+| crush_hp | 20..2000 Hz | 20 | *(addendum)* HP into the CRUSH quantizer (pre-quantize, wet path only); 20 = off |
+
+*Addendum note: the three `*_hp` parameters were appended to the frozen table
+(append-only rule — no existing ID, order, range or taper changed) after the
+Phase-6 listening review. One-pole (6 dB/oct) TPT high-pass on each FX's WET
+path only; the dry signal is never filtered.*
 
 Non-automatable state: craft grid contents (base + 8 cells), preset name/category, UI scale.
 

@@ -19,6 +19,7 @@
   },
   "params": {
     "voice_mode": "mono",
-    "env1_r": 0.2
+    "env1_r": 0.2,
+    "cave_hp": 100.0
   }
 }

@@ -110,6 +110,14 @@ struct ParamSnapshot
     float cave_size    = 0.5f;  // 0..1 -> FDN loop lengths + RT60
     float cave_damp    = 0.5f;  // 0..1 -> in-loop damping lowpass
     float cave_mix     = 0.0f;  // 0..1
+
+    // FX wet-path high-pass cutoffs (Phase-6 producer feedback; appended per
+    // the frozen-table append-only rule). 20 Hz = hard bypass (bit-exact).
+    // Each filters ONLY the signal entering its effect — reverb/delay tails
+    // and crushed wet stop rumbling while the dry path stays untouched.
+    float cave_hp      = 20.0f; // Hz, 20..2000 log
+    float dly_hp       = 20.0f;
+    float crush_hp     = 20.0f;
 };
 
 // Single-writer (message thread) / single-reader (audio thread) snapshot

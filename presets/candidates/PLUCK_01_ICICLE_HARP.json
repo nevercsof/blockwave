@@ -17,5 +17,8 @@
       "GLASS"
     ]
   },
-  "params": {}
+  "params": {
+    "cave_hp": 150.0,
+    "dly_hp": 150.0
+  }
 }

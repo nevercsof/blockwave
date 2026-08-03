@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "name": "ICICLE HARP",
+  "category": "PLUCK",
+  "author": "BLOCKWAVE Factory",
+  "note": "hidden-recipe showcase: technique 7 pitch-env chirp on a 14% pulse, dotted ping-pong ring",
+  "craft": {
+    "base": "PLUCK",
+    "cells": [
+      "GLASS",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "GLASS"
+    ]
+  },
+  "params": {
+    "cave_hp": 150.0,
+    "dly_hp": 150.0,
+    "master_gain": 6.0
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "formatVersion": 1,
+  "name": "CANYON CLAP",
+  "category": "PERC",
+  "author": "BLOCKWAVE Factory",
+  "note": "clap-ish noise burst answered by a cave slap-back",
+  "craft": {
+    "base": "PERC",
+    "cells": [
+      "",
+      "",
+      "",
+      "SAND",
+      "",
+      "",
+      "CLOUD",
+      ""
+    ]
+  },
+  "params": {
+    "env1_a": 0.001,
+    "oscA_level": 0.3,
+    "filt_cutoff": 1500,
+    "env1_d": 0.1,
+    "cave_mix": 0.25,
+    "master_gain": 6.0
+  }
+}

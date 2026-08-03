@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "name": "MEADOW SUNDAY",
+  "category": "KEYS",
+  "author": "BLOCKWAVE Factory",
+  "note": "wide warm Sunday keys",
+  "craft": {
+    "base": "KEYS",
+    "cells": [
+      "",
+      "WOOD",
+      "",
+      "",
+      "GOLD",
+      "",
+      "",
+      ""
+    ]
+  },
+  "params": {
+    "filt_keytrack": 0.5,
+    "master_gain": 2.1
+  }
+}
