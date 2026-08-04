@@ -27,7 +27,8 @@
 // The discovery states drive the REAL code path (setCraftGrid -> recipe match
 // -> DiscoveryStore -> UI poll -> toast), with the discovery file redirected
 // to a temporary location so a run never touches the user's own
-// Discoveries.json and always starts from zero found.
+// Discoveries.json and always starts from zero found. The FAVORITES store is
+// redirected the same way (zero stars at the start of every run).
 
 #include <iostream>
 #include <juce_gui_basics/juce_gui_basics.h>
@@ -83,7 +84,7 @@ int main (int argc, char* argv[])
     outDir.createDirectory();
 
     bool ok = true;
-    juce::File discoveryFile;
+    juce::File discoveryFile, favoritesFile;
     {
         BlockwaveAudioProcessor proc;
 
@@ -91,6 +92,12 @@ int main (int argc, char* argv[])
         discoveryFile = juce::File::createTempFile ("blockwave_discoveries.json");
         discoveryFile.deleteFile();
         proc.getDiscoveries().setFile (discoveryFile);
+
+        // Same for FAVORITES: a run always starts from zero stars and never
+        // touches the user's own Favorites.json.
+        favoritesFile = juce::File::createTempFile ("blockwave_favorites.json");
+        favoritesFile.deleteFile();
+        proc.getPresetLibrary().setFavoritesFile (favoritesFile);
 
         // Load the first factory preset so the top bar shows a real name.
         juce::String err;
@@ -232,8 +239,50 @@ int main (int argc, char* argv[])
         pump();
         ok = shoot (*editor, { 96, 48, 640, 240 },
                     outDir.getChildFile ("preset_browser_icons_1x.png")) && ok;
+
+        // 7b) FAVORITES (producer request). Empty state first — the folder
+        //     exists at (0) and the list explains itself — then a handful of
+        //     presets starred through the library API and the FAVORITES
+        //     folder selected, showing the cross-bank grouped list.
+        using Browser = blockwave::ui::PresetBrowser;
+        if (editor->getBrowser().selectFolder (Browser::kFavoritesBank, {}))
+        {
+            pump();
+            ok = shoot (*editor, editor->getLocalBounds(),
+                        outDir.getChildFile ("preset_browser_favorites_empty_1x.png")) && ok;
+        }
+        else
+        {
+            std::cerr << "FAVORITES folder missing — no empty-state shot\n";
+            ok = false;
+        }
+
+        {
+            auto& lib = proc.getPresetLibrary();
+            // Spread the stars across categories so the grouped list shows
+            // more than one header.
+            const int n = lib.getNumPresets();
+            for (int i = 0; i < n; i += juce::jmax (1, n / 5))
+                lib.toggleFavorite (i);
+            editor->getBrowser().refresh();
+            editor->getBrowser().selectFolder (Browser::kFavoritesBank, {});
+            pump();
+            ok = shoot (*editor, editor->getLocalBounds(),
+                        outDir.getChildFile ("preset_browser_favorites_1x.png")) && ok;
+            // Zoom: gold filled stars vs dim hollow ones, side by side.
+            editor->getBrowser().selectFolder (-1, {});
+            pump();
+            ok = shoot (*editor, { 96, 48, 640, 200 },
+                        outDir.getChildFile ("preset_browser_stars_1x.png")) && ok;
+        }
         editor->showPresetBrowser (false);
         pump();
+
+        // 7c) Top bar with the current preset starred (the star toggle).
+        editor->getTopBar().refresh();
+        pump();
+        ok = shoot (*editor, { 0, 0, 832, 40 },
+                    outDir.getChildFile ("topbar_favorite_1x.png")) && ok;
 
         // 8) Mini recipe icon proof sheet: the same 12x12 renderer the preset
         //    browser uses, at true size and blown up 4x (nearest neighbour).
@@ -275,6 +324,7 @@ int main (int argc, char* argv[])
     }
 
     discoveryFile.deleteFile();
+    favoritesFile.deleteFile();
     std::cout << (ok ? "all screenshots written\n" : "SOME SCREENSHOTS FAILED\n");
     return ok ? 0 : 1;
 }

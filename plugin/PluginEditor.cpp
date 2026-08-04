@@ -82,6 +82,7 @@ BlockwaveAudioProcessorEditor::BlockwaveAudioProcessorEditor (BlockwaveAudioProc
         craftTab.refreshFromProcessor();          // preset carries a craft grid
     };
     topBar.onScaleChange = [this] (int s) { setUiScale (s); };
+    topBar.onFavoriteToggled = [this] { browser.refresh(); };
 
     browser.onLoad = [this] (int index)
     {
@@ -92,6 +93,7 @@ BlockwaveAudioProcessorEditor::BlockwaveAudioProcessorEditor (BlockwaveAudioProc
         craftTab.refreshFromProcessor();
     };
     browser.onClose = [this] { showPresetBrowser (false); };
+    browser.onFavoritesChanged = [this] { topBar.refresh(); };
 
     savePanel.onSave = [this] (const juce::String& name, const juce::String& category)
     {

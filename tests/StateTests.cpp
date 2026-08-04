@@ -25,6 +25,8 @@
 //   - preset save round trip (minimal overrides, canonical representations)
 //   - factory bank (128 presets, fixed per-category quotas)
 //   - PresetLibrary browser model: ordering, next/prev wrap, lazy user folder
+//   - FAVORITES: lazy Favorites.json, "CATEGORY/NAME" identity key, both
+//     banks, persistence across a reload and a rescan, deleted presets
 //   - host session state round trip (params + preset meta + craft +
 //     formatVersion)
 //   - processBlock wiring: APVTS -> engine, MIDI pitch bend ±2 st
@@ -497,6 +499,124 @@ static void test_preset_library_model()
 
     tmp.deleteRecursively();
     std::printf ("  ordering, wrap, lazy folder, save/rescan OK\n");
+}
+
+// ---------------------------------------------------------------------------
+// FAVORITES (producer request). Identity key is "CATEGORY/NAME" so the same
+// sound stays starred across restarts, rescans and both banks.
+static void test_favorites_store()
+{
+    std::printf ("[favorites]\n");
+    auto tmp = juce::File::getSpecialLocation (juce::File::tempDirectory)
+                   .getChildFile ("blockwave_state_tests_favorites");
+    tmp.deleteRecursively();
+    tmp.createDirectory();
+    const auto favFile = tmp.getChildFile ("Favorites.json");
+    const auto presetDir = tmp.getChildFile ("Presets");
+
+    {
+        PresetLibrary lib (presetDir);
+        lib.setFavoritesFile (favFile);
+        CHECK_MSG (! favFile.exists(), "favorites file must not be created eagerly");
+
+        lib.addFactoryPresetJson (R"({"formatVersion":1,"name":"F LEAD","category":"LEAD","author":"f","params":{}})");
+        lib.addFactoryPresetJson (R"({"formatVersion":1,"name":"F BASS","category":"BASS","author":"f","params":{}})");
+        lib.rescanUserPresets();
+        CHECK_MSG (! favFile.exists(), "scanning must not create the favorites file");
+        CHECK_MSG (lib.getNumFavorites() == 0, "fresh library must have 0 favorites");
+
+        // Toggle on: file appears now (lazy creation), flag + count follow.
+        CHECK_MSG (lib.toggleFavorite (0), "toggle must report the new state (on)");
+        CHECK_MSG (favFile.existsAsFile(), "first favorite must create the file");
+        CHECK_MSG (lib.isFavorite (0), "preset 0 should be a favorite");
+        CHECK_MSG (! lib.isFavorite (1), "preset 1 must be untouched");
+        CHECK_MSG (lib.getPreset (0).isFavorite, "Entry::isFavorite not mirrored");
+        CHECK_MSG (lib.getNumFavorites() == 1, "expected 1 favorite, got %d",
+                   lib.getNumFavorites());
+
+        // A user preset can be favorited too (both banks, same key scheme).
+        juce::String err;
+        const auto userPreset = juce::JSON::parse (
+            R"({"formatVersion":1,"name":"MY BASS","category":"BASS","author":"User","params":{}})");
+        CHECK_MSG (lib.saveUserPreset (userPreset, err), "save failed: %s", err.toRawUTF8());
+        const int userIdx = lib.indexOfName ("MY BASS");
+        CHECK_MSG (userIdx >= 0, "user preset missing after save");
+        CHECK_MSG (! lib.getPreset (userIdx).isFactory, "expected a user preset");
+        CHECK_MSG (lib.toggleFavorite (userIdx), "user preset must be favoritable");
+        CHECK_MSG (lib.getNumFavorites() == 2, "expected 2 favorites, got %d",
+                   lib.getNumFavorites());
+
+        // Favorites survive a rescan (the key is category+name, not filename).
+        lib.rescanUserPresets();
+        CHECK_MSG (lib.getNumFavorites() == 2, "favorites lost across rescan (%d)",
+                   lib.getNumFavorites());
+        CHECK_MSG (lib.isFavorite (lib.indexOfName ("MY BASS")),
+                   "user favorite lost across rescan");
+        CHECK_MSG (lib.isFavorite (lib.indexOfName ("F LEAD")),
+                   "factory favorite lost across rescan");
+
+        // Toggle off persists too.
+        CHECK_MSG (! lib.toggleFavorite (lib.indexOfName ("F LEAD")),
+                   "toggle must report the new state (off)");
+        CHECK_MSG (lib.getNumFavorites() == 1, "un-starring did not stick");
+
+        // Out-of-range indices are no-ops, never crashes.
+        CHECK_MSG (! lib.toggleFavorite (-1), "toggleFavorite(-1) must be a no-op");
+        CHECK_MSG (! lib.toggleFavorite (9999), "toggleFavorite(oob) must be a no-op");
+        CHECK_MSG (! lib.isFavorite (-1), "isFavorite(-1) must be false");
+        CHECK_MSG (lib.getNumFavorites() == 1, "no-op toggles changed the count");
+    }
+
+    // Fresh library over the same file: the star survived the "restart".
+    {
+        PresetLibrary lib (presetDir);
+        lib.setFavoritesFile (favFile);
+        lib.addFactoryPresetJson (R"({"formatVersion":1,"name":"F LEAD","category":"LEAD","author":"f","params":{}})");
+        lib.addFactoryPresetJson (R"({"formatVersion":1,"name":"F BASS","category":"BASS","author":"f","params":{}})");
+        lib.rescanUserPresets();
+        CHECK_MSG (lib.getNumFavorites() == 1, "favorite did not survive a reload (%d)",
+                   lib.getNumFavorites());
+        CHECK_MSG (lib.isFavorite (lib.indexOfName ("MY BASS")),
+                   "the wrong preset came back starred");
+
+        // Deleting the user preset: no crash, it drops out of the count and
+        // out of the library, and it does not resurrect as a phantom row.
+        presetDir.getChildFile ("MY BASS.json").deleteFile();
+        lib.rescanUserPresets();
+        CHECK_MSG (lib.indexOfName ("MY BASS") < 0, "deleted preset still listed");
+        CHECK_MSG (lib.getNumFavorites() == 0,
+                   "deleted preset still counted as a favorite (%d)",
+                   lib.getNumFavorites());
+        CHECK_MSG (lib.getFavorites().getNumKeys() == 1,
+                   "the key should stay on file for when the preset returns");
+
+        // ...and when the preset comes back, so does its star.
+        juce::String err;
+        CHECK_MSG (lib.saveUserPreset (juce::JSON::parse (
+                       R"({"formatVersion":1,"name":"MY BASS","category":"BASS","author":"User","params":{}})"),
+                   err), "re-save failed: %s", err.toRawUTF8());
+        CHECK_MSG (lib.getNumFavorites() == 1, "restored preset lost its star");
+    }
+
+    // Key shape: category + "/" + name, upper-cased.
+    {
+        PresetLibrary::Entry e;
+        e.name = "my bass";
+        e.category = "bass";
+        CHECK_MSG (PresetLibrary::favoriteKey (e) == "BASS/MY BASS",
+                   "unexpected favorite key: %s",
+                   PresetLibrary::favoriteKey (e).toRawUTF8());
+    }
+
+    // The default file lives next to Discoveries.json and is never created.
+    const auto def = FavoritesStore::defaultFile();
+    CHECK_MSG (def.getFullPathName().contains ("Documents")
+                   && def.getFileName() == "Favorites.json"
+                   && def.getParentDirectory().getFileName() == "BLOCKWAVE",
+               "unexpected favorites path: %s", def.getFullPathName().toRawUTF8());
+
+    tmp.deleteRecursively();
+    std::printf ("  lazy file, persistence, rescan, both banks, deletion OK\n");
 }
 
 // ---------------------------------------------------------------------------
@@ -1390,6 +1510,7 @@ int main()
         craftcoverage::test_craft_transition_click_free (proc);
     }
     test_preset_library_model();
+    test_favorites_store();
     test_session_state_round_trip();
     test_processor_pitch_bend_and_params();
     test_factory_presets_render_clean();

@@ -30,12 +30,32 @@
 namespace blockwave::ui
 {
 
+// 16x16 star toggle: procedural pixel art, no LookAndFeel button chrome.
+// Lit = the current preset is a favorite. Keyboard-reachable like every
+// other top-bar control.
+class StarButton final : public juce::Button
+{
+public:
+    StarButton() : juce::Button ("FAVORITE") { setWantsKeyboardFocus (true); }
+    void setLit (bool shouldBeLit)
+    {
+        if (shouldBeLit != lit) { lit = shouldBeLit; repaint(); }
+    }
+    bool isLit() const { return lit; }
+    void paintButton (juce::Graphics&, bool highlighted, bool down) override;
+
+private:
+    bool lit = false;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (StarButton)
+};
+
 class TopBar final : public juce::Component
 {
 public:
     explicit TopBar (BlockwaveAudioProcessor& processor);
 
     std::function<void()> onBrowse, onSave, onPresetChanged;
+    std::function<void()> onFavoriteToggled;                 // browser count changed
     std::function<void (int)> onScaleChange;                 // percent: 100..200
 
     void refresh();                                          // preset name/cat
@@ -52,6 +72,7 @@ private:
                      browseBtn { "PRESETS" }, saveBtn { "SAVE" },
                      scaleBtn { "100%" };
     juce::ToggleButton rawBtn { "RAW" };
+    StarButton favBtn;
     PixelSlider masterKnob { juce::Slider::RotaryVerticalDrag,
                              juce::Slider::NoTextBox };
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> rawAtt;

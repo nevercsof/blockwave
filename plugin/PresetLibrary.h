@@ -30,6 +30,7 @@
 
 #include <vector>
 #include <juce_core/juce_core.h>
+#include "FavoritesStore.h"
 
 namespace blockwave
 {
@@ -52,6 +53,7 @@ public:
     {
         juce::String name, category, author;
         bool isFactory = false;
+        bool isFavorite = false;                 // mirrors FavoritesStore
         juce::var root;                          // parsed preset JSON
         juce::File file;                         // invalid for factory entries
     };
@@ -134,6 +136,57 @@ public:
         return -1;
     }
 
+    // ---- favorites (producer request; message thread only) -----------------
+    //
+    // Identity key is "CATEGORY/NAME" upper-cased — stable across restarts
+    // and identical for factory and user presets (rationale in
+    // FavoritesStore.h). The flags on Entry are a cache of the store and are
+    // re-applied after every rebuild, so favorites survive rescanUserPresets()
+    // and addFactoryPresetJson().
+
+    static juce::String favoriteKey (const Entry& e)
+    {
+        return e.category.trim().toUpperCase() + "/" + e.name.trim().toUpperCase();
+    }
+
+    FavoritesStore& getFavorites() { return favorites; }
+    const FavoritesStore& getFavorites() const { return favorites; }
+
+    // Test/tool injection: point the store at another file and re-sync flags.
+    void setFavoritesFile (const juce::File& f)
+    {
+        favorites.setFile (f);
+        applyFavoriteFlags();
+    }
+
+    bool isFavorite (int index) const
+    {
+        return index >= 0 && index < getNumPresets() && getPreset (index).isFavorite;
+    }
+
+    // Flips the favorite state of a listed preset and persists it (the file
+    // is created lazily on the first add). Returns the NEW state.
+    bool toggleFavorite (int index)
+    {
+        if (index < 0 || index >= getNumPresets())
+            return false;
+        auto& e = *sorted[static_cast<size_t> (index)];
+        const bool now = favorites.toggle (favoriteKey (e));
+        applyFavoriteFlags();                    // name collisions stay in sync
+        return now;
+    }
+
+    // Favorited presets that are actually installed right now. Keys of
+    // deleted user presets stay on file but are NOT counted or listed.
+    int getNumFavorites() const
+    {
+        int n = 0;
+        for (const auto* e : sorted)
+            if (e->isFavorite)
+                ++n;
+        return n;
+    }
+
     // ---- saving ------------------------------------------------------------
 
     // Writes a user preset JSON (name/category read from the var). Creates
@@ -209,11 +262,20 @@ private:
                      : (sorted.empty() ? -1 : 0);
         if (currentIndex < 0 && ! sorted.empty())
             currentIndex = 0;
+
+        applyFavoriteFlags();
+    }
+
+    void applyFavoriteFlags()
+    {
+        for (auto* e : sorted)
+            e->isFavorite = favorites.contains (favoriteKey (*e));
     }
 
     juce::File userFolder;
     std::vector<Entry> factory, user;
     std::vector<Entry*> sorted;
+    FavoritesStore favorites { FavoritesStore::defaultFile() };
     int currentIndex = -1;
 };
 

@@ -20,7 +20,7 @@
 
 // Preset browser overlay, Arturia-style two-pane folder navigation:
 //
-//   left pane  — folder tree: ALL, then the FACTORY and USER banks, each
+//   left pane  — folder tree: FAVORITES, ALL, then the FACTORY and USER banks, each
 //                holding its categories (LEAD, BASS, ... "PAD (16)") as
 //                pixel folder icons with preset counts;
 //   right pane — the presets of the selected folder. ALL / bank folders
@@ -31,7 +31,14 @@
 // (SPEC §UI: users learn crafting by inspecting factory sounds).
 // Keyboard: up/down walks the focused pane (folders filter immediately),
 // tab / right into the list, left back to the folders, enter loads,
-// escape closes. Wheel scrolls the pane under the mouse.
+// F stars/unstars the focused row, escape closes. Wheel scrolls the pane
+// under the mouse.
+//
+// FAVORITES (producer request): every row carries an 8x8 star toggle at its
+// right edge — clicking the star area toggles and does NOT load the preset
+// (the star is hit-tested before the row). The FAVORITES folder sits at the
+// top of the tree with a live count and lists every starred preset across
+// both banks, grouped by category; empty, it shows a pixel hint.
 //
 // SavePanel: minimal pixel-art save dialog — name entry drawn with the
 // bitmap font (own key handling, no native text editor), category cycler,
@@ -51,11 +58,16 @@ public:
 
     std::function<void (int)> onLoad;                 // library index
     std::function<void()> onClose;
+    std::function<void()> onFavoritesChanged;         // top-bar star follows
 
     void refresh();                                   // rebuild folders + rows
 
+    // Bank id of the FAVORITES pseudo-folder (not a real preset bank).
+    static constexpr int kFavoritesBank = 2;
+
     // Select a folder programmatically (also used by tools/screenshots).
-    // bank: -1 = ALL, 0 = FACTORY, 1 = USER; category empty = whole bank.
+    // bank: -1 = ALL, 0 = FACTORY, 1 = USER, kFavoritesBank = FAVORITES;
+    // category empty = whole bank.
     // Returns false when no such folder exists (e.g. empty category).
     bool selectFolder (int bank, const juce::String& category);
 
@@ -95,6 +107,8 @@ private:
     void rebuildRows();                               // from the selected folder
     int rowAt (juce::Point<int> pos) const;
     int folderAt (juce::Point<int> pos) const;
+    juce::Rectangle<int> starRectForRow (int rowIndex) const;   // canvas coords
+    void toggleFavoriteRow (int rowIndex);
     void setFolderCursor (int index);
     void moveCursor (int delta);
     void moveFolderCursor (int delta);

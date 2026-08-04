@@ -21,6 +21,19 @@
 namespace blockwave::ui
 {
 
+void StarButton::paintButton (juce::Graphics& g, bool highlighted, bool down)
+{
+    using namespace colours;
+    // Sunken chip well so the star sits in the bar like the other controls.
+    drawBevelBox (g, getLocalBounds(), chip, panelDark, panelLight, outline, true);
+    const int x = (getWidth() - 8) / 2 + (down ? 1 : 0);
+    const int y = (getHeight() - 8) / 2 + (down ? 1 : 0);
+    drawPixelStar (g, x, y, lit, starGold,
+                   highlighted ? label : panelFace);
+    if (hasKeyboardFocus (false))
+        drawFocusTicks (g, getLocalBounds());
+}
+
 TopBar::TopBar (BlockwaveAudioProcessor& processor) : proc (processor)
 {
     setOpaque (true);
@@ -45,6 +58,17 @@ TopBar::TopBar (BlockwaveAudioProcessor& processor) : proc (processor)
     saveBtn.setTooltip ("save user preset");
     saveBtn.onClick = [this] { if (onSave) onSave(); };
     addAndMakeVisible (saveBtn);
+
+    favBtn.setTooltip ("star this sound");
+    favBtn.onClick = [this]
+    {
+        auto& lib = proc.getPresetLibrary();
+        lib.toggleFavorite (lib.getCurrentIndex());
+        refresh();
+        if (onFavoriteToggled)
+            onFavoriteToggled();
+    };
+    addAndMakeVisible (favBtn);
 
     rawBtn.setComponentID ("led");
     rawBtn.setTooltip ("aliased retro dirt");
@@ -88,6 +112,8 @@ void TopBar::refresh()
     const auto name = proc.getPresetName();
     const auto cat  = proc.getPresetCategory();
     nameBtn.setButtonText (cat.isNotEmpty() ? cat + " : " + name : name);
+    auto& lib = proc.getPresetLibrary();
+    favBtn.setLit (lib.isFavorite (lib.getCurrentIndex()));
     repaint();
 }
 
@@ -121,6 +147,7 @@ void TopBar::resized()
     nextBtn.setBounds   (280, 12, 16, 16);
     browseBtn.setBounds (304, 12, 64, 16);
     saveBtn.setBounds   (376, 12, 48, 16);
+    favBtn.setBounds    (432, 12, 16, 16);             // 8-px grid, clear of RAW
     rawBtn.setBounds    (648, 12, 56, 16);
     masterKnob.setBounds (712, 8, 24, 24);
     scaleBtn.setBounds  (784, 12, 40, 16);             // fits "100%" at 1x

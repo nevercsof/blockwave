@@ -41,6 +41,7 @@ namespace
         g.setColour (body.brighter (0.35f));
         g.fillRect (x + 1, y + 2, 8, 1);             // lid highlight
     }
+
 }
 
 PresetBrowser::PresetBrowser (BlockwaveAudioProcessor& processor)
@@ -86,6 +87,9 @@ void PresetBrowser::rebuildFolders()
     folders.clear();
     const auto& lib = proc.getPresetLibrary();
 
+    // FAVORITES sits above ALL and is always present — at (0) it doubles as
+    // the "you can star things" affordance.
+    folders.push_back ({ "FAVORITES", kFavoritesBank, -1, 0, lib.getNumFavorites() });
     folders.push_back ({ "ALL", -1, -1, 0, lib.getNumPresets() });
 
     for (int bank = 0; bank < 2; ++bank)             // 0 factory, 1 user
@@ -122,7 +126,12 @@ void PresetBrowser::rebuildRows()
     for (int i = 0; i < lib.getNumPresets(); ++i)
     {
         const auto& e = lib.getPreset (i);
-        if (f.bank >= 0 && e.isFactory != (f.bank == 0))
+        if (f.bank == kFavoritesBank)
+        {
+            if (! e.isFavorite)                      // starred, any bank
+                continue;
+        }
+        else if (f.bank >= 0 && e.isFactory != (f.bank == 0))
             continue;
         if (f.catRank >= 0 && categoryRank (e.category) != f.catRank)
             continue;
@@ -234,11 +243,21 @@ void PresetBrowser::paint (juce::Graphics& g)
             }
 
             const int ix = fInner.getX() + 4 + f.indent * 12;
-            const auto body = f.bank < 0 ? grass
-                            : f.indent == 0 ? stone : dirt.brighter (0.25f);
-            drawFolderIcon (g, ix, y + 4, body);
+            const bool isFavFolder = f.bank == kFavoritesBank;
+            if (isFavFolder)
+            {
+                // A star, not a folder: it is a view, not a bank on disk.
+                drawPixelStar (g, ix + 1, y + 4, f.count > 0, colours::starGold, stone);
+            }
+            else
+            {
+                const auto body = f.bank < 0 ? grass
+                                : f.indent == 0 ? stone : dirt.brighter (0.25f);
+                drawFolderIcon (g, ix, y + 4, body);
+            }
 
             const auto textCol = sel ? label
+                               : isFavFolder ? colours::starGold
                                : f.indent == 0 ? grass : dimText;
             drawPixelText (g, f.label, ix + 14, y + 5, 1, textCol);
 
@@ -292,9 +311,25 @@ void PresetBrowser::paint (juce::Graphics& g)
 
         drawPixelText (g, row.text, list.getX() + 28, y + 5, 1,
                        isCurrent ? label : dimText);
+
+        // Star toggle: its own click target (see starRectForRow / mouseDown).
+        drawPixelStar (g, list.getRight() - 30, y + 4,
+                  proc.getPresetLibrary().isFavorite (row.presetIndex),
+                  colours::starGold, panelFace);
+
         drawPixelText (g, row.isFactory ? "F" : "U",
                        list.getRight() - 12, y + 5, 1,
                        row.isFactory ? stone : lava);
+    }
+
+    // Empty FAVORITES: the folder still exists, so say what it is for.
+    if (presetsListed == 0 && selectedFolder().bank == kFavoritesBank)
+    {
+        drawPixelStar (g, list.getCentreX() - 4, list.getY() + 40, false,
+                  colours::starGold, panelFace);
+        const juce::String hint ("STAR A PRESET TO PIN IT");
+        drawPixelText (g, hint, list.getCentreX() - pixelTextWidth (hint, 1) / 2,
+                       list.getY() + 56, 1, dimText);
     }
 }
 
@@ -305,6 +340,50 @@ int PresetBrowser::rowAt (juce::Point<int> pos) const
         return -1;
     const int r = (pos.y - list.getY() + scrollY) / kRowH;
     return r >= 0 && r < static_cast<int> (rows.size()) ? r : -1;
+}
+
+// The star's click target: 16x16 around the 8x8 art, so it is comfortable
+// at 1x without eating the preset name.
+juce::Rectangle<int> PresetBrowser::starRectForRow (int rowIndex) const
+{
+    if (rowIndex < 0 || rowIndex >= static_cast<int> (rows.size())
+        || rows[static_cast<size_t> (rowIndex)].header)
+        return {};
+    const auto list = listRect().reduced (3);
+    const int y = list.getY() - scrollY + rowIndex * kRowH;
+    return { list.getRight() - 34, y, 16, kRowH };
+}
+
+void PresetBrowser::toggleFavoriteRow (int rowIndex)
+{
+    if (rowIndex < 0 || rowIndex >= static_cast<int> (rows.size()))
+        return;
+    const auto& row = rows[static_cast<size_t> (rowIndex)];
+    if (row.header || row.presetIndex < 0)
+        return;
+
+    proc.getPresetLibrary().toggleFavorite (row.presetIndex);
+
+    // The FAVORITES count (and, inside that folder, the list itself) changed.
+    const auto keepBank = selectedFolder().bank;
+    const auto keepRank = selectedFolder().catRank;
+    const int keepScroll = scrollY;
+    rebuildFolders();
+    for (size_t i = 0; i < folders.size(); ++i)
+        if (folders[i].bank == keepBank && folders[i].catRank == keepRank)
+            folderCursor = static_cast<int> (i);
+    if (keepBank == kFavoritesBank)
+    {
+        rebuildRows();                               // the row may have left
+    }
+    else
+    {
+        scrollY = keepScroll;                        // stay exactly where we are
+        repaint();
+    }
+
+    if (onFavoritesChanged)
+        onFavoritesChanged();
 }
 
 int PresetBrowser::folderAt (juce::Point<int> pos) const
@@ -354,6 +433,12 @@ void PresetBrowser::mouseDown (const juce::MouseEvent& e)
     {
         focusList = true;
         cursor = r;
+        // Star first: clicking the star ONLY toggles, it never loads.
+        if (starRectForRow (r).contains (e.getPosition()))
+        {
+            toggleFavoriteRow (r);
+            return;
+        }
         loadRow (r);
     }
 }
@@ -462,6 +547,11 @@ bool PresetBrowser::keyPressed (const juce::KeyPress& k)
     if (k.isKeyCode (juce::KeyPress::returnKey))
     {
         loadRow (cursor);
+        return true;
+    }
+    if (juce::CharacterFunctions::toUpperCase (k.getTextCharacter()) == 'F')
+    {
+        toggleFavoriteRow (cursor);                  // star the focused row
         return true;
     }
     return false;

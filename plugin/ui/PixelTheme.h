@@ -91,6 +91,44 @@ inline void drawBevelBox (juce::Graphics& g, juce::Rectangle<int> r,
     g.fillRect (inner.getRight() - bevel, inner.getY(), bevel, inner.getHeight());
 }
 
+// ---- FAVORITES star (producer request) --------------------------------------
+// 8x8 chunky star drawn from scratch on the pixel grid, shared by the preset
+// browser rows/tree and the top bar. Filled = lit gold with a darker gold
+// rim; hollow = rim pixels only, so an unstarred preset still reads as "you
+// can star this". Gold is the GOLD material face colour.
+
+namespace colours { inline const juce::Colour starGold { 0xffffcc33 }; }
+
+inline bool pixelStarOn (int px, int py)
+{
+    static const char* const rows[8] = { "   ##   ",
+                                         "  ####  ",
+                                         "########",
+                                         " ###### ",
+                                         "  ####  ",
+                                         " ###### ",
+                                         " ##  ## ",
+                                         "##    ##" };
+    return px >= 0 && px < 8 && py >= 0 && py < 8 && rows[py][px] == '#';
+}
+
+inline void drawPixelStar (juce::Graphics& g, int x, int y, bool filled,
+                           juce::Colour face, juce::Colour edge)
+{
+    for (int py = 0; py < 8; ++py)
+        for (int px = 0; px < 8; ++px)
+        {
+            if (! pixelStarOn (px, py))
+                continue;
+            const bool isEdge = ! pixelStarOn (px - 1, py) || ! pixelStarOn (px + 1, py)
+                             || ! pixelStarOn (px, py - 1) || ! pixelStarOn (px, py + 1);
+            if (! filled && ! isEdge)
+                continue;                            // hollow: rim only
+            g.setColour (! filled ? edge : (isEdge ? face.darker (0.4f) : face));
+            g.fillRect (x + px, y + py, 1, 1);
+        }
+}
+
 // Small ice corner ticks marking keyboard focus (crisp, no glow).
 inline void drawFocusTicks (juce::Graphics& g, juce::Rectangle<int> r)
 {
