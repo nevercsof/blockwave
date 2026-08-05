@@ -19,6 +19,7 @@
   },
   "params": {
     "sub_level": 0.85,
-    "master_gain": -1.6
+    "master_gain": -1.6,
+    "dly_hp": 100.0
   }
 }

@@ -65,9 +65,18 @@ static juce::String hzText (float v)
 }
 
 juce::String formatParamValue (PId id, float v,
-                               const juce::AudioProcessorValueTreeState& state)
+                               const juce::AudioProcessorValueTreeState& state,
+                               int syncOverride)
 {
     const auto& d = paramDef (id);
+
+    const auto isSynced = [&state, syncOverride] (const char* switchId)
+    {
+        if (syncOverride >= 0)
+            return syncOverride != 0;
+        const auto* sync = state.getRawParameterValue (switchId);
+        return sync != nullptr && sync->load() >= 0.5f;
+    };
 
     switch (id)
     {
@@ -89,8 +98,14 @@ juce::String formatParamValue (PId id, float v,
         case PId::env2_a: case PId::env2_d: case PId::env2_r:
             return timeText (v);
 
+        // Every frequency-in-Hz parameter shares one readout: <1 kHz as whole
+        // Hz, above that as "1.45K" / "20.0K". The *_hp trio needed this
+        // mapping explicitly when it landed and the *_lp trio needs it too —
+        // without it they fall through to the raw two-decimal float default
+        // and read as "20000.00".
         case PId::filt_cutoff:
         case PId::crush_hp: case PId::dly_hp: case PId::cave_hp:
+        case PId::crush_lp: case PId::dly_lp: case PId::cave_lp:
             return v >= 1000.0f ? juce::String (v / 1000.0f, v >= 10000.0f ? 1 : 2) + "K"
                                 : juce::String (static_cast<int> (std::lround (v))) + "HZ";
 
@@ -98,15 +113,9 @@ juce::String formatParamValue (PId id, float v,
             return signedInt (v) + "ST";
 
         case PId::lfo1_rate:
-        {
-            const auto* sync = state.getRawParameterValue ("lfo1_sync");
-            return (sync != nullptr && sync->load() >= 0.5f) ? divisionText (v) : hzText (v);
-        }
+            return isSynced ("lfo1_sync") ? divisionText (v) : hzText (v);
         case PId::lfo2_rate:
-        {
-            const auto* sync = state.getRawParameterValue ("lfo2_sync");
-            return (sync != nullptr && sync->load() >= 0.5f) ? divisionText (v) : hzText (v);
-        }
+            return isSynced ("lfo2_sync") ? divisionText (v) : hzText (v);
 
         case PId::crush_bits:
             return juce::String (static_cast<int> (std::lround (v))) + "BIT";
@@ -272,12 +281,35 @@ ParamCell::ParamCell (juce::AudioProcessorValueTreeState& s, PId id,
     refreshValue();
 }
 
-void ParamCell::refreshValue()
+void ParamCell::refreshValue (int syncOverride)
 {
-    const auto* raw = state.getRawParameterValue (paramDef (pid).id);
-    if (raw == nullptr)
-        return;
-    const auto next = formatParamValue (pid, raw->load(), state);
+    // Read the CONTROL, not the APVTS raw value. These callbacks run from the
+    // parameter attachment, and JUCE notifies a parameter's listeners in
+    // REVERSE registration order: the attachment (registered when this cell
+    // was built) is called BEFORE the APVTS adapter writes the new raw value.
+    // Reading the atomic here would print the previous value, so any change
+    // that did not come from turning this knob — host automation, a preset
+    // load, a craft/DICE/MUTATE edit — would leave the readout one edit
+    // behind, permanently. The attachment has already pushed the new value
+    // into the widget by the time we get here.
+    float plain = 0.0f;
+    if (slider != nullptr)
+    {
+        plain = static_cast<float> (slider->getValue());
+    }
+    else if (toggle != nullptr)
+    {
+        plain = toggle->getToggleState() ? 1.0f : 0.0f;
+    }
+    else
+    {
+        const auto* raw = state.getRawParameterValue (paramDef (pid).id);
+        if (raw == nullptr)
+            return;
+        plain = raw->load();
+    }
+
+    const auto next = formatParamValue (pid, plain, state, syncOverride);
     if (next != valueText)
     {
         valueText = next;

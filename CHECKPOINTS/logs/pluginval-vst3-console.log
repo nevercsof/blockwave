@@ -1,7 +1,7 @@
 Started validating: /Users/kirillboyko/Downloads/blockwave-kickoff/build/release/BLOCKWAVE_artefacts/Release/VST3/BLOCKWAVE.vst3
-Random seed: 0x6f9ab95
+Random seed: 0x1f8326e
 Validation started
-	3 Aug 2026 3:58:17am
+	5 Aug 2026 7:48:33pm
 
 Strictness level: 10
 -----------------------------------------------------------------
@@ -14,12 +14,12 @@ Completed tests in pluginval / Scan for plugins located in: /Users/kirillboyko/D
 -----------------------------------------------------------------
 Starting tests in: pluginval / Open plugin (cold)...
 
-Time taken to open plugin (cold): 168 ms
+Time taken to open plugin (cold): 169 ms
 Completed tests in pluginval / Open plugin (cold)
 -----------------------------------------------------------------
 Starting tests in: pluginval / Open plugin (warm)...
 
-Time taken to open plugin (warm): 11 ms
+Time taken to open plugin (warm): 12 ms
 Running tests 1 times
 Completed tests in pluginval / Open plugin (warm)
 -----------------------------------------------------------------
@@ -43,15 +43,15 @@ Completed tests in pluginval / Plugin programs
 -----------------------------------------------------------------
 Starting tests in: pluginval / Editor...
 
-Time taken to open editor (cold): 230 ms
-Time taken to open editor (warm): 204 ms
+Time taken to open editor (cold): 227 ms
+Time taken to open editor (warm): 206 ms
 
-Time taken to run test: 445 ms
+Time taken to run test: 438 ms
 Completed tests in pluginval / Editor
 -----------------------------------------------------------------
 Starting tests in: pluginval / Open editor whilst processing...
 
-Time taken to run test: 209 ms
+Time taken to run test: 208 ms
 Completed tests in pluginval / Open editor whilst processing
 -----------------------------------------------------------------
 Starting tests in: pluginval / Audio processing...
@@ -91,17 +91,17 @@ Testing with sample rate [96000] and block size [256]
 Testing with sample rate [96000] and block size [512]
 Testing with sample rate [96000] and block size [1024]
 
-Time taken to run test: 5 ms
+Time taken to run test: 4 ms
 Completed tests in pluginval / Non-releasing audio processing
 -----------------------------------------------------------------
 Starting tests in: pluginval / Plugin state...
 
-Time taken to run test: 2 ms
+Time taken to run test: 1 ms
 Completed tests in pluginval / Plugin state
 -----------------------------------------------------------------
 Starting tests in: pluginval / Plugin state restoration...
 
-Time taken to run test: 10 ms
+Time taken to run test: 9 ms
 Completed tests in pluginval / Plugin state restoration
 -----------------------------------------------------------------
 Starting tests in: pluginval / Automation...
@@ -387,7 +387,19 @@ Testing parameter: 63 - crush_hp
 Parameter info: index - 63, paramName - crush_hp, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
 Testing accessors
 
-Time taken to run test: 4 ms
+Testing parameter: 64 - cave_lp
+Parameter info: index - 64, paramName - cave_lp, defaultValue - 1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 65 - dly_lp
+Parameter info: index - 65, paramName - dly_lp, defaultValue - 1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 66 - crush_lp
+Parameter info: index - 66, paramName - crush_lp, defaultValue - 1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Time taken to run test: 5 ms
 Completed tests in pluginval / Automatable Parameters
 -----------------------------------------------------------------
 Starting tests in: pluginval / Parameters...
@@ -648,6 +660,18 @@ Testing parameter: 63 - crush_hp
 Parameter info: index - 63, paramName - crush_hp, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
 Testing accessors
 
+Testing parameter: 64 - cave_lp
+Parameter info: index - 64, paramName - cave_lp, defaultValue - 1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 65 - dly_lp
+Parameter info: index - 65, paramName - dly_lp, defaultValue - 1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 66 - crush_lp
+Parameter info: index - 66, paramName - crush_lp, defaultValue - 1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
 Time taken to run test: 3 ms
 Completed tests in pluginval / Parameters
 -----------------------------------------------------------------
@@ -658,7 +682,7 @@ Completed tests in pluginval / Background thread state
 -----------------------------------------------------------------
 Starting tests in: pluginval / Parameter thread safety...
 
-Time taken to run test: 16 ms
+Time taken to run test: 14 ms
 Completed tests in pluginval / Parameter thread safety
 -----------------------------------------------------------------
 Starting tests in: pluginval / auval...
@@ -764,8 +788,11 @@ Fuzz testing parameter: 60 - master_gain
 Fuzz testing parameter: 61 - cave_hp
 Fuzz testing parameter: 62 - dly_hp
 Fuzz testing parameter: 63 - crush_hp
+Fuzz testing parameter: 64 - cave_lp
+Fuzz testing parameter: 65 - dly_lp
+Fuzz testing parameter: 66 - crush_lp
 
-Time taken to run test: 9 ms
+Time taken to run test: 8 ms
 
 Time taken to run all tests: 15 secs
 Completed tests in pluginval / Fuzz parameters

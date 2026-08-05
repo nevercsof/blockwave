@@ -21,8 +21,9 @@
     "oscA_on": false,
     "noise_mode": "short",
     "filt_type": "HP",
-    "filt_cutoff": 6500,
+    "filt_cutoff": 3200,
     "env1_d": 0.04,
-    "master_gain": 6.0
+    "master_gain": 3.2,
+    "noise_level": 1.0
   }
 }

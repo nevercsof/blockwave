@@ -73,6 +73,25 @@ static CraftGrid makeGrid (CraftBase b,
     return g;
 }
 
+// Grid from (material, weight) pairs in cell order 0..7.
+struct WeightedCell { Material m; float w; };
+
+static CraftGrid makeWeightedGrid (CraftBase b,
+                                   std::initializer_list<WeightedCell> cells)
+{
+    CraftGrid g;
+    g.base = b;
+    int i = 0;
+    for (const auto& c : cells)
+        if (i < kNumCells)
+        {
+            g.cells[i] = c.m;
+            g.setCellWeight (i, c.w);
+            ++i;
+        }
+    return g;
+}
+
 static bool snapshotsEqual (const ParamSnapshot& a, const ParamSnapshot& b)
 {
     return hashSnapshot (a) == hashSnapshot (b);
@@ -328,6 +347,24 @@ static std::vector<GoldenGrid> goldenGrids()
     v.push_back ({ "CHIP_mix6",   makeGrid (CraftBase::CHIP,
                    { M::SLIME, M::TNT, M::MOSS, M::SAND, M::OBSIDIAN, M::CLOUD }),
                    0xe8227cf7301235f3ULL });
+
+    // Weighted grids (per-cell WEIGHT/MIX). Frozen the same way as the rest —
+    // everything above is untouched, these are new entries only.
+    v.push_back ({ "PAD_ICE_w50", makeWeightedGrid (CraftBase::PAD,
+                   { { M::ICE, 0.5f } }), 0xd31065d37eab83f6ULL });
+    v.push_back ({ "PAD_ICEx4_w_mixed", makeWeightedGrid (CraftBase::PAD,
+                   { { M::ICE, 1.0f }, { M::ICE, 0.75f },
+                     { M::ICE, 0.5f }, { M::ICE, 0.25f } }),
+                   0xfd9703a471b87391ULL });
+    v.push_back ({ "BASS_mix8_w25", makeWeightedGrid (CraftBase::BASS,
+                   { { M::ICE, 0.25f }, { M::LAVA, 0.25f }, { M::STONE, 0.25f },
+                     { M::WOOD, 0.25f }, { M::GLASS, 0.25f }, { M::GOLD, 0.25f },
+                     { M::CRYSTAL, 0.25f }, { M::VOLT, 0.25f } }),
+                   0xbc0a0e3ca96de7f8ULL });
+    v.push_back ({ "CHIP_mix6_w_ramp", makeWeightedGrid (CraftBase::CHIP,
+                   { { M::SLIME, 0.1f }, { M::TNT, 0.3f }, { M::MOSS, 0.5f },
+                     { M::SAND, 0.7f }, { M::OBSIDIAN, 0.9f }, { M::CLOUD, 1.0f } }),
+                   0xc7d3aa5735d2b2abULL });
 
     // The spec recipe grids (plain craft result — overrides live in JSON).
     // Golden hashes are keyed by NAME, so the pattern table can grow without
@@ -681,10 +718,328 @@ static void test_craft_material_distinctness()
 }
 
 // ---------------------------------------------------------------------------
+// Per-cell WEIGHT / MIX (src/CraftEngine.h, CELL WEIGHT block). One test per
+// rule in that contract, because each rule is load-bearing:
+//   1. weights are invisible to recipe identity and auto-naming
+//   2. adds/muls scale per copy, defaults are bit-identical to the old engine
+//   3. sets are weighted toward their target, exact at 1.0
+//   4. discrete switches fire for any non-zero weight
+//   5. weight 0 == the material is not there (bit-identical to an empty cell)
+//   6. crafting stays SHAPELESS with mixed weights
+// ---------------------------------------------------------------------------
+static void test_craft_cell_weights()
+{
+    std::printf ("[craft_cell_weights]\n");
+
+    // ---- default: 1.0 everywhere, and explicitly writing 1.0 changes nothing
+    {
+        CraftGrid fresh;
+        bool allDefault = true;
+        for (int i = 0; i < kNumCells; ++i)
+            if (fresh.cellWeight (i) != 1.0f)
+                allDefault = false;
+        CHECK_MSG (allDefault, "a fresh CraftGrid must start at weight 1.0");
+
+        for (const auto& g : goldenGrids())
+        {
+            CraftGrid explicitOnes = g.grid;
+            for (int i = 0; i < kNumCells; ++i)
+                explicitOnes.setCellWeight (i, 1.0f);
+            if (! g.grid.allCellWeightsDefault())
+                continue;                       // weighted golden: not a 1.0 grid
+            CHECK_MSG (hashSnapshot (craftApply (explicitOnes))
+                           == hashSnapshot (craftApply (g.grid)),
+                       "%s: writing weight 1.0 explicitly changed the craft", g.label);
+        }
+        std::printf ("  default 1.0 is a no-op on every unweighted golden grid\n");
+    }
+
+    // ---- rule 5: weight 0 == the material is not there (bit-identical)
+    {
+        int checked = 0;
+        for (const int b : { 0, 1, 2, 4, 7 })
+        {
+            const auto base = static_cast<CraftBase> (b);
+            const auto bare = hashSnapshot (craftApply (makeGrid (base)));
+            for (int m = 1; m <= kNumMaterials; ++m)
+            {
+                const auto zeroed = makeWeightedGrid (base,
+                    { { static_cast<Material> (m), 0.0f } });
+                CHECK_MSG (hashSnapshot (craftApply (zeroed)) == bare,
+                           "%s + %s at weight 0 is not identical to the bare base",
+                           baseName (base), materialName (static_cast<Material> (m)));
+                ++checked;
+            }
+        }
+        // A zero copy alongside a full one contributes nothing either.
+        const auto oneFull = makeWeightedGrid (CraftBase::PAD, { { Material::ICE, 1.0f } });
+        const auto fullPlusZero = makeWeightedGrid (CraftBase::PAD,
+            { { Material::ICE, 1.0f }, { Material::ICE, 0.0f } });
+        CHECK_MSG (hashSnapshot (craftApply (oneFull)) == hashSnapshot (craftApply (fullPlusZero)),
+                   "a weight-0 copy alongside a full one changed the result");
+        std::printf ("  %d base/material pairs: weight 0 == empty cell, bit-identical\n",
+                     checked);
+    }
+
+    // ---- rule 6: shapeless — only the multiset of (material, weight) counts
+    {
+        CraftGrid a = makeWeightedGrid (CraftBase::LEAD,
+            { { Material::ICE, 1.0f }, { Material::ICE, 0.5f } });
+        CraftGrid b;                            // same pair, swapped and moved
+        b.base = CraftBase::LEAD;
+        b.cells[6] = Material::ICE; b.setCellWeight (6, 0.5f);
+        b.cells[2] = Material::ICE; b.setCellWeight (2, 1.0f);
+        CHECK_MSG (snapshotsEqual (craftApply (a), craftApply (b)),
+                   "shapeless violated: weight placement changed the craft");
+
+        // ...and the heavier cell is always the primary copy, whichever cell
+        // it sits in: 1.0 + 0.5*0.5 = 1.25 total weight either way.
+        CraftGrid c;
+        c.base = CraftBase::LEAD;
+        c.cells[0] = Material::ICE; c.setCellWeight (0, 0.5f);
+        c.cells[7] = Material::ICE; c.setCellWeight (7, 1.0f);
+        CHECK_MSG (snapshotsEqual (craftApply (a), craftApply (c)),
+                   "copy ordering is position dependent — sort by weight broken");
+    }
+
+    // ---- rule 2: add/mul arithmetic, exact expected values
+    {
+        const auto p0 = craftApply (makeGrid (CraftBase::PAD));         // detune 14
+        // One copy at 0.5: effective weight 0.5 -> +12 * 0.5 = +6.
+        const auto pHalf = craftApply (makeWeightedGrid (CraftBase::PAD,
+            { { Material::ICE, 0.5f } }));
+        CHECK_MSG (std::abs (pHalf.uni_detune - (p0.uni_detune + 6.0f)) < 1.0e-5f,
+                   "ICE@50%% uni_detune %.4f != %.4f", (double) pHalf.uni_detune,
+                   (double) (p0.uni_detune + 6.0f));
+        // Two copies, 1.0 then 0.5: 1*1.0 + 0.5*0.5 = 1.25 -> +15.
+        const auto pMix = craftApply (makeWeightedGrid (CraftBase::PAD,
+            { { Material::ICE, 1.0f }, { Material::ICE, 0.5f } }));
+        CHECK_MSG (std::abs (pMix.uni_detune - (p0.uni_detune + 15.0f)) < 1.0e-5f,
+                   "ICE@100%%+ICE@50%% uni_detune %.4f != %.4f",
+                   (double) pMix.uni_detune, (double) (p0.uni_detune + 15.0f));
+        // Multiplicative: one ICE copy at w scales cutoff by 1 + 0.25*w.
+        const float expected = p0.filt_cutoff * (1.0f + 0.25f * 0.5f);
+        CHECK_MSG (std::abs (pHalf.filt_cutoff - expected) < 1.0e-2f,
+                   "ICE@50%% cutoff %.3f != %.3f", (double) pHalf.filt_cutoff,
+                   (double) expected);
+    }
+
+    // ---- rule 3: sets are weighted toward their target, exact at 1.0
+    {
+        const float padPw = craftApply (makeGrid (CraftBase::PAD)).oscA_pw;   // 50
+        struct Case { float w; float expected; };
+        const Case cases[] =
+        {
+            { 1.00f, 38.0f },                              // exact target
+            { 0.50f, padPw + 0.5f * (38.0f - padPw) },     // 44
+            { 0.25f, padPw + 0.25f * (38.0f - padPw) },    // 47
+        };
+        for (const auto& c : cases)
+        {
+            const auto p = craftApply (makeWeightedGrid (CraftBase::PAD,
+                { { Material::ICE, c.w } }));
+            CHECK_MSG (std::abs (p.oscA_pw - c.expected) < 1.0e-4f,
+                       "ICE@%.0f%% PW set %.4f != %.4f", (double) (c.w * 100.0f),
+                       (double) p.oscA_pw, (double) c.expected);
+        }
+        // Full weight must be EXACT, not merely close (bit-identity guard).
+        CHECK_MSG (craftApply (makeWeightedGrid (CraftBase::PAD,
+                       { { Material::ICE, 1.0f } })).oscA_pw == 38.0f,
+                   "a set at weight 1.0 must land exactly on its target");
+        // Stacking a set still does not intensify it, and the STRONGEST cell
+        // owns it: [0.25, 1.0] must land on the full target.
+        CHECK_MSG (craftApply (makeWeightedGrid (CraftBase::PAD,
+                       { { Material::ICE, 0.25f }, { Material::ICE, 1.0f } })).oscA_pw
+                       == 38.0f,
+                   "the strongest copy must own the set");
+    }
+
+    // ---- rule 4: discrete switches fire for any non-zero weight
+    {
+        CHECK_MSG (craftApply (makeWeightedGrid (CraftBase::CHIP,
+                       { { Material::STONE, 0.01f } })).raw,
+                   "STONE at 1%% must still switch raw ON");
+        CHECK_MSG (! craftApply (makeWeightedGrid (CraftBase::CHIP,
+                       { { Material::STONE, 0.0f } })).raw,
+                   "STONE at 0%% must NOT switch raw ON");
+        CHECK_MSG (craftApply (makeWeightedGrid (CraftBase::KEYS,
+                       { { Material::CRYSTAL, 0.05f } })).oscB_sync,
+                   "CRYSTAL at 5%% must still switch sync ON");
+        CHECK_MSG (! craftApply (makeWeightedGrid (CraftBase::KEYS,
+                       { { Material::SAND, 0.0f } })).noise_on,
+                   "SAND at 0%% must NOT switch noise ON");
+        // Synced LFO rates are discrete on purpose (they must stay on the
+        // note-division grid); the DEPTH is what the weight scales.
+        const auto volt25 = craftApply (makeWeightedGrid (CraftBase::LEAD,
+            { { Material::VOLT, 0.25f } }));
+        const auto volt100 = craftApply (makeWeightedGrid (CraftBase::LEAD,
+            { { Material::VOLT, 1.0f } }));
+        CHECK_MSG (volt25.lfo1_rate == volt100.lfo1_rate && volt25.lfo1_rate == 0.0625f,
+                   "VOLT lfo1_rate must stay on the 1/16 division at any weight");
+        CHECK_MSG (volt25.lfo1_pwm < volt100.lfo1_pwm,
+                   "VOLT lfo1_pwm depth must scale with weight (%.4f vs %.4f)",
+                   (double) volt25.lfo1_pwm, (double) volt100.lfo1_pwm);
+    }
+
+    // ---- rule 1: weights are invisible to recipe identity and auto-naming
+    {
+        int n = 0;
+        const auto* pats = specRecipePatterns (n);
+        for (int i = 0; i < n; ++i)
+        {
+            for (const float w : { 0.0f, 0.3f, 0.65f, 1.0f })
+            {
+                CraftGrid g = pats[i].grid;
+                for (int c = 0; c < kNumCells; ++c)
+                    g.setCellWeight (c, w);
+                CHECK_MSG (matchRecipe (g, pats, n) == &pats[i],
+                           "%s stopped matching at weight %.2f — weights must "
+                           "never touch recipe detection", pats[i].name, (double) w);
+                CHECK_MSG (g == pats[i].grid,
+                           "%s: operator== must ignore weights", pats[i].name);
+                CHECK_MSG (! g.equalsWithWeights (pats[i].grid) || w == 1.0f,
+                           "%s: equalsWithWeights must NOT ignore weights", pats[i].name);
+            }
+        }
+        char buf[128];
+        CraftGrid named = makeWeightedGrid (CraftBase::LEAD,
+            { { Material::ICE, 0.0f }, { Material::GOLD, 0.1f } });
+        CHECK_MSG (std::string (autoName (named, buf, sizeof (buf))) == "Frozen Golden Lead",
+                   "auto-name must describe what is PLACED, ignoring weights: '%s'", buf);
+        std::printf ("  %d spec recipes match at weights 0 / 0.3 / 0.65 / 1.0\n", n);
+    }
+
+    // ---- monotonicity: turning a material up must keep moving the sound
+    {
+        struct MonoCase
+        {
+            const char* label;
+            CraftBase base;
+            Material mat;
+            float ParamSnapshot::* field;
+            bool increasing;
+        };
+        const MonoCase cases[] =
+        {
+            { "PAD+ICE cave_mix",        CraftBase::PAD,  Material::ICE,
+              &ParamSnapshot::cave_mix,   true  },
+            { "PAD+ICE uni_detune",      CraftBase::PAD,  Material::ICE,
+              &ParamSnapshot::uni_detune, true  },
+            { "BASS+OBSIDIAN cutoff",    CraftBase::BASS, Material::OBSIDIAN,
+              &ParamSnapshot::filt_cutoff, false },
+            { "KEYS+CLOUD env1_a",       CraftBase::KEYS, Material::CLOUD,
+              &ParamSnapshot::env1_a,     true  },
+            { "LEAD+LAVA filt_res",      CraftBase::LEAD, Material::LAVA,
+              &ParamSnapshot::filt_res,   true  },
+            { "CHIP+MOSS crush_mix",     CraftBase::CHIP, Material::MOSS,
+              &ParamSnapshot::crush_mix,  true  },
+        };
+        constexpr float kWeights[] = { 0.0f, 0.25f, 0.5f, 0.75f, 1.0f };
+        for (const auto& c : cases)
+        {
+            float v[5] = {};
+            for (int i = 0; i < 5; ++i)
+                v[i] = craftApply (makeWeightedGrid (c.base, { { c.mat, kWeights[i] } }))
+                           .*(c.field);
+            bool mono = true;
+            for (int i = 1; i < 5; ++i)
+                if (c.increasing ? v[i] <= v[i - 1] : v[i] >= v[i - 1])
+                    mono = false;
+            std::printf ("  %-24s 0%%/25%%/50%%/75%%/100%%: %.4f %.4f %.4f %.4f %.4f\n",
+                         c.label, (double) v[0], (double) v[1], (double) v[2],
+                         (double) v[3], (double) v[4]);
+            CHECK_MSG (mono, "%s: not strictly monotonic across weights", c.label);
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// The weight slider must be AUDIBLE, and monotonically so, in the RENDER —
+// not just in the parameter set. Each pair is scored on the metric that
+// carries its material's character, because a generic "distance from the 0%
+// render" is not a monotone function of anything: detuned-unison beating and
+// integer steps (unison count, octave) make it wander.
+//   PAD + ICE       -> +2 unison, +detune, PW 50->38%  => the body thins out
+//   BASS + OBSIDIAN -> cutoff down, octave down    => the centroid falls
+//   KEYS + CLOUD    -> +300 ms attack, level down  => the first 150 ms quieten
+//   LEAD + GLASS    -> cutoff x1.4, PW 18% -> 14%  => the centroid rises
+// All three metrics are printed for every pair so a human can audit the ones
+// the case does not assert on.
+static void test_craft_weight_audible_monotonic()
+{
+    std::printf ("[craft_weight_audible_monotonic]\n");
+    const double sr = 48000.0;
+    constexpr float kWeights[] = { 0.0f, 0.25f, 0.5f, 0.75f, 1.0f };
+
+    enum class Metric { tailRms, centroid, earlyRms };
+    struct Case
+    {
+        CraftBase base; Material mat; int note;
+        Metric metric; bool increasing; const char* what;
+        double minTotalMove;      // |100% - 0%| relative to the 0% value
+    };
+    const Case cases[] =
+    {
+        { CraftBase::PAD,  Material::ICE,      48,
+          Metric::earlyRms, false, "early rms", 0.30 },
+        { CraftBase::BASS, Material::OBSIDIAN, 36,
+          Metric::centroid, false, "centroid", 0.30 },
+        { CraftBase::KEYS, Material::CLOUD,    48,
+          Metric::earlyRms, false, "early rms", 0.30 },
+        { CraftBase::LEAD, Material::GLASS,    48,
+          Metric::centroid, true,  "centroid", 0.15 },
+    };
+
+    for (const auto& c : cases)
+    {
+        double tail[5] = {}, cent[5] = {}, early[5] = {};
+        for (int i = 0; i < 5; ++i)
+        {
+            const auto r = renderNote (craftApply (makeWeightedGrid (c.base,
+                                           { { c.mat, kWeights[i] } })),
+                                       c.note, sr, 0.9, 1.5);
+            std::vector<float> mono (r.l.size());
+            for (size_t k = 0; k < mono.size(); ++k)
+                mono[k] = 0.5f * (r.l[k] + r.r[k]);
+            tail[i]  = rmsOf (mono, static_cast<size_t> (1.0 * sr),
+                                    static_cast<size_t> (1.5 * sr));
+            early[i] = rmsOf (mono, 0, static_cast<size_t> (0.15 * sr));
+            cent[i]  = centroidHz (magSpec (mono, static_cast<size_t> (0.02 * sr), 32768), sr);
+        }
+        const double* v = c.metric == Metric::tailRms  ? tail
+                        : c.metric == Metric::centroid ? cent
+                                                       : early;
+
+        std::printf ("  %-5s + %-9s 0/25/50/75/100%%\n", baseName (c.base),
+                     materialName (c.mat));
+        std::printf ("      tail rms  %.5f %.5f %.5f %.5f %.5f\n",
+                     tail[0], tail[1], tail[2], tail[3], tail[4]);
+        std::printf ("      early rms %.5f %.5f %.5f %.5f %.5f\n",
+                     early[0], early[1], early[2], early[3], early[4]);
+        std::printf ("      centroid  %.0f %.0f %.0f %.0f %.0f Hz  <- asserting on %s\n",
+                     cent[0], cent[1], cent[2], cent[3], cent[4], c.what);
+
+        for (int i = 1; i < 5; ++i)
+            CHECK_MSG (c.increasing ? v[i] > v[i - 1] : v[i] < v[i - 1],
+                       "%s + %s: %s not monotonic from weight %.0f%% to %.0f%% "
+                       "(%.5f -> %.5f)", baseName (c.base), materialName (c.mat),
+                       c.what, (double) (kWeights[i - 1] * 100.0f),
+                       (double) (kWeights[i] * 100.0f), v[i - 1], v[i]);
+        const double move = std::abs (v[4] - v[0]) / std::max (std::abs (v[0]), 1.0e-9);
+        CHECK_MSG (move >= c.minTotalMove,
+                   "%s + %s: the whole slider only moved %s by %.1f%% (need %.0f%%)",
+                   baseName (c.base), materialName (c.mat), c.what,
+                   move * 100.0, c.minTotalMove * 100.0);
+    }
+}
+
+// ---------------------------------------------------------------------------
 inline void runAll()
 {
     test_craft_shapeless_and_stacking();
     test_craft_soft_knee_stacking();
+    test_craft_cell_weights();
+    test_craft_weight_audible_monotonic();
     test_craft_determinism_golden();
     test_craft_recipe_matching();
     test_craft_autoname();

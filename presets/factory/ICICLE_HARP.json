@@ -20,6 +20,7 @@
   "params": {
     "cave_hp": 150.0,
     "dly_hp": 150.0,
-    "master_gain": 6.0
+    "master_gain": 6.0,
+    "oscA_level": 1.0
   }
 }

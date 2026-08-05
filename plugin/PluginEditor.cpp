@@ -124,14 +124,20 @@ BlockwaveAudioProcessorEditor::BlockwaveAudioProcessorEditor (BlockwaveAudioProc
 
     setActiveTab (Tab::craft);                        // CRAFT is home (SPEC)
 
-    // "uiScale" session property is a percent (100..200). Sessions saved
-    // before the percent scheme stored 1 or 2 — anything < 10 is one of those
-    // legacy integers, so read it as 100/200.
-    int storedScale = static_cast<int> (
-        proc.apvts.state.getProperty ("uiScale", 100));
-    if (storedScale < 10)
-        storedScale *= 100;
-    setUiScale (storedScale);
+    // Scale precedence: session (this project) -> global (this machine) ->
+    // 100 %. hasProperty, not a getProperty default, is what tells a project
+    // that genuinely stored 100 % apart from one that never stored anything.
+    // GlobalSettings::sanitiseScale also migrates the legacy 1x/2x integers
+    // sessions saved before the percent scheme.
+    int storedScale = 0;
+    if (proc.apvts.state.hasProperty ("uiScale"))
+        storedScale = blockwave::GlobalSettings::sanitiseScale (
+            static_cast<int> (proc.apvts.state.getProperty ("uiScale")));
+    if (storedScale == 0)
+        storedScale = settings.getUiScalePercent();
+    if (storedScale == 0)
+        storedScale = 100;
+    setUiScale (storedScale, false);                  // restore: no global write
 }
 
 BlockwaveAudioProcessorEditor::~BlockwaveAudioProcessorEditor()
@@ -153,11 +159,11 @@ void BlockwaveAudioProcessorEditor::setActiveTab (Tab tab)
     tweakTabBtn.setToggleState (tab == Tab::tweak, juce::dontSendNotification);
 }
 
-void BlockwaveAudioProcessorEditor::setUiScale (int scalePercent)
+void BlockwaveAudioProcessorEditor::setUiScale (int scalePercent, bool writeGlobal)
 {
-    // Snap to the cycle steps: 100 / 125 / 150 / 175 / 200.
-    const int clamped = juce::jlimit (100, 200, scalePercent);
-    uiScale = 100 + 25 * ((clamped - 100 + 12) / 25);
+    // Snap to the slider steps: 100 / 125 / 150 / 175 / 200.
+    const int snapped = blockwave::GlobalSettings::sanitiseScale (scalePercent);
+    uiScale = snapped == 0 ? 100 : snapped;
 
     // The content stays a fixed 832x456 canvas; only the transform changes.
     // 100% / 200% are exact integer transforms (pixel-perfect path); the
@@ -170,7 +176,9 @@ void BlockwaveAudioProcessorEditor::setUiScale (int scalePercent)
     // 100 for every step — the window size is always a whole pixel count.
     setSize ((kCanvasW * uiScale) / 100, (kCanvasH * uiScale) / 100);
     proc.apvts.state.setProperty ("uiScale", uiScale, nullptr);   // session state
-    topBar.setScaleLabel (uiScale);
+    if (writeGlobal)
+        settings.setUiScalePercent (uiScale);                     // this machine
+    topBar.setScalePercent (uiScale);
 }
 
 void BlockwaveAudioProcessorEditor::showPresetBrowser (bool shouldShow)

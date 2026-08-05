@@ -53,6 +53,19 @@ void drawBaseSprite (juce::Graphics&, CraftBase, int x, int y, int scale);
 juce::Image makeMaterialImage (Material, int scale);
 juce::Image makeBaseImage (CraftBase, int scale);
 
+// ---- per-cell WEIGHT / MIX dimming (CRAFT bench) ----------------------------
+// A placed block is drawn DARKER as its cell weight drops, so "turned down"
+// reads at a glance across the whole bench. The dimming is QUANTISED into
+// kWeightDimLevels discrete steps instead of following the weight smoothly:
+// this is a pixel synth, and a continuous fade would read as a soft gradient
+// wash over sprite art that is otherwise all flat colour. Each level blends
+// every palette entry of the sprite toward the SPEC night colour BEFORE the
+// sprite is rasterised, so the result is still flat indexed pixel art (no
+// translucent overlay, no anti-aliased edge, nothing to blur at 125/175 %).
+constexpr int kWeightDimLevels = 5;                // 0 = full bright .. 4 = darkest
+int weightDimLevel (float weight01) noexcept;
+juce::Image makeMaterialImage (Material, int scale, int dimLevel);
+
 // 12x12 mini 3x3 recipe icon (4x4 px per cell): centre = base colour, outer
 // cells = material colours, empty cells = sunken dark. Teaches the crafting
 // system straight from the preset browser (SPEC §UI). The scaled overload
@@ -69,6 +82,7 @@ class BlockImageCache
 {
 public:
     const juce::Image& material (Material m, int scale);
+    const juce::Image& material (Material m, int scale, int dimLevel);
     const juce::Image& base (CraftBase b, int scale);
 
 private:

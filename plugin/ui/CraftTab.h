@@ -31,6 +31,11 @@
 // never touches the audio thread. A single 15 Hz timer drives the discovery
 // poll and every animation (well under the 30 Hz house limit; pixel
 // animations are 2-4 discrete frames with no easing curves).
+//
+// Per-block MIX edits (the rail on each filled block, see CraftBlocks.h) take
+// the separate setCraftCellWeight() path instead: same atomic APVTS write,
+// but no discovery registration and no name change, because weights are not
+// part of a recipe's identity.
 
 #include "../PluginProcessor.h"
 #include "CraftBlocks.h"
@@ -145,6 +150,11 @@ public:
 
     void showDiscoveries (bool shouldShow);
     bool isShowingDiscoveries() const;
+
+    // Tool hook (tools/screenshots): drives the SAME code path as the arrow
+    // keys on a focused block, so a rendered mix state is the real one rather
+    // than a mock-up. steps are 5 % each.
+    void nudgeCellWeight (int slot, int steps) { gridComp.nudgeCellWeight (slot, steps); }
 
     void paint (juce::Graphics&) override;
     void resized() override;

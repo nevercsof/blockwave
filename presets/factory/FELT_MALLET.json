@@ -21,6 +21,7 @@
     "env1_a": 0.002,
     "filt_keytrack": 0.5,
     "cave_hp": 180.0,
-    "master_gain": 6.0
+    "master_gain": 6.0,
+    "oscA_level": 1.0
   }
 }

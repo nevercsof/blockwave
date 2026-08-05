@@ -27,14 +27,18 @@
 // The discovery states drive the REAL code path (setCraftGrid -> recipe match
 // -> DiscoveryStore -> UI poll -> toast), with the discovery file redirected
 // to a temporary location so a run never touches the user's own
-// Discoveries.json and always starts from zero found. The FAVORITES store is
-// redirected the same way (zero stars at the start of every run).
+// Discoveries.json and always starts from zero found. The FAVORITES store and
+// the machine-wide SETTINGS store (UI scale) are redirected the same way, so
+// a run always starts from zero stars at 100 % and never reads or writes the
+// user's real files. Settings must be redirected BEFORE the editor exists —
+// the editor reads the global scale in its constructor.
 
 #include <iostream>
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <juce_audio_processors/juce_audio_processors.h>
 #include "../../plugin/PluginProcessor.h"
 #include "../../plugin/PluginEditor.h"
+#include "../../plugin/GlobalSettings.h"
 
 namespace
 {
@@ -84,7 +88,15 @@ int main (int argc, char* argv[])
     outDir.createDirectory();
 
     bool ok = true;
-    juce::File discoveryFile, favoritesFile;
+    juce::File discoveryFile, favoritesFile, settingsFile;
+
+    // Machine-wide settings: redirect the DEFAULT location before anything
+    // constructs an editor, so the run neither reads nor writes the real
+    // ~/Documents/BLOCKWAVE/Settings.json and always starts at 100 %.
+    settingsFile = juce::File::createTempFile ("blockwave_settings.json");
+    settingsFile.deleteFile();
+    blockwave::GlobalSettings::setDefaultFile (settingsFile);
+
     {
         BlockwaveAudioProcessor proc;
 
@@ -135,8 +147,19 @@ int main (int argc, char* argv[])
                     outDir.getChildFile ("topbar_scale_150pct.png")) && ok;
         editor->setUiScale (100);
         pump();
-        ok = shoot (*editor, { 640, 0, 192, 40 },
+        // The scale control is now a 5-notch slider: shoot the whole view
+        // group (RAW + master + slider) at the lowest stop, then again at the
+        // 175 % stop so the handle travel, the readout and the chunkiness of
+        // a fractional step are all reviewable. Crop rectangles are in
+        // EDITOR pixels, so the second one is the canvas rect * 1.75.
+        ok = shoot (*editor, { 480, 0, 352, 40 },
                     outDir.getChildFile ("topbar_scale_100pct_1x.png")) && ok;
+        editor->setUiScale (175);
+        pump();
+        ok = shoot (*editor, { 840, 0, 616, 70 },
+                    outDir.getChildFile ("topbar_scale_slider_175pct.png")) && ok;
+        editor->setUiScale (100);
+        pump();
 
         // 2) Bench loaded with materials (a plain craft, no recipe): the
         //    everyday CRAFT state — stacked ICE, mixed blocks, auto name.
@@ -154,6 +177,38 @@ int main (int argc, char* argv[])
                         outDir.getChildFile ("craft_grid_materials_1x.png")) && ok;
             ok = shoot (*editor, { 0, 64, 832, 392 },
                         outDir.getChildFile ("craft_bench_detail_1x.png")) && ok;
+        }
+
+        // 2b) PER-BLOCK MIX (producer's headline request): the same bench with
+        //     its blocks at different weights, driven through the real
+        //     processor API so the darkening, the rail handles and the
+        //     percent tags all come from live state.
+        {
+            const float weights[blockwave::kNumCells] =
+                { 1.0f, 0.75f, 0.5f, 1.0f, 0.25f, 1.0f, 0.6f, 0.0f };
+            proc.setCraftCellWeights (weights, blockwave::kNumCells);
+            editor->getCraftTab().refreshFromProcessor();
+            pump (120);
+            ok = shoot (*editor, editor->getLocalBounds(),
+                        outDir.getChildFile ("craft_weights_1x.png")) && ok;
+            ok = shoot (*editor, { 8, 112, 232, 232 },
+                        outDir.getChildFile ("craft_weights_bench_1x.png")) && ok;
+
+            // Drag readout: the arrow-key path shows the same big % badge the
+            // rail drag holds up, so this is the real state, not a mock.
+            editor->getCraftTab().nudgeCellWeight (2, -1);      // 50% -> 45%
+            pump (60);
+            ok = shoot (*editor, editor->getLocalBounds(),
+                        outDir.getChildFile ("craft_weight_readout_1x.png")) && ok;
+            ok = shoot (*editor, { 8, 112, 232, 232 },
+                        outDir.getChildFile ("craft_weight_readout_bench_1x.png")) && ok;
+
+            // Back to a plain all-100 % bench for the shots that follow.
+            const float full[blockwave::kNumCells] =
+                { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
+            proc.setCraftCellWeights (full, blockwave::kNumCells);
+            editor->getCraftTab().refreshFromProcessor();
+            pump (60);
         }
 
         // 3) Discovery moment: craft an exact recipe pattern and let the UI
@@ -194,6 +249,22 @@ int main (int argc, char* argv[])
         pump();
         ok = shoot (*editor, editor->getLocalBounds(),
                     outDir.getChildFile ("tweak_tab_1x.png")) && ok;
+        // FX row detail: CRUSH / DELAY / CAVE each now carry an LP cell next
+        // to their HP (addendum-2 IDs) on the row's 40 px cell pitch.
+        ok = shoot (*editor, { 0, 352, 832, 96 },
+                    outDir.getChildFile ("tweak_fx_lp_1x.png")) && ok;
+        // ...and with the LP knobs actually turned down, so the Hz/K readout
+        // formatting is visible rather than a row of "20.0K" defaults.
+        for (const char* id : { "crush_lp", "dly_lp", "cave_lp" })
+            if (auto* p = proc.apvts.getParameter (id))
+                p->setValueNotifyingHost (0.55f);
+        pump (60);
+        ok = shoot (*editor, { 0, 352, 832, 96 },
+                    outDir.getChildFile ("tweak_fx_lp_set_1x.png")) && ok;
+        for (const char* id : { "crush_lp", "dly_lp", "cave_lp" })
+            if (auto* p = proc.apvts.getParameter (id))
+                p->setValueNotifyingHost (1.0f);
+        pump (60);
         editor->setUiScale (200);
         pump();
         ok = shoot (*editor, editor->getLocalBounds(),
@@ -325,6 +396,8 @@ int main (int argc, char* argv[])
 
     discoveryFile.deleteFile();
     favoritesFile.deleteFile();
+    settingsFile.deleteFile();
+    blockwave::GlobalSettings::setDefaultFile ({});
     std::cout << (ok ? "all screenshots written\n" : "SOME SCREENSHOTS FAILED\n");
     return ok ? 0 : 1;
 }

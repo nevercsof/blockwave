@@ -87,6 +87,50 @@ inline Rendered renderWithTempo (const ParamSnapshot& p, int note, double sr,
     return out;
 }
 
+// Engine render with ONE mid-render parameter swap at swapSec. The swap lands
+// on an exact sample index (the block is split there), so the result does not
+// depend on the host block size.
+inline Rendered renderParamSwap (const ParamSnapshot& a, const ParamSnapshot& b,
+                                 int note, double sr, double swapSec,
+                                 double totalSec, int blockSize = 512)
+{
+    BlockwaveEngine engine;
+    engine.setParams (a);
+    engine.setTempo (120.0);
+    engine.prepare (sr, blockSize);
+
+    const int total  = static_cast<int> (totalSec * sr);
+    const int stepAt = static_cast<int> (swapSec * sr);
+    Rendered out;
+    out.l.assign (static_cast<size_t> (total), 0.0f);
+    out.r.assign (static_cast<size_t> (total), 0.0f);
+
+    engine.noteOn (note, 1.0f);
+    bool swapped = false;
+    for (int pos = 0; pos < total; )
+    {
+        if (! swapped && pos >= stepAt) { engine.setParams (b); swapped = true; }
+        int n = std::min (blockSize, total - pos);
+        if (! swapped && pos + n > stepAt)
+            n = stepAt - pos;
+        engine.process (out.l.data() + pos, out.r.data() + pos, n);
+        pos += n;
+    }
+    return out;
+}
+
+// Worst single-sample step of x over [from, to).
+inline float maxSlew (const std::vector<float>& x, int from, int to)
+{
+    float m = 0.0f;
+    const int lo = std::max (1, from);
+    const int hi = std::min (static_cast<int> (x.size()), to);
+    for (int i = lo; i < hi; ++i)
+        m = std::max (m, std::abs (x[static_cast<size_t> (i)]
+                                 - x[static_cast<size_t> (i - 1)]));
+    return m;
+}
+
 // Best lag of template x[0..tplLen) inside x over [lagMin, lagMax].
 inline int bestLag (const std::vector<float>& x, int tplLen, int lagMin, int lagMax)
 {
@@ -183,6 +227,15 @@ inline void test_fx_bypass_null()
         // never leak into the dry signal.
         { "hp",    [] (ParamSnapshot& p) { p.crush_hp = 2000.0f; p.dly_hp = 2000.0f;
                                            p.cave_hp = 2000.0f; p.crush_mix = 0.0f;
+                                           p.dly_mix = 0.0f; p.cave_mix = 0.0f; } },
+        // Addendum 2: the same for the wet-path LP, and for both together.
+        { "lp",    [] (ParamSnapshot& p) { p.crush_lp = 400.0f; p.dly_lp = 900.0f;
+                                           p.cave_lp = 2500.0f; p.crush_mix = 0.0f;
+                                           p.dly_mix = 0.0f; p.cave_mix = 0.0f; } },
+        { "hp+lp", [] (ParamSnapshot& p) { p.crush_hp = 800.0f; p.dly_hp = 300.0f;
+                                           p.cave_hp = 120.0f;
+                                           p.crush_lp = 3000.0f; p.dly_lp = 1500.0f;
+                                           p.cave_lp = 600.0f; p.crush_mix = 0.0f;
                                            p.dly_mix = 0.0f; p.cave_mix = 0.0f; } },
     };
     for (const auto& v : variants)
@@ -522,7 +575,10 @@ inline void test_fx_hp_default_transparent()
     p.crush_bits = 6; p.crush_down = 3; p.crush_mix = 0.6f;
     p.dly_time = 6; p.dly_fb = 0.5f; p.dly_mix = 0.5f;
     p.cave_size = 0.6f; p.cave_damp = 0.5f; p.cave_mix = 0.5f;
-    // cave_hp / dly_hp / crush_hp stay at the 20 Hz default = bypass.
+    // cave_hp / dly_hp / crush_hp stay at the 20 Hz default = bypass, and
+    // (addendum 2) cave_lp / dly_lp / crush_lp at the 20 kHz default = bypass.
+    // The golden below therefore locks BOTH trios' transparency: if either
+    // one started running at its default, this render would change.
 
     const auto r = renderNote (p, 45, 48000.0, 0.5, 1.0);
 
@@ -615,6 +671,310 @@ inline void test_fx_hp_wet_rumble_cut()
         CHECK_MSG (midDrop <= c.maxMidDrop,
                    "%s hp ate %.1f dB of the effect's mid band", c.name, midDrop);
     }
+}
+
+// ---------------------------------------------------------------------------
+// Frozen-table addendum 2 (cave_lp / dly_lp / crush_lp): the 20 kHz maximum is
+// a hard bypass, so a render that sets every LP EXPLICITLY to the ceiling must
+// be bit-identical to one that leaves them at their default — and both must
+// equal the pre-addendum-2 output, which is what the shared golden in
+// test_fx_hp_default_transparent already locks.
+inline void test_fx_lp_ceiling_is_bypass()
+{
+    std::printf ("[fx_lp_ceiling_is_bypass]\n");
+    ParamSnapshot base;
+    base.oscB_on = true; base.oscB_sync = true; base.oscB_semi = 7;
+    base.sub_on = true;  base.noise_on = true;
+    base.filt_cutoff = 3000.0f; base.filt_res = 0.3f;
+    base.crush_bits = 6; base.crush_down = 3; base.crush_mix = 0.6f;
+    base.dly_time = 6; base.dly_fb = 0.5f; base.dly_mix = 0.5f;
+    base.cave_size = 0.6f; base.cave_damp = 0.5f; base.cave_mix = 0.5f;
+
+    ParamSnapshot atCeiling = base;
+    atCeiling.crush_lp = 20000.0f;
+    atCeiling.dly_lp   = 20000.0f;
+    atCeiling.cave_lp  = 20000.0f;
+
+    const auto ref = renderNote (base,       45, 48000.0, 0.5, 1.0);
+    const auto r   = renderNote (atCeiling,  45, 48000.0, 0.5, 1.0);
+    float maxDiff = 0.0f;
+    for (size_t i = 0; i < ref.l.size(); ++i)
+        maxDiff = std::max ({ maxDiff, std::abs (ref.l[i] - r.l[i]),
+                              std::abs (ref.r[i] - r.r[i]) });
+    std::printf ("  wet FX, LP explicitly at the 20 kHz ceiling: max |diff| = %.3g\n",
+                 static_cast<double> (maxDiff));
+    CHECK_MSG (maxDiff == 0.0f, "LP at the ceiling is not a hard bypass (diff %.3g)",
+               static_cast<double> (maxDiff));
+
+    // Just below the ceiling it must actually do something, otherwise the
+    // check above would be vacuous.
+    ParamSnapshot engaged = base;
+    engaged.crush_lp = 2000.0f;
+    const auto rEngaged = renderNote (engaged, 45, 48000.0, 0.5, 1.0);
+    float engagedDiff = 0.0f;
+    for (size_t i = 0; i < ref.l.size(); ++i)
+        engagedDiff = std::max (engagedDiff, std::abs (ref.l[i] - rEngaged.l[i]));
+    CHECK_MSG (engagedDiff > 1.0e-4f,
+               "crush_lp at 2 kHz changed nothing (diff %.3g) — bypass gate stuck on",
+               static_cast<double> (engagedDiff));
+}
+
+// ---------------------------------------------------------------------------
+// The audible contract: each *_lp removes high-frequency energy from its FX's
+// WET output while leaving the effect's low band essentially untouched — the
+// mirror image of test_fx_hp_wet_rumble_cut.
+inline void test_fx_lp_wet_hf_cut()
+{
+    std::printf ("[fx_lp_wet_hf_cut]\n");
+    const double sr = 48000.0;
+    const size_t fftN = 32768;
+    const double binHz = sr / static_cast<double> (fftN);
+
+    struct Case
+    {
+        const char* name;
+        void (*base) (ParamSnapshot&);        // FX wet-only, lp default
+        void (*lp) (ParamSnapshot&);          // same + lp at 2 kHz
+        double t0;                            // spectrum window start (s)
+        double minHfDrop, maxLowDrop;         // dB gates
+    };
+    const Case cases[] =
+    {
+        { "cave",
+          [] (ParamSnapshot& p) { p.cave_mix = 1.0f; p.cave_size = 0.7f;
+                                  p.cave_damp = 0.0f;          // keep the tail bright
+                                  p.oscA_pw = 18.0f;           // harmonic-rich pulse
+                                  p.env1_s = 1.0f; p.env1_r = 0.05f; },
+          [] (ParamSnapshot& p) { p.cave_lp = 2000.0f; },
+          1.2, 8.0, 3.0 },
+        { "delay",
+          [] (ParamSnapshot& p) { p.dly_mix = 1.0f; p.dly_time = 6;   // 1/8
+                                  p.dly_fb = 0.5f; p.dly_pingpong = false;
+                                  p.oscA_pw = 18.0f;
+                                  p.env1_s = 1.0f; },
+          [] (ParamSnapshot& p) { p.dly_lp = 2000.0f; },
+          1.0, 8.0, 3.0 },
+        { "crush",
+          [] (ParamSnapshot& p) { p.crush_mix = 1.0f; p.crush_bits = 16;
+                                  p.crush_down = 1; p.oscA_pw = 18.0f;
+                                  p.env1_s = 1.0f; },
+          [] (ParamSnapshot& p) { p.crush_lp = 2000.0f; },
+          0.6, 8.0, 3.0 },
+    };
+
+    for (const auto& c : cases)
+    {
+        ParamSnapshot pBase;
+        pBase.filt_cutoff = 20000.0f;         // let the harmonics through
+        c.base (pBase);
+        ParamSnapshot pLp = pBase;
+        c.lp (pLp);
+
+        const auto rBase = renderNote (pBase, 45, sr, 2.0, 2.2);   // A2, 110 Hz
+        const auto rLp   = renderNote (pLp,   45, sr, 2.0, 2.2);
+
+        const int from = static_cast<int> (c.t0 * sr);
+        const auto dbBase = spectrumDb (rBase.l.data() + from, fftN);
+        const auto dbLp   = spectrumDb (rLp.l.data()   + from, fftN);
+
+        const double hfDrop = 10.0 * std::log10 (
+            (bandPower (dbBase, binHz, 5000.0, 15000.0) + 1.0e-20)
+          / (bandPower (dbLp,   binHz, 5000.0, 15000.0) + 1.0e-20));
+        const double lowDrop = 10.0 * std::log10 (
+            (bandPower (dbBase, binHz, 100.0, 500.0) + 1.0e-20)
+          / (bandPower (dbLp,   binHz, 100.0, 500.0) + 1.0e-20));
+        std::printf ("  %-5s lp@2kHz: HF(5-15 kHz) drop %5.1f dB (need >= %.0f), "
+                     "low(100-500) drop %4.1f dB (allow <= %.1f)\n",
+                     c.name, hfDrop, c.minHfDrop, lowDrop, c.maxLowDrop);
+        CHECK_MSG (hfDrop >= c.minHfDrop,
+                   "%s lp cut only %.1f dB of HF energy", c.name, hfDrop);
+        CHECK_MSG (lowDrop <= c.maxLowDrop,
+                   "%s lp ate %.1f dB of the effect's low band", c.name, lowDrop);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Engaging and disengaging a wet-path LP must be click-free. A one-pole
+// low-pass parked at the 20 kHz ceiling is NOT an identity filter, so a naive
+// hard switch there steps the top end; the wet-mix fade plus the state priming
+// in OnePoleLp remove that.
+//
+// PART 1 is the precise measurement AND its own negative control: on a bright
+// test signal it measures the ADDED DISCONTINUITY the swap injects — the
+// difference between the first/last filtered sample and the bypassed sample it
+// replaces — for the shipped filter and for a naive hard switch (no fade, no
+// priming) built from the same code. A slew-based detector cannot do this job
+// here: a harmonic-rich signal's own sample-to-sample motion is larger than
+// the step under test, so it would pass anything.
+//
+// PART 2 puts the real thing in the engine: swap instants across a held note
+// stay inside the steady-state slew, and the output returns to the bit-exact
+// bypass path once the smoother has crossed the ceiling.
+inline void test_fx_lp_engage_click_free()
+{
+    std::printf ("[fx_lp_engage_click_free]\n");
+    const double sr = 48000.0;
+    const int note = 48;
+
+    // ---- PART 1: added discontinuity, shipped vs naive hard switch --------
+    {
+        // Bandlimited square at 220 Hz: harmonics right up to ~18 kHz, so the
+        // top end the LP acts on is genuinely populated.
+        constexpr int kN = 4096;
+        std::vector<float> x (kN);
+        for (int n = 0; n < kN; ++n)
+        {
+            double acc = 0.0;
+            for (int k = 1; k * 220 < 18000; k += 2)
+                acc += std::sin (2.0 * 3.14159265358979323846 * k * 220.0
+                                 * static_cast<double> (n) / sr) / k;
+            x[static_cast<size_t> (n)] = static_cast<float> (0.7 * acc);
+        }
+        float peak = 0.0f;
+        for (float v : x)
+            peak = std::max (peak, std::abs (v));
+
+        const auto dbfs = [peak] (float v)
+        {
+            return 20.0 * std::log10 (static_cast<double> (v / peak) + 1.0e-12);
+        };
+
+        // ENGAGE: the first filtered sample replaces a bypassed one, so the
+        // injected step is |out - x| right there. Probed from several signal
+        // phases — starting on a zero crossing would hide any step.
+        const auto engageStep = [&] (float fc, bool shipped)
+        {
+            const float G   = OnePoleLp::coefficient (fc, static_cast<float> (sr));
+            const float mix = shipped ? OnePoleLp::wetMix (fc) : 1.0f;
+            float worst = 0.0f;
+            for (const int start : { 17, 101, 233, 397, 601, 887 })
+            {
+                OnePoleLp f;
+                if (! shipped)
+                    f.primed = true;          // naive: unprimed, state = 0
+                const float in = x[static_cast<size_t> (start)];
+                worst = std::max (worst, std::abs (f.process (in, G, mix) - in));
+            }
+            return worst;
+        };
+
+        // DISENGAGE: the last filtered sample is replaced by the bypassed one,
+        // so the injected step is |out - x| in steady state.
+        const auto disengageStep = [&] (float fc, bool shipped)
+        {
+            OnePoleLp f;
+            const float G   = OnePoleLp::coefficient (fc, static_cast<float> (sr));
+            const float mix = shipped ? OnePoleLp::wetMix (fc) : 1.0f;
+            float worst = 0.0f;
+            for (int n = 0; n < kN; ++n)
+            {
+                const float out = f.process (x[static_cast<size_t> (n)], G, mix);
+                if (n > 64)                   // let the filter settle first
+                    worst = std::max (worst, std::abs (out - x[static_cast<size_t> (n)]));
+            }
+            return worst;
+        };
+
+        // Engage cutoffs worth probing: the ceiling itself, the value the
+        // ~25 ms smoother lands on after ONE 512-sample chunk of a 20 k -> 2 k
+        // jump (~13.8 kHz, already fully wet), and the settled 2 kHz target.
+        for (const float fc : { kFxLpCeilingHz, 13750.0f, 2000.0f })
+        {
+            const float ship  = engageStep (fc, true);
+            const float naive = engageStep (fc, false);
+            std::printf ("  engage @ %8.0f Hz   added step: shipped %.2e   "
+                         "naive %.2e (%6.1f dBFS)\n", static_cast<double> (fc),
+                         static_cast<double> (ship), static_cast<double> (naive),
+                         dbfs (naive));
+            CHECK_MSG (ship == 0.0f,
+                       "engage @ %.0f Hz injects a step of %.3g — priming broken",
+                       static_cast<double> (fc), static_cast<double> (ship));
+            CHECK_MSG (naive > 0.02f * peak,
+                       "negative control failed: an unprimed hard switch @ %.0f Hz "
+                       "only injects %.3g — the measurement proves nothing",
+                       static_cast<double> (fc), static_cast<double> (naive));
+        }
+
+        // Disengage happens exactly once, at the bypass gate.
+        {
+            const float ship  = disengageStep (kFxLpBypassHz, true);
+            const float naive = disengageStep (kFxLpBypassHz, false);
+            std::printf ("  disengage @ %6.0f Hz gate added step: shipped %.2e "
+                         "(%6.1f dBFS)  naive %.2e (%6.1f dBFS)\n",
+                         static_cast<double> (kFxLpBypassHz),
+                         static_cast<double> (ship), dbfs (ship),
+                         static_cast<double> (naive), dbfs (naive));
+            // Measures ~-86 dBFS; the gate keeps a few dB of platform headroom.
+            CHECK_MSG (dbfs (ship) < -80.0,
+                       "disengage injects a %.1f dBFS step (want < -80)", dbfs (ship));
+            CHECK_MSG (dbfs (naive) > dbfs (ship) + 40.0,
+                       "negative control failed: an unfaded hard switch only injects "
+                       "%.1f dBFS — the measurement proves nothing", dbfs (naive));
+        }
+    }
+
+    // ---- PART 2: the real engine ------------------------------------------
+
+    // Wet-only, transparent crusher: what we hear IS the LP on the wet path.
+    ParamSnapshot off;
+    off.oscA_pw = 18.0f;                      // harmonic-rich, plenty of HF
+    off.filt_cutoff = 20000.0f;
+    off.env1_a = 0.005f; off.env1_s = 1.0f;
+    off.crush_mix = 1.0f; off.crush_bits = 16; off.crush_down = 1;
+
+    ParamSnapshot on = off;
+    on.crush_lp = 2000.0f;
+
+    // The step is phase dependent, so score a fixed set of swap instants.
+    constexpr double kInstants[] = { 0.42, 0.70, 0.99, 1.28 };
+    struct Dir { const char* label; const ParamSnapshot* a; const ParamSnapshot* b; };
+    const Dir dirs[] = { { "engage  (20 kHz -> 2 kHz)", &off, &on },
+                         { "disengage (2 kHz -> 20 kHz)", &on, &off } };
+
+    float bound = 0.0f;
+    for (const auto& d : dirs)
+    {
+        float worst = 0.0f;
+        double worstAt = 0.0;
+        for (const double t : kInstants)
+        {
+            const auto r = renderParamSwap (*d.a, *d.b, note, sr, t, t + 0.6);
+            const int stepAt = static_cast<int> (t * sr);
+            const float swap   = maxSlew (r.l, stepAt, stepAt + static_cast<int> (0.030 * sr));
+            const float before = maxSlew (r.l, stepAt - static_cast<int> (0.150 * sr), stepAt);
+            const float after  = maxSlew (r.l, stepAt + static_cast<int> (0.300 * sr),
+                                          static_cast<int> (r.l.size()));
+            const float b = 1.25f * std::max (before, after);
+            bound = std::max (bound, b);
+            if (swap / std::max (1.0e-9f, b) > worst / std::max (1.0e-9f, b))
+            {
+                worst = swap;
+                worstAt = t;
+            }
+            CHECK_MSG (swap <= b, "%s at t=%.2f s clicked: step %.5f > bound %.5f",
+                       d.label, t, static_cast<double> (swap), static_cast<double> (b));
+        }
+        std::printf ("  %-28s worst step %.5f (t=%.2f s)\n", d.label,
+                     static_cast<double> (worst), worstAt);
+    }
+
+    // The disengage swap itself: run long enough for the smoother to cross the
+    // bypass point (~190 ms after the target reaches the ceiling) and confirm
+    // the output really did return to the bypassed path bit-for-bit.
+    {
+        const auto swapped = renderParamSwap (on, off, note, sr, 0.5, 2.0);
+        const auto pure    = renderNote (off, note, sr, 2.0, 2.0);
+        float lateDiff = 0.0f;
+        for (int i = static_cast<int> (1.5 * sr); i < static_cast<int> (2.0 * sr); ++i)
+            lateDiff = std::max (lateDiff, std::abs (swapped.l[static_cast<size_t> (i)]
+                                                   - pure.l[static_cast<size_t> (i)]));
+        std::printf ("  1.0 s after disengage vs never-engaged: max |diff| = %.3g\n",
+                     static_cast<double> (lateDiff));
+        CHECK_MSG (lateDiff == 0.0f,
+                   "LP did not return to the bit-exact bypass path (diff %.3g)",
+                   static_cast<double> (lateDiff));
+    }
+    (void) bound;    // reported above; PART 1 carries the negative control
 }
 
 } // namespace fxtests

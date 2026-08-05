@@ -19,7 +19,7 @@
   },
   "params": {
     "cave_size": 0.8,
-    "filt_keytrack": 0.3,
-    "master_gain": 3.2
+    "master_gain": 3.2,
+    "filt_cutoff": 8000
   }
 }

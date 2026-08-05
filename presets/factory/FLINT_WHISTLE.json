@@ -20,6 +20,8 @@
   "params": {
     "oscA_oct": 1,
     "dly_mix": 0.25,
-    "dly_time": "1/8"
+    "dly_time": "1/8",
+    "filt_cutoff": 7000,
+    "oscA_level": 0.75
   }
 }

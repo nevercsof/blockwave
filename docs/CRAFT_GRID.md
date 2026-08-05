@@ -34,6 +34,25 @@ Deltas below are the design intent and starting values; final numbers are tuned 
 
 Conflict rule: deltas are applied in a fixed material order (table order), multiplicative for × entries, additive for the rest; discrete switches (raw, sync, noise) use "any material at weight ≥1 may switch ON; STONE's raw wins last".
 
+## Per-cell WEIGHT / MIX
+
+*Producer-requested for v1.0 (the architect had deferred it to v1.1 "Crafting 2.0"; the producer overrode that and specified the semantics below). Rationale, verbatim: sometimes a material is simply too much and you want to dial it back without removing the block.*
+
+Every placed cell carries a **weight** in `0..1` (1.0 = 100%, the default), edited by a slider on the block itself. It scales that cell's contribution to its material's delta set — the cell contributes `weight` instead of a full copy.
+
+| Delta class | Behaviour at weight *w* |
+|---|---|
+| **add** / **multiply** | copy *k* contributes `copyWeight(k) * w`, where the copies of a material are ordered by **descending** weight so the heaviest cell is always copy 0. Crafting therefore stays shapeless: only the multiset of (material, weight) pairs matters, never where the blocks sit. |
+| **set** | weighted toward the target by the material's **strongest** cell weight: `value += wMax * (target - value)`, and exactly `value = target` at `wMax = 1`. Stacking still does not intensify a set. |
+| **switch** (raw, sync, noise on, LFO dest/shape) | fires for **any** non-zero weight — a bool cannot be half on. Tempo-synced LFO **rates** count as switches on purpose, so a synced LFO never lands between note divisions; turning a material down reduces the modulation **depth** instead (`lfo1_pwm` / `lfo2_amt` are adds, so they scale). |
+| **weight 0** | the material is **not there** for the delta math — bit-identical to leaving those cells empty. The blocks stay *placed* for everything below. |
+
+The soft-knee stacking clamp is unchanged and runs on top of the weighted sums.
+
+**Recipe detection, discovery and auto-naming ignore weights completely.** A recipe matches on base + material identity + position only, so a grid with the right blocks at 30% — or at 0% — still triggers the recipe and still receives its hand-tuned override patch. This is non-negotiable: it protects every already-discovered recipe and the whole hunt mechanic. The auto-name follows the same principle (name and recipe both describe what you *placed*; weights only shape how it sounds).
+
+With every weight at 1.0 the arithmetic is **bit-identical** to the pre-weight engine, so the frozen craft golden hashes, the 128 factory presets and every existing user preset are unaffected. Preset/session JSON carries `craft.weights` only when a placed cell is off 1.0 — see `docs/SPEC.md` §Preset format for the format and the migration rule.
+
 Stacking clamp: the accumulated delta on each continuous parameter is soft-kneed against the SPEC rail instead of hard-clamped — linear up to 75% of the headroom between the parameter's post-set reference value and the rail, then compressed so it approaches (never reaches) the rail. Copies 3–8 of a material therefore keep changing the sound monotonically instead of slamming into the parameter range. Integer parameters (unison count, octaves, crush bits/down) still round and hard-clamp — steps are inherent to them.
 
 ## Hidden recipes (position-sensitive)

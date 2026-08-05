@@ -118,6 +118,14 @@ struct ParamSnapshot
     float cave_hp      = 20.0f; // Hz, 20..2000 log
     float dly_hp       = 20.0f;
     float crush_hp     = 20.0f;
+
+    // FX wet-path low-pass cutoffs (Phase-6 producer feedback, addendum 2 —
+    // the symmetric partner of the HP trio, same append-only rule).
+    // 20000 Hz = hard bypass (bit-exact). Each filters ONLY the signal
+    // entering its effect, at exactly the same point as the matching HP.
+    float cave_lp      = 20000.0f; // Hz, 200..20000 log
+    float dly_lp       = 20000.0f;
+    float crush_lp     = 20000.0f;
 };
 
 // Single-writer (message thread) / single-reader (audio thread) snapshot

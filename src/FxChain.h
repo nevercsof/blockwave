@@ -30,7 +30,9 @@
 //
 // Bypass guarantee: every mix blend is `dry + mix*(wet - dry)`. With mix
 // exactly 0 (snapped default) the dry signal passes through bit-exact, so all
-// pre-FX golden renders are unchanged.
+// pre-FX golden renders are unchanged. The wet-path HP/LP filters
+// (cave_hp/dly_hp/crush_hp, cave_lp/dly_lp/crush_lp) carry the same guarantee
+// at their own bypass rails — see OnePoleHp / OnePoleLp below.
 //
 // TEMPO FLOOR (documented limit): the delay buffer is sized for the longest
 // division (1/1) at kMinTempoBpm = 20 BPM -> kMaxDelaySeconds = 12 s. Hosts
@@ -122,6 +124,100 @@ struct OnePoleHp
 };
 
 // ---------------------------------------------------------------------------
+// FX wet-path low-pass (cave_lp / dly_lp / crush_lp, frozen-table addendum 2).
+//
+// The symmetric partner of OnePoleHp: same one-pole TPT core, same insertion
+// points (pre-quantize for CRUSH, the delay-line/FDN input for DELAY/CAVE),
+// same "wet only, dry never touched" rule, and the HP runs first so the two
+// together read as one band-pass on the effect's input.
+//
+// BYPASS CONTRACT: the parameter MAXIMUM (20000 Hz, the default) means OFF —
+// the filter is not run at all and its state is cleared, so every render with
+// the default value is BIT-IDENTICAL to the pre-addendum engine.
+//
+// CLICK-FREE ENGAGE/DISENGAGE. A one-pole low-pass parked at 20 kHz is NOT an
+// identity filter (it still costs ~1 dB at 10 kHz), so switching it in or out
+// at the ceiling would step the top end. Two mechanisms remove that:
+//
+//   1. WET-MIX FADE. The filter's contribution is blended
+//      `out = x + mix * (lp - x)` with mix ramping linearly from 0 at the
+//      20 kHz ceiling to 1 at 16 kHz. At the ceiling the filter contributes
+//      exactly nothing, so starting/stopping it there is a no-op; below
+//      16 kHz — the whole musically useful part of the range — it is fully
+//      wet and behaves like a plain 6 dB/oct low-pass. This is what makes
+//      DISENGAGE clean: the engine only stops running the filter once the
+//      cutoff has glided to within 1 Hz of the ceiling, where the remaining
+//      mix is 0.025 % and the step it leaves behind measures around
+//      -90 dBFS on a harmonic-rich signal.
+//   2. STATE PRIMING. The first sample after an engage sets the integrator to
+//      that sample, i.e. the filter starts in steady state and its first
+//      output equals its input EXACTLY. This is what makes ENGAGE clean, and
+//      it is the mechanism that matters there: the ~25 ms smoother covers a
+//      large fraction of the distance to the new cutoff inside the very first
+//      control chunk, so the fade is already near fully wet by then and
+//      cannot be relied on.
+//
+// As with the HP, FxChain smooths the cutoff (~25 ms) and keeps the filter
+// engaged while either the target or the smoothed value is still below the
+// bypass point, so a preset jump back to 20 kHz glides up first. (Exact
+// equality with the ceiling is NOT usable as the gate: an exponential
+// smoother stalls one ULP short of its target, so it would never disengage.)
+constexpr float kFxLpCeilingHz = 20000.0f;   // parameter maximum = OFF
+constexpr float kFxLpFadeHz    =  4000.0f;   // wet mix 0 at ceiling -> 1 at 16 kHz
+constexpr float kFxLpBypassHz  = 19999.0f;   // at/above this the filter is not run
+
+struct OnePoleLp
+{
+    float s = 0.0f;                       // TPT integrator state
+    bool  primed = false;                 // false = next sample seeds the state
+
+    void clear() noexcept { s = 0.0f; primed = false; }
+
+    // Same coefficient as OnePoleHp, with the cutoff held below Nyquist so
+    // tan() stays finite at any supported sample rate (a no-op at 44.1 kHz
+    // and above, where the 20 kHz maximum is already below 0.49 * sr).
+    static float coefficient (float fcHz, float sr) noexcept
+    {
+        const float maxFc = 0.49f * sr;
+        const float fc = fcHz > maxFc ? maxFc : (fcHz < 1.0f ? 1.0f : fcHz);
+        const float g = std::tan (3.14159265f * fc / sr);
+        return g / (1.0f + g);
+    }
+
+    // Wet mix for a cutoff: 0 at (and above) the ceiling, 1 at/below 16 kHz.
+    static float wetMix (float fcHz) noexcept
+    {
+        const float m = (kFxLpCeilingHz - fcHz) * (1.0f / kFxLpFadeHz);
+        return m < 0.0f ? 0.0f : (m > 1.0f ? 1.0f : m);
+    }
+
+    float process (float x, float G, float mix) noexcept
+    {
+        if (! primed)                     // engage in steady state: lp == x
+        {
+            s = x;
+            primed = true;
+        }
+        const float v  = (x - s) * G;
+        const float lp = v + s;
+        s = flushDenorm (lp + v);
+        return x + mix * (lp - x);
+    }
+};
+
+// Per-FX wet-path filter settings, computed once per control chunk by FxChain
+// and passed down to the effects. Keeping them in one struct is what stopped
+// the effect process() signatures from growing a parameter per filter.
+struct WetFilters
+{
+    bool  hpOn  = false;
+    float hpG   = 0.0f;
+    bool  lpOn  = false;
+    float lpG   = 0.0f;
+    float lpMix = 0.0f;
+};
+
+// ---------------------------------------------------------------------------
 // CRUSH: sample-rate downsample (hold every crush_down-th input sample) then
 // bit-depth quantization of the held value. Stereo, stateless apart from the
 // hold register; runs unconditionally (bits=16, down=1 is transparent to
@@ -133,12 +229,13 @@ public:
     {
         holdL = 0.0f; holdR = 0.0f; counter = 0;
         hpL.clear(); hpR.clear();
+        lpL.clear(); lpR.clear();
     }
 
-    // hpOn/hpG: wet-path high-pass on the signal entering the crusher
+    // f: wet-path high-pass then low-pass on the signal entering the crusher
     // (pre-quantize) — the dry side of the mix blend stays untouched.
     void process (float* l, float* r, int n, int bits, int down, float mix,
-                  bool hpOn, float hpG) noexcept
+                  const WetFilters& f) noexcept
     {
         const int d = down < 1 ? 1 : (down > 64 ? 64 : down);
         const int b = bits < 1 ? 1 : (bits > 16 ? 16 : bits);
@@ -146,18 +243,28 @@ public:
         const float invq = 1.0f / q;
         if (counter >= d)
             counter = 0;                       // down lowered mid-run
-        if (! hpOn)
+        if (! f.hpOn)
         {
             hpL.clear();                       // bypass = pre-addendum path,
             hpR.clear();                       // bit-exact (see OnePoleHp)
         }
+        if (! f.lpOn)
+        {
+            lpL.clear();                       // ditto (see OnePoleLp)
+            lpR.clear();
+        }
         for (int i = 0; i < n; ++i)
         {
             float inL = l[i], inR = r[i];
-            if (hpOn)
+            if (f.hpOn)
             {
-                inL = hpL.process (inL, hpG);
-                inR = hpR.process (inR, hpG);
+                inL = hpL.process (inL, f.hpG);
+                inR = hpR.process (inR, f.hpG);
+            }
+            if (f.lpOn)
+            {
+                inL = lpL.process (inL, f.lpG, f.lpMix);
+                inR = lpR.process (inR, f.lpG, f.lpMix);
             }
             if (counter == 0) { holdL = inL; holdR = inR; }
             if (++counter >= d)
@@ -173,6 +280,7 @@ private:
     float holdL = 0.0f, holdR = 0.0f;
     int counter = 0;
     OnePoleHp hpL, hpR;
+    OnePoleLp lpL, lpR;
 };
 
 // ---------------------------------------------------------------------------
@@ -198,6 +306,8 @@ public:
         w = 0;
         hpL.clear();
         hpR.clear();
+        lpL.clear();
+        lpR.clear();
     }
 
     int maxDelaySamples() const noexcept { return capacity - 3; }
@@ -206,12 +316,12 @@ public:
     // delaySamplesEnd across the chunk: during tempo changes the read position
     // moves continuously per sample (tape-style glide, never a per-chunk jump).
     // Static time -> flat ramp -> block-size bit-exactness preserved.
-    // hpOn/hpG: wet-path high-pass on the signal entering the delay line —
-    // everything in the line (and thus every echo) is filtered exactly once;
-    // the dry side of the mix blend stays untouched.
+    // f: wet-path high-pass then low-pass on the signal entering the delay
+    // line — everything in the line (and thus every echo) is filtered exactly
+    // once; the dry side of the mix blend stays untouched.
     void process (float* l, float* r, int n, double delaySamplesStart,
                   double delaySamplesEnd, float fb, float mix, bool pingpong,
-                  bool hpOn, float hpG) noexcept
+                  const WetFilters& f) noexcept
     {
         const double dmax = static_cast<double> (capacity - 3);
         const auto clampDs = [dmax] (double v) noexcept
@@ -222,10 +332,15 @@ public:
         const double step = (clampDs (delaySamplesEnd) - ds)
                           / static_cast<double> (n > 0 ? n : 1);
 
-        if (! hpOn)
+        if (! f.hpOn)
         {
             hpL.clear();                       // bypass = pre-addendum path,
             hpR.clear();                       // bit-exact (see OnePoleHp)
+        }
+        if (! f.lpOn)
+        {
+            lpL.clear();                       // ditto (see OnePoleLp)
+            lpR.clear();
         }
         for (int i = 0; i < n; ++i)
         {
@@ -241,10 +356,15 @@ public:
 
             const float inL = l[i], inR = r[i];
             float fInL = inL, fInR = inR;
-            if (hpOn)
+            if (f.hpOn)
             {
-                fInL = hpL.process (inL, hpG);
-                fInR = hpR.process (inR, hpG);
+                fInL = hpL.process (fInL, f.hpG);
+                fInR = hpR.process (fInR, f.hpG);
+            }
+            if (f.lpOn)
+            {
+                fInL = lpL.process (fInL, f.lpG, f.lpMix);
+                fInR = lpR.process (fInR, f.lpG, f.lpMix);
             }
             const auto iw = static_cast<size_t> (w);
             if (pingpong)
@@ -271,6 +391,7 @@ private:
     int capacity = 8;
     int w = 0;
     OnePoleHp hpL, hpR;
+    OnePoleLp lpL, lpR;
 };
 
 // ---------------------------------------------------------------------------
@@ -332,6 +453,7 @@ public:
         dcX = 0.0f;
         dcY = 0.0f;
         hpIn.clear();
+        lpIn.clear();
     }
 
     // Control-rate update (once per chunk): smoothed lengths -> per-line gain.
@@ -344,25 +466,30 @@ public:
         }
     }
 
-    // hpOn/hpG: wet-path high-pass on the mono input entering the reverb —
-    // the tail carries no rumble; the dry side of the mix blend is untouched.
+    // f: wet-path high-pass then low-pass on the mono input entering the
+    // reverb — the tail carries no rumble and no fizz; the dry side of the
+    // mix blend is untouched.
     void process (float* l, float* r, int n, const float* smoothedLen,
                   float preSamples, float dampCoef, float mix,
-                  bool hpOn, float hpG) noexcept
+                  const WetFilters& f) noexcept
     {
         float pMax = static_cast<float> (preCap - 3);
         const float ps  = preSamples < 1.0f ? 1.0f : (preSamples > pMax ? pMax : preSamples);
         const float eps = ps * 0.5f;
 
-        if (! hpOn)
+        if (! f.hpOn)
             hpIn.clear();                      // bypass = pre-addendum path
+        if (! f.lpOn)
+            lpIn.clear();                      // ditto
         for (int i = 0; i < n; ++i)
         {
-            // Input: mono sum, high-passed (cave_hp), DC-blocked, into the
-            // pre-delay line.
+            // Input: mono sum, band-limited (cave_hp / cave_lp), DC-blocked,
+            // into the pre-delay line.
             float x = 0.5f * (l[i] + r[i]);
-            if (hpOn)
-                x = hpIn.process (x, hpG);
+            if (f.hpOn)
+                x = hpIn.process (x, f.hpG);
+            if (f.lpOn)
+                x = lpIn.process (x, f.lpG, f.lpMix);
             const float hp = x - dcX + 0.995f * dcY;
             dcX = x;
             dcY = flushDenorm (hp);
@@ -424,6 +551,7 @@ private:
     float g[kLines] {};                       // per-line RT60 gain
     float dcX = 0.0f, dcY = 0.0f;             // input DC blocker
     OnePoleHp hpIn;                           // cave_hp (mono input)
+    OnePoleLp lpIn;                           // cave_lp (mono input)
 };
 
 // ---------------------------------------------------------------------------
@@ -457,6 +585,9 @@ public:
         sCrushHp  = p.crush_hp;
         sDlyHp    = p.dly_hp;
         sCaveHp   = p.cave_hp;
+        sCrushLp  = p.crush_lp;
+        sDlyLp    = p.dly_lp;
+        sCaveLp   = p.cave_lp;
         sDlyTime  = delayTargetSamples (p, bpm);
         const float ls = CaveReverb::lengthScale (p.cave_size);
         for (int i = 0; i < CaveReverb::kLines; ++i)
@@ -477,18 +608,34 @@ public:
         sCrushHp  += aMix * (p.crush_hp  - sCrushHp);
         sDlyHp    += aMix * (p.dly_hp    - sDlyHp);
         sCaveHp   += aMix * (p.cave_hp   - sCaveHp);
+        sCrushLp  += aMix * (p.crush_lp  - sCrushLp);
+        sDlyLp    += aMix * (p.dly_lp    - sDlyLp);
+        sCaveLp   += aMix * (p.cave_lp   - sCaveLp);
 
-        // Wet-path HP engage/bypass (see OnePoleHp header comment): stay
-        // engaged while either the target or the smoothed cutoff is above the
-        // floor, so a preset jump back to 20 Hz glides down first and only
-        // then swaps to the bit-exact bypass path.
+        // Wet-path HP/LP engage/bypass (see the OnePoleHp / OnePoleLp header
+        // comments): stay engaged while either the target or the smoothed
+        // cutoff is still inside the range, so a preset jump back to the
+        // bypass rail glides there first and only then swaps to the bit-exact
+        // bypass path.
         const float fsr = static_cast<float> (sr);
-        const bool  crushHpOn = p.crush_hp > kFxHpBypassHz || sCrushHp > kFxHpBypassHz;
-        const bool  dlyHpOn   = p.dly_hp   > kFxHpBypassHz || sDlyHp   > kFxHpBypassHz;
-        const bool  caveHpOn  = p.cave_hp  > kFxHpBypassHz || sCaveHp  > kFxHpBypassHz;
-        const float crushHpG = crushHpOn ? OnePoleHp::coefficient (sCrushHp, fsr) : 0.0f;
-        const float dlyHpG   = dlyHpOn   ? OnePoleHp::coefficient (sDlyHp,   fsr) : 0.0f;
-        const float caveHpG  = caveHpOn  ? OnePoleHp::coefficient (sCaveHp,  fsr) : 0.0f;
+        const auto makeFilters = [fsr] (float hpTarget, float hpSmoothed,
+                                        float lpTarget, float lpSmoothed) noexcept
+        {
+            WetFilters f;
+            f.hpOn = hpTarget > kFxHpBypassHz || hpSmoothed > kFxHpBypassHz;
+            f.lpOn = lpTarget < kFxLpBypassHz || lpSmoothed < kFxLpBypassHz;
+            if (f.hpOn)
+                f.hpG = OnePoleHp::coefficient (hpSmoothed, fsr);
+            if (f.lpOn)
+            {
+                f.lpG   = OnePoleLp::coefficient (lpSmoothed, fsr);
+                f.lpMix = OnePoleLp::wetMix (lpSmoothed);
+            }
+            return f;
+        };
+        const WetFilters crushF = makeFilters (p.crush_hp, sCrushHp, p.crush_lp, sCrushLp);
+        const WetFilters dlyF   = makeFilters (p.dly_hp,   sDlyHp,   p.dly_lp,   sDlyLp);
+        const WetFilters caveF  = makeFilters (p.cave_hp,  sCaveHp,  p.cave_lp,  sCaveLp);
         const double dlyTimePrev = sDlyTime;
         sDlyTime  += static_cast<double> (aTime) * (delayTargetSamples (p, bpm) - sDlyTime);
         const float ls = CaveReverb::lengthScale (p.cave_size);
@@ -507,12 +654,10 @@ public:
                                                 / static_cast<float> (sr));
         cave.updateGains (sCaveLen, CaveReverb::rt60ForSize (p.cave_size));
 
-        crush.process (l, r, n, p.crush_bits, p.crush_down, sCrushMix,
-                       crushHpOn, crushHpG);
+        crush.process (l, r, n, p.crush_bits, p.crush_down, sCrushMix, crushF);
         delay.process (l, r, n, dlyTimePrev, sDlyTime, sDlyFb, sDlyMix,
-                       p.dly_pingpong, dlyHpOn, dlyHpG);
-        cave.process  (l, r, n, sCaveLen, sCavePre, dampCoef, sCaveMix,
-                       caveHpOn, caveHpG);
+                       p.dly_pingpong, dlyF);
+        cave.process  (l, r, n, sCaveLen, sCavePre, dampCoef, sCaveMix, caveF);
     }
 
     // Honest tail estimate for AudioProcessor::getTailLengthSeconds — time for
@@ -558,6 +703,8 @@ private:
     // Smoothed values (audible params, ~25 ms; time-like params, ~100 ms).
     float  sCrushMix = 0.0f, sDlyMix = 0.0f, sDlyFb = 0.35f, sCaveMix = 0.0f;
     float  sCrushHp = 20.0f, sDlyHp = 20.0f, sCaveHp = 20.0f;   // wet-path HP, Hz
+    float  sCrushLp = kFxLpCeilingHz, sDlyLp = kFxLpCeilingHz,  // wet-path LP, Hz
+           sCaveLp  = kFxLpCeilingHz;
     double sDlyTime = 1.0;
     float  sCaveLen[CaveReverb::kLines] {};
     float  sCavePre = 1.0f;

@@ -19,6 +19,7 @@
   },
   "params": {
     "env1_s": 0.7,
-    "master_gain": -4.9
+    "master_gain": -4.9,
+    "filt_cutoff": 9000
   }
 }

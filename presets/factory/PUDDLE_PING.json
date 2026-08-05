@@ -20,6 +20,7 @@
   "params": {
     "env1_s": 0.2,
     "env1_d": 0.15,
-    "master_gain": 6.0
+    "master_gain": 6.0,
+    "oscA_level": 0.77
   }
 }

@@ -17,9 +17,136 @@
 */
 
 #include "TopBar.h"
+#include <cmath>
+#include <cstdlib>
 
 namespace blockwave::ui
 {
+
+// ---- PixelScaleSlider --------------------------------------------------------
+
+PixelScaleSlider::PixelScaleSlider()
+{
+    setWantsKeyboardFocus (true);
+    setTooltip ("pixel size steps");
+}
+
+int PixelScaleSlider::indexForPercent (int percent) noexcept
+{
+    int best = 0, bestErr = 1 << 20;
+    for (int i = 0; i < kNumSteps; ++i)
+    {
+        const int err = std::abs (kStepPercent[i] - percent);
+        if (err < bestErr) { bestErr = err; best = i; }
+    }
+    return best;
+}
+
+juce::Rectangle<int> PixelScaleSlider::trackBounds() const
+{
+    return { 0, 10, kTrackW, 14 };
+}
+
+void PixelScaleSlider::setScalePercent (int percent)
+{
+    const int next = indexForPercent (percent);
+    if (next == index)
+        return;
+    index = next;
+    repaint();
+}
+
+void PixelScaleSlider::setIndex (int newIndex, bool notify)
+{
+    const int clamped = juce::jlimit (0, kNumSteps - 1, newIndex);
+    if (clamped == index)
+        return;
+    index = clamped;
+    repaint();
+    if (notify && onScaleChange)
+        onScaleChange (kStepPercent[index]);
+}
+
+void PixelScaleSlider::setFromMouse (int x)
+{
+    // Snap to the nearest notch: the handle's own centre travels
+    // kHandleW/2 .. kTrackW - kHandleW/2 in kNotchPitch steps.
+    const int rel = x - kHandleW / 2;
+    setIndex ((rel + kNotchPitch / 2) / kNotchPitch, true);
+}
+
+void PixelScaleSlider::paint (juce::Graphics& g)
+{
+    using namespace colours;
+    const auto track = trackBounds();
+
+    drawPixelText (g, "SCALE", 0, 0, 1, dimText);
+
+    drawBevelBox (g, track, chip, panelDark, panelLight, outline, true);
+
+    // Notch ticks inside the well: five stops you can see and aim at.
+    g.setColour (panelDark);
+    for (int i = 0; i < kNumSteps; ++i)
+        g.fillRect (kHandleW / 2 - 1 + i * kNotchPitch, track.getY() + 4, 2, 6);
+
+    // Filled portion up to the handle — "bigger pixels" reads as "more".
+    const int handleX = index * kNotchPitch;
+    if (index > 0)
+    {
+        g.setColour (grass);
+        g.fillRect (track.getX() + 3, track.getCentreY() - 1, handleX, 2);
+    }
+
+    const juce::Rectangle<int> handle (handleX, 6, kHandleW, 22);
+    drawBevelBox (g, handle, buttonFace, label, panelDark, outline);
+    g.setColour (ice);
+    g.fillRect (handle.getCentreX() - 1, handle.getY() + 5, 2, 12);
+
+    const juce::Rectangle<int> readout (kTrackW + 8, 8, kReadoutW, 16);
+    drawBevelBox (g, readout, chip, panelDark, panelLight, outline, true);
+    drawPixelTextCentred (g, juce::String (kStepPercent[index]) + "%", readout, 1, ice);
+
+    if (hasKeyboardFocus (false))
+        drawFocusTicks (g, { 0, 4, width, height - 4 });
+}
+
+void PixelScaleSlider::mouseDown (const juce::MouseEvent& e)
+{
+    grabKeyboardFocus();
+    if (e.getPosition().x <= kTrackW)
+        setFromMouse (e.getPosition().x);
+}
+
+void PixelScaleSlider::mouseDrag (const juce::MouseEvent& e)
+{
+    setFromMouse (e.getPosition().x);
+}
+
+void PixelScaleSlider::mouseWheelMove (const juce::MouseEvent&,
+                                       const juce::MouseWheelDetails& w)
+{
+    if (w.deltaY != 0.0f)
+        setIndex (index + (w.deltaY > 0.0f ? 1 : -1), true);
+}
+
+bool PixelScaleSlider::keyPressed (const juce::KeyPress& k)
+{
+    if (k.isKeyCode (juce::KeyPress::rightKey) || k.isKeyCode (juce::KeyPress::upKey))
+    {
+        setIndex (index + 1, true);
+        return true;
+    }
+    if (k.isKeyCode (juce::KeyPress::leftKey) || k.isKeyCode (juce::KeyPress::downKey))
+    {
+        setIndex (index - 1, true);
+        return true;
+    }
+    if (k.isKeyCode (juce::KeyPress::homeKey)) { setIndex (0, true); return true; }
+    if (k.isKeyCode (juce::KeyPress::endKey))  { setIndex (kNumSteps - 1, true); return true; }
+    return false;
+}
+
+// ---- StarButton --------------------------------------------------------------
 
 void StarButton::paintButton (juce::Graphics& g, bool highlighted, bool down)
 {
@@ -83,14 +210,12 @@ TopBar::TopBar (BlockwaveAudioProcessor& processor) : proc (processor)
     masterAtt = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
         proc.apvts, "master_gain", masterKnob);
 
-    scaleBtn.setTooltip ("pixel size cycle");
-    scaleBtn.onClick = [this]
+    scaleSlider.onScaleChange = [this] (int percent)
     {
-        // 100 -> 125 -> 150 -> 175 -> 200 -> 100.
         if (onScaleChange)
-            onScaleChange (currentScale >= 200 ? 100 : currentScale + 25);
+            onScaleChange (percent);
     };
-    addAndMakeVisible (scaleBtn);
+    addAndMakeVisible (scaleSlider);
 
     refresh();
 }
@@ -117,10 +242,9 @@ void TopBar::refresh()
     repaint();
 }
 
-void TopBar::setScaleLabel (int s)
+void TopBar::setScalePercent (int s)
 {
-    currentScale = s;
-    scaleBtn.setButtonText (juce::String (s) + "%");   // shows the CURRENT scale
+    scaleSlider.setScalePercent (s);                   // shows the CURRENT scale
 }
 
 void TopBar::paint (juce::Graphics& g)
@@ -142,15 +266,19 @@ void TopBar::paint (juce::Graphics& g)
 
 void TopBar::resized()
 {
+    // Three groups on the 8-px grid, each separated by 40 px of night:
+    //   presets 88..448 | sound 488..584 | view 624..824.
+    // RAW and the master knob moved left out of the old 184 px hole so the
+    // scale slider gets the right end without crowding anything.
     prevBtn.setBounds   (88,  12, 16, 16);
     nameBtn.setBounds   (108, 12, 168, 16);
     nextBtn.setBounds   (280, 12, 16, 16);
     browseBtn.setBounds (304, 12, 64, 16);
     saveBtn.setBounds   (376, 12, 48, 16);
-    favBtn.setBounds    (432, 12, 16, 16);             // 8-px grid, clear of RAW
-    rawBtn.setBounds    (648, 12, 56, 16);
-    masterKnob.setBounds (712, 8, 24, 24);
-    scaleBtn.setBounds  (784, 12, 40, 16);             // fits "100%" at 1x
+    favBtn.setBounds    (432, 12, 16, 16);
+    rawBtn.setBounds    (488, 12, 56, 16);
+    masterKnob.setBounds (560, 8, 24, 24);
+    scaleSlider.setBounds (624, 6, PixelScaleSlider::width, PixelScaleSlider::height);
 }
 
 } // namespace blockwave::ui

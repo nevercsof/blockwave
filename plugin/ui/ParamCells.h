@@ -33,8 +33,16 @@ namespace blockwave::ui
 
 // Human-readable bitmap-font value ("12.5K", "1/16D", "+7", "ON"...).
 // Needs the APVTS to resolve LFO sync state for synced-rate display.
+//
+// syncOverride (-1 = read the switch out of the APVTS, 0/1 = force): a caller
+// that is REACTING to an lfo*_sync change must pass the new state it was
+// handed. JUCE notifies a parameter's listeners in REVERSE registration
+// order, so while an attachment callback runs the APVTS raw value for that
+// same parameter has not been written yet — reading it here would format the
+// rate against the OLD switch state.
 juce::String formatParamValue (PId id, float plain,
-                               const juce::AudioProcessorValueTreeState& state);
+                               const juce::AudioProcessorValueTreeState& state,
+                               int syncOverride = -1);
 
 // Slider with explicit arrow-key stepping (keyboard reachability).
 class PixelSlider final : public juce::Slider
@@ -78,7 +86,9 @@ public:
     ParamCell (juce::AudioProcessorValueTreeState& state, PId pid,
                const juce::String& label, const juce::String& tooltip);
 
-    void refreshValue();                    // recompute readout, repaint chip
+    // Recompute the readout and repaint the chip. syncOverride is forwarded
+    // to formatParamValue (see above) — only the LFO rate cells use it.
+    void refreshValue (int syncOverride = -1);
     void paint (juce::Graphics&) override;
     void resized() override;
 

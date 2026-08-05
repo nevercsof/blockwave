@@ -22,6 +22,7 @@
     "env2_pitch": 7,
     "env2_d": 0.03,
     "dly_hp": 150.0,
-    "master_gain": 6.0
+    "master_gain": 6.0,
+    "oscA_level": 0.97
   }
 }

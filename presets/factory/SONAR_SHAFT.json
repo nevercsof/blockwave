@@ -22,6 +22,7 @@
     "dly_time": "1/2",
     "dly_fb": 0.7,
     "dly_mix": 0.45,
-    "master_gain": 6.0
+    "master_gain": 6.0,
+    "oscA_level": 1.0
   }
 }

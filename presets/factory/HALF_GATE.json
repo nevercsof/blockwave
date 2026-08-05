@@ -19,6 +19,7 @@
   },
   "params": {
     "vel_amp": 0.35,
-    "master_gain": -8.8
+    "master_gain": -8.8,
+    "filt_cutoff": 9000
   }
 }

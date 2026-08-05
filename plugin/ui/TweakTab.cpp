@@ -22,9 +22,11 @@ namespace blockwave::ui
 {
 
 BlockPanel& TweakTab::panel (const juce::String& title, int x, int y, int w,
-                             const char* onParamId, const juce::String& onTooltip)
+                             const char* onParamId, const juce::String& onTooltip,
+                             int cellWidth)
 {
     auto p = std::make_unique<BlockPanel> (title);
+    p->setCellWidth (cellWidth);
     p->setBounds (x, y, w, kPanelH);
     addAndMakeVisible (*p);
     if (onParamId != nullptr)
@@ -49,11 +51,12 @@ TweakTab::TweakTab (juce::AudioProcessorValueTreeState& s) : state (s)
     setSize (kCanvasW, kContentH);
 
     // Row 1 — sound sources. Panel x/w values are 8-px grid constants; the
-    // whole 64-parameter table fits this canvas. Panels are exact-fit
-    // (16 + 48*cells), so the three FX HP cells forced a row rebalance:
-    // LFO1 joins row 2, MASTER ends row 4 after the FX chain — the only
-    // 8-px-grid partition that keeps ENV1/ENV2 adjacent and FX in
-    // signal order. Flagged in the checkpoint notes.
+    // whole 67-parameter table fits this canvas. Panels are exact-fit
+    // (2 * kPanelPad + cells * pitch), so the three FX HP cells forced a row
+    // rebalance: LFO1 joins row 2, MASTER ends row 4 after the FX chain — the
+    // only 8-px-grid partition that keeps ENV1/ENV2 adjacent and FX in
+    // signal order. The three LP cells then forced the FX row onto a 40 px
+    // pitch (see the row-4 note below). Both flagged in the checkpoint notes.
     auto& oscA = panel ("OSC A", 8, 8, 256, "oscA_on", "square voice one");
     cell (oscA, PId::oscA_oct,   "OCT");
     cell (oscA, PId::oscA_semi,  "SEMI");
@@ -121,36 +124,67 @@ TweakTab::TweakTab (juce::AudioProcessorValueTreeState& s) : state (s)
     cell (lfo2, PId::lfo2_dest,  "DEST", "what it wobbles");
 
     // Row 4 — FX chain in signal order, master gain at the end.
-    auto& crush = panel ("CRUSH", 8, 296, 208);
+    //
+    // LAYOUT NOTE (addendum-2 LP cells, flagged rather than squeezed silently).
+    // Each FX panel gains an LP cell next to its HP, so the row goes
+    // 4/5/4 + MASTER 2 = 15 cells to 5/6/5 + 2 = 18. At the standard 48 px
+    // pitch a row holds at most 15 cells (48c + 24p <= 824 for p panels), and
+    // there is no 5th row: the four 88 px rows already fill the fixed
+    // 832x392 content area exactly. Moving MASTER elsewhere does not help —
+    // every other row is at or over the same 15-cell ceiling.
+    // Chosen fix: the FX row alone runs a 40 px cell pitch (still on the 8-px
+    // grid, still a 24 px knob with 8 px of air each side; the widest FX
+    // readout is "20.0K" = 20 px in a 36 px chip). 18 * 40 + 4 * 16 + 3 * 8
+    // + 16 margins = 824, an exact fit with the row's usual 8 px right edge.
+    // Rejected alternatives, for the record: 48 px with zero side margins
+    // (breaks the 8 px frame every other row keeps), and growing the canvas
+    // (832x456 is frozen and every other screen is laid out against it).
+    constexpr int kFxCellW = 40;
+    auto& crush = panel ("CRUSH", 8, 296, 216, nullptr, {}, kFxCellW);
     cell (crush, PId::crush_bits, "BITS", "bit depth dirt");
     cell (crush, PId::crush_down, "DOWN", "sample rate divide");
     cell (crush, PId::crush_hp,   "HP",   "trims crushed lows");
+    cell (crush, PId::crush_lp,   "LP",   "tames crushed highs");
     cell (crush, PId::crush_mix,  "MIX");
 
-    auto& dly = panel ("DELAY", 224, 296, 256);
+    auto& dly = panel ("DELAY", 232, 296, 256, nullptr, {}, kFxCellW);
     cell (dly, PId::dly_time,     "TIME", "tempo synced echo");
     cell (dly, PId::dly_fb,       "FEEDB");
     cell (dly, PId::dly_pingpong, "PING", "bounces left right");
     cell (dly, PId::dly_hp,       "HP",   "trims echo lows");
+    cell (dly, PId::dly_lp,       "LP",   "darkens the echoes");
     cell (dly, PId::dly_mix,      "MIX");
 
-    auto& cave = panel ("CAVE", 488, 296, 208);
+    auto& cave = panel ("CAVE", 496, 296, 216, nullptr, {}, kFxCellW);
     cell (cave, PId::cave_size, "SIZE", "cavern hugeness");
     cell (cave, PId::cave_damp, "DAMP", "darkens the tail");
     cell (cave, PId::cave_hp,   "HP",   "trims cave rumble");
+    cell (cave, PId::cave_lp,   "LP",   "softens cave top");
     cell (cave, PId::cave_mix,  "MIX");
 
-    auto& master = panel ("MASTER", 712, 296, 112);
+    auto& master = panel ("MASTER", 728, 296, 96, nullptr, {}, kFxCellW);
     cell (master, PId::vel_amp,     "VELO", "velocity to volume");
     cell (master, PId::master_gain, "GAIN", "final output level");
 
+    // Synced rates render as divisions: repaint the rate readout when the sync
+    // switch flips. The new switch state is forwarded explicitly — the APVTS
+    // raw value is still the old one inside this callback (see
+    // formatParamValue's syncOverride note).
     if (auto* p1 = state.getParameter ("lfo1_sync"))
         lfo1SyncWatch = std::make_unique<juce::ParameterAttachment> (
-            *p1, [this] (float) { if (lfo1RateCell != nullptr) lfo1RateCell->refreshValue(); },
+            *p1, [this] (float v)
+            {
+                if (lfo1RateCell != nullptr)
+                    lfo1RateCell->refreshValue (v >= 0.5f ? 1 : 0);
+            },
             nullptr);
     if (auto* p2 = state.getParameter ("lfo2_sync"))
         lfo2SyncWatch = std::make_unique<juce::ParameterAttachment> (
-            *p2, [this] (float) { if (lfo2RateCell != nullptr) lfo2RateCell->refreshValue(); },
+            *p2, [this] (float v)
+            {
+                if (lfo2RateCell != nullptr)
+                    lfo2RateCell->refreshValue (v >= 0.5f ? 1 : 0);
+            },
             nullptr);
 }
 

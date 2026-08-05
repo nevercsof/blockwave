@@ -18,11 +18,12 @@
 
 #pragma once
 
-// TWEAK tab: the full synth. All 64 SPEC parameters (61 + the three FX
-// high-pass addendum IDs) reachable and readable, grouped into block panels
-// (OSC A/B/SUB/NOISE, VOICE, FILTER, MASTER, ENV1/2, LFO1/2,
-// CRUSH/DELAY/CAVE). FX controls are live APVTS parameters with frozen IDs.
-// Fixed pixel layout on the 832x392 content area — no dynamic layout.
+// TWEAK tab: the full synth. All 67 SPEC parameters (61 + the three FX
+// high-pass addendum IDs + the three low-pass addendum-2 IDs) reachable and
+// readable, grouped into block panels (OSC A/B/SUB/NOISE, VOICE, FILTER,
+// MASTER, ENV1/2, LFO1/2, CRUSH/DELAY/CAVE). FX controls are live APVTS
+// parameters with frozen IDs. Fixed pixel layout on the 832x392 content
+// area — no dynamic layout.
 
 #include "BlockPanel.h"
 
@@ -37,7 +38,8 @@ public:
 private:
     BlockPanel& panel (const juce::String& title, int x, int y, int w,
                        const char* onParamId = nullptr,
-                       const juce::String& onTooltip = juce::String());
+                       const juce::String& onTooltip = juce::String(),
+                       int cellWidth = kCellW);
     ParamCell& cell (BlockPanel&, PId, const juce::String& label,
                      const juce::String& tooltip = juce::String());
 

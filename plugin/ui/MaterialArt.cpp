@@ -598,6 +598,39 @@ juce::Image makeMaterialImage (Material m, int scale)
     return renderSprite (kMaterialSprites[i], kMaterialPalettes[i].c, 5, scale);
 }
 
+int weightDimLevel (float weight01) noexcept
+{
+    // 5 discrete steps, chosen so 100 % is untouched, the first step down is
+    // clearly visible without being alarming, and 0 % is obviously "off" while
+    // the material is still recognisable (you must be able to see WHAT you
+    // muted). Thresholds, not a formula: they line up with the round 5 %
+    // values the mix rail snaps to.
+    if (weight01 >= 0.90f) return 0;
+    if (weight01 >= 0.70f) return 1;
+    if (weight01 >= 0.50f) return 2;
+    if (weight01 >= 0.25f) return 3;
+    return 4;
+}
+
+juce::Image makeMaterialImage (Material m, int scale, int dimLevel)
+{
+    if (m == Material::none)
+        return {};
+    const int lv = juce::jlimit (0, kWeightDimLevels - 1, dimLevel);
+    if (lv == 0)
+        return makeMaterialImage (m, scale);
+
+    static constexpr float kBlend[kWeightDimLevels] =
+        { 0.0f, 0.20f, 0.40f, 0.58f, 0.74f };
+
+    const int i = materialIndex (m);
+    juce::uint32 dimmed[5] = {};
+    for (int c = 0; c < 5; ++c)
+        dimmed[c] = juce::Colour (kMaterialPalettes[i].c[c])
+                        .interpolatedWith (colours::night, kBlend[lv]).getARGB();
+    return renderSprite (kMaterialSprites[i], dimmed, 5, scale);
+}
+
 juce::Image makeBaseImage (CraftBase b, int scale)
 {
     const int i = juce::jlimit (0, 7, static_cast<int> (b));
@@ -655,10 +688,19 @@ void drawMiniCraftIcon (juce::Graphics& g, const CraftGrid& grid, int x, int y,
 
 const juce::Image& BlockImageCache::material (Material m, int scale)
 {
-    const int key = 0x10000 + static_cast<int> (m) * 256 + scale;
+    return material (m, scale, 0);
+}
+
+const juce::Image& BlockImageCache::material (Material m, int scale, int dimLevel)
+{
+    // Key: material | scale | dim level. Dimmed variants are cached like every
+    // other sprite, so dragging a mix rail never re-rasterises 256 fillRects
+    // per frame — it just picks a different pre-built image.
+    const int lv = juce::jlimit (0, kWeightDimLevels - 1, dimLevel);
+    const int key = 0x10000 + static_cast<int> (m) * 512 + scale * 8 + lv;
     auto it = images.find (key);
     if (it == images.end())
-        it = images.emplace (key, makeMaterialImage (m, scale)).first;
+        it = images.emplace (key, makeMaterialImage (m, scale, lv)).first;
     return it->second;
 }
 

@@ -38,6 +38,12 @@
 //  - center = one of 8 hand-tuned BASE archetype patches;
 //  - materials are shapeless; the k-th copy of the same material (k = 0,1,..)
 //    carries weight 2^-k (1.0, 0.5, 0.25, ...);
+//  - every placed cell also carries its own WEIGHT / MIX in 0..1 (default 1.0
+//    = 100%). A cell's effective contribution is copyWeight(k) * cellWeight,
+//    with the copies of a material sorted by DESCENDING cell weight so the
+//    strongest cell is always copy 0 — that is what keeps crafting shapeless
+//    (only the multiset of (material, weight) pairs matters, never where the
+//    blocks sit). See the CELL WEIGHT block below for the full contract;
 //  - deltas apply in fixed material table order (ICE..CLOUD):
 //      add     : value += delta * (sum of copy weights)
 //      mul     : per copy, value *= 1 + (factor - 1) * copyWeight
@@ -83,17 +89,111 @@ enum class Material : int
 constexpr int kNumMaterials = 14;
 constexpr int kNumCells     = 8;
 
+// ---------------------------------------------------------------------------
+// CELL WEIGHT / MIX (v1.0, producer-specified — architect had deferred it to
+// v1.1; the producer overrode that and fixed the semantics below).
+//
+// Every placed cell carries a weight in 0..1 (1.0 = 100%, the default) that
+// scales that cell's contribution to its material's delta set. The rules, in
+// full, because every one of them is load-bearing:
+//
+//  1. RECIPE DETECTION IGNORES WEIGHTS, ALWAYS. A recipe matches on base +
+//     material identity + position only, so a grid with the right blocks at
+//     30% (or 0%) still triggers the recipe. This protects every already
+//     discovered recipe and the whole hunt mechanic, and it is why
+//     CraftGrid::operator== — the one function matchRecipe/RecipeBook::match
+//     use — deliberately does NOT look at weights. Use equalsWithWeights()
+//     when you need full equality (state/preset round-trip checks).
+//     Auto-naming ignores weights for the same reason: name and recipe both
+//     describe what you PLACED; weights only shape how it sounds.
+//
+//  2. ADDS / MULTIPLIES scale per copy: copy k contributes
+//     copyWeight(k) * cellWeight(k), copies sorted by descending cell weight.
+//     With every weight at 1.0 the arithmetic is bit-identical to the
+//     pre-weight engine (multiplying by exactly 1.0f is exact in IEEE), so
+//     the frozen craft golden hashes and every factory preset are unaffected.
+//
+//  3. SETS are weighted toward their target by the material's STRONGEST cell
+//     weight: value += wMax * (target - value), and exactly `value = target`
+//     at wMax == 1. Stacking still does not intensify a set. Weighting sets
+//     is what makes "turn this material down" actually turn it down: a
+//     material whose whole character is a set (GLASS's PW -> 14%) would
+//     otherwise ignore the slider completely.
+//
+//  4. DISCRETE SWITCHES (raw, sync, noise on, LFO destinations/shapes) fire
+//     for ANY non-zero weight. A bool cannot be half on; weight 0 is the only
+//     value that removes them. The tempo-synced LFO RATES (lfo1_rate,
+//     lfo2_rate) count as discrete here on purpose: interpolating them would
+//     park a synced LFO between note divisions. Turning a material down
+//     reduces the modulation DEPTH (lfo1_pwm / lfo2_amt are adds, so they
+//     scale) while the wobble stays in time.
+//
+//  5. WEIGHT 0 == THE MATERIAL IS NOT THERE, for the delta math only. A
+//     material whose cells are all at 0 is skipped outright, so the result is
+//     bit-identical to leaving those cells empty — while the blocks stay
+//     PLACED for rule 1.
+//
+//  6. The soft-knee stacking clamp is unchanged and runs on top: effective
+//     contributions are summed exactly as before, then knee-mapped.
+constexpr float kCellWeightDefault = 1.0f;
+
+inline float clampCellWeight (float w) noexcept
+{
+    return w < 0.0f ? 0.0f : (w > 1.0f ? 1.0f : w);
+}
+
 struct CraftGrid
 {
     CraftBase base = CraftBase::LEAD;
     Material  cells[kNumCells] = {};    // all Material::none by default
+    // Per-cell weight / mix, 0..1. Meaningful only where cells[i] != none.
+    float weights[kNumCells] = { kCellWeightDefault, kCellWeightDefault,
+                                 kCellWeightDefault, kCellWeightDefault,
+                                 kCellWeightDefault, kCellWeightDefault,
+                                 kCellWeightDefault, kCellWeightDefault };
 
+    // RECIPE IDENTITY: base + placement only (rule 1 above). Weights are
+    // deliberately excluded — do not "fix" this.
     bool operator== (const CraftGrid& o) const noexcept
     {
         if (base != o.base)
             return false;
         for (int i = 0; i < kNumCells; ++i)
             if (cells[i] != o.cells[i])
+                return false;
+        return true;
+    }
+
+    // Full equality including the weights of PLACED cells (an empty cell's
+    // weight is meaningless and is never compared, saved or restored).
+    bool equalsWithWeights (const CraftGrid& o) const noexcept
+    {
+        if (! (*this == o))
+            return false;
+        for (int i = 0; i < kNumCells; ++i)
+            if (cells[i] != Material::none && weights[i] != o.weights[i])
+                return false;
+        return true;
+    }
+
+    float cellWeight (int i) const noexcept
+    {
+        return i >= 0 && i < kNumCells ? clampCellWeight (weights[i])
+                                       : kCellWeightDefault;
+    }
+
+    void setCellWeight (int i, float w) noexcept
+    {
+        if (i >= 0 && i < kNumCells)
+            weights[i] = clampCellWeight (w);
+    }
+
+    // True when every placed cell sits at the 1.0 default — the case where
+    // the "weights" JSON key is omitted entirely (see CraftJson.h).
+    bool allCellWeightsDefault() const noexcept
+    {
+        for (int i = 0; i < kNumCells; ++i)
+            if (cells[i] != Material::none && weights[i] != kCellWeightDefault)
                 return false;
         return true;
     }
@@ -386,31 +486,76 @@ inline ParamSnapshot baseSnapshot (CraftBase b) noexcept
 
 namespace craftdetail
 {
-    // Sum of copy weights 1, 1/2, 1/4, ... for n copies = 2 - 2^(1-n),
-    // computed by plain summation (exact in binary floating point).
-    inline float totalWeight (int copies) noexcept
+    // The cells holding one material, as their weights sorted DESCENDING —
+    // so copy 0 (the full 2^0 copy weight) is always the strongest cell and
+    // crafting stays shapeless. Built once per craft by collectCopies().
+    struct MaterialCopies
+    {
+        int   n = 0;
+        float w[kNumCells] = {};
+
+        float maxWeight() const noexcept { return n > 0 ? w[0] : 0.0f; }
+    };
+
+    inline void collectCopies (const CraftGrid& g,
+                               MaterialCopies (&out)[kNumMaterials + 1]) noexcept
+    {
+        for (int i = 0; i < kNumCells; ++i)
+        {
+            const int m = static_cast<int> (g.cells[i]);
+            if (m <= 0 || m > kNumMaterials)
+                continue;
+            auto& mc = out[m];
+            const float w = g.cellWeight (i);
+            int k = mc.n;                          // insertion sort, descending
+            while (k > 0 && mc.w[k - 1] < w)
+            {
+                mc.w[k] = mc.w[k - 1];
+                --k;
+            }
+            mc.w[k] = w;
+            ++mc.n;
+        }
+    }
+
+    // Sum of effective copy weights: copy k contributes 2^-k * cellWeight(k).
+    // With every cell at 1.0 this is the classic 2 - 2^(1-n) computed by the
+    // same plain summation as before, bit-for-bit (x * 1.0f == x exactly).
+    inline float totalWeight (const MaterialCopies& mc) noexcept
     {
         float w = 0.0f, cw = 1.0f;
-        for (int k = 0; k < copies; ++k)
+        for (int k = 0; k < mc.n; ++k)
         {
-            w += cw;
+            w += cw * mc.w[k];
             cw *= 0.5f;
         }
         return w;
     }
 
-    // Multiplicative stacking: copy k scales by 1 + (factor-1) * 2^-k.
-    inline void mulW (float& x, float factor, int copies) noexcept
+    // Multiplicative stacking: copy k scales by 1 + (factor-1) * 2^-k * weight.
+    // Same bit-identity argument as totalWeight at weight 1.0.
+    inline void mulW (float& x, float factor, const MaterialCopies& mc) noexcept
     {
         float cw = 1.0f;
-        for (int k = 0; k < copies; ++k)
+        for (int k = 0; k < mc.n; ++k)
         {
-            x *= 1.0f + (factor - 1.0f) * cw;
+            x *= 1.0f + (factor - 1.0f) * cw * mc.w[k];
             cw *= 0.5f;
         }
     }
 
     inline void addW (float& x, float delta, float w) noexcept { x += delta * w; }
+
+    // Weighted 'set' (rule 3): exactly the target at full weight — the
+    // explicit branch guarantees bit-identity rather than relying on
+    // x + 1.0f * (target - x) rounding back to target.
+    inline void setW (float& x, float target, float wMax) noexcept
+    {
+        if (wMax >= 1.0f)
+            x = target;
+        else
+            x += wMax * (target - x);
+    }
 
     // ---- Soft-knee stacking clamp (CRAFT_GRID.md §Stacking clamp) ----------
     //
@@ -469,7 +614,8 @@ namespace craftdetail
     // withDeltas == true  -> the full accumulation (unclamped raw values).
     // Keeping one body for both passes is what guarantees they agree on the
     // set/switch state and only differ by the add/mul deltas.
-    inline void applyMaterials (CraftAccum& A, const int (&copies)[kNumMaterials + 1],
+    inline void applyMaterials (CraftAccum& A,
+                                const MaterialCopies (&copies)[kNumMaterials + 1],
                                 bool withDeltas) noexcept
     {
         ParamSnapshot& p = A.p;
@@ -478,18 +624,26 @@ namespace craftdetail
             if (withDeltas)
                 addW (x, delta, w);
         };
-        const auto mul = [withDeltas] (float& x, float factor, int n) noexcept
+        const auto mul = [withDeltas] (float& x, float factor,
+                                       const MaterialCopies& mc) noexcept
         {
             if (withDeltas)
-                mulW (x, factor, n);
+                mulW (x, factor, mc);
         };
 
         for (int m = 1; m <= kNumMaterials; ++m)
         {
-            const int n = copies[m];
-            if (n == 0)
+            const MaterialCopies& n = copies[m];
+            // Not placed at all, or every copy at weight 0 (rule 5) — either
+            // way the material contributes nothing, bit-for-bit.
+            if (n.n == 0 || n.w[0] <= 0.0f)
                 continue;
-            const float w = totalWeight (n);
+            const float w  = totalWeight (n);   // adds: summed effective weight
+            const float wm = n.maxWeight();     // sets/switches: strongest cell
+            const auto set = [&] (float& x, float target) noexcept
+            {
+                setW (x, target, wm);
+            };
 
             switch (static_cast<Material> (m))
             {
@@ -499,8 +653,8 @@ namespace craftdetail
                     mul (p.env1_r, 2.5f, n);
                     mul (p.filt_cutoff, 1.25f, n);
                     add (p.cave_mix, 0.15f, w);
-                    p.oscA_pw = 38.0f;
-                    p.oscB_pw = 38.0f;
+                    set (p.oscA_pw, 38.0f);
+                    set (p.oscB_pw, 38.0f);
                     break;
 
                 case Material::LAVA:          // hot, aggressive
@@ -514,28 +668,28 @@ namespace craftdetail
 
                 case Material::STONE:         // dry, blunt, raw (raw set after loop)
                     mul (p.env1_r, 0.4f, n);
-                    p.cave_mix = 0.0f;
-                    p.oscA_pw = 50.0f;
-                    p.oscB_pw = 50.0f;
+                    set (p.cave_mix, 0.0f);
+                    set (p.oscA_pw, 50.0f);
+                    set (p.oscB_pw, 50.0f);
                     mul (p.filt_cutoff, 0.85f, n);
                     break;
 
                 case Material::WOOD:          // warm, mellow
                     mul (p.filt_cutoff, 0.65f, n);
-                    p.oscA_pw = 47.0f;
-                    p.oscB_pw = 47.0f;
+                    set (p.oscA_pw, 47.0f);
+                    set (p.oscB_pw, 47.0f);
                     add (p.env1_a, 0.008f, w);
                     add (p.vel_amp, 0.2f, w);
                     break;
 
                 case Material::GLASS:         // thin, bright, delicate
-                    p.oscA_pw = 14.0f;
-                    p.oscB_pw = 14.0f;
+                    set (p.oscA_pw, 14.0f);
+                    set (p.oscB_pw, 14.0f);
                     mul (p.filt_cutoff, 1.4f, n);
                     add (p.dly_mix, 0.2f, w);
                     add (p.oscA_level, -0.1f, w);
                     add (p.oscB_level, -0.1f, w);
-                    p.env1_a = 0.001f;
+                    set (p.env1_a, 0.001f);
                     break;
 
                 case Material::GOLD:          // expensive, wide, polished
@@ -552,7 +706,7 @@ namespace craftdetail
                     add (A.fOscBOct, 1.0f, w);     // sync partial up an octave
                     add (A.fOscBSemi, 7.0f, w);
                     add (p.env2_pitch, 5.0f, w);
-                    p.env2_d = 0.08f;         // fast decay
+                    set (p.env2_d, 0.08f);    // fast decay
                     mul (p.filt_cutoff, 1.3f, n);
                     break;
 
@@ -574,16 +728,16 @@ namespace craftdetail
                     p.lfo2_rate = 0.125f;     // 1/8 synced
                     p.lfo2_sync = true;
                     add (p.lfo2_amt, 0.4f, w);
-                    p.oscA_pw = 60.0f;
-                    p.oscB_pw = 60.0f;
+                    set (p.oscA_pw, 60.0f);
+                    set (p.oscB_pw, 60.0f);
                     break;
 
                 case Material::TNT:           // percussive boom
                     add (p.env2_pitch, 24.0f, w);  // positive = falling drop
-                    p.env2_d = 0.09f;              // (SOUND_DESIGN technique 8)
-                    p.env2_s = 0.0f;
-                    p.env1_s = 0.0f;          // "sustain 0" read as amp sustain:
-                    p.env1_a = 0.002f;        // every base turns percussive
+                    set (p.env2_d, 0.09f);         // (SOUND_DESIGN technique 8)
+                    set (p.env2_s, 0.0f);
+                    set (p.env1_s, 0.0f);     // "sustain 0" read as amp sustain:
+                    set (p.env1_a, 0.002f);   // every base turns percussive
                     add (p.crush_mix, 0.2f, w);
                     p.noise_on = true;        // noise burst (gated by the amp env)
                     add (p.noise_level, 0.25f, w);
@@ -597,7 +751,7 @@ namespace craftdetail
                     p.lfo2_shape = LfoShape::tri;
                     p.lfo2_rate = 1.0f;       // 1/1 synced — slow wobble
                     p.lfo2_sync = true;
-                    p.lfo2_amt = 0.065f;      // quadratic taper: ~ +-5 cents
+                    set (p.lfo2_amt, 0.065f); // quadratic taper: ~ +-5 cents
                     break;
 
                 case Material::SAND:          // gritty texture
@@ -631,8 +785,9 @@ namespace craftdetail
             }
         }
 
-        // STONE's raw wins last (conflict rule).
-        if (copies[static_cast<int> (Material::STONE)] > 0)
+        // STONE's raw wins last (conflict rule). A discrete switch, so it
+        // follows rule 4: any non-zero STONE weight turns it on.
+        if (copies[static_cast<int> (Material::STONE)].maxWeight() > 0.0f)
             p.raw = true;
     }
 }
@@ -644,10 +799,8 @@ inline ParamSnapshot craftApply (const CraftGrid& g) noexcept
 {
     using namespace craftdetail;
 
-    int copies[kNumMaterials + 1] = {};
-    for (int i = 0; i < kNumCells; ++i)
-        ++copies[static_cast<int> (g.cells[i])];
-    copies[0] = 0;
+    MaterialCopies copies[kNumMaterials + 1] = {};
+    collectCopies (g, copies);
 
     CraftAccum ref;
     ref.p          = baseSnapshot (g.base);
@@ -814,6 +967,9 @@ struct CraftRng
 
 // DICE: fill the outer cells with random materials, base kept. Each cell has
 // a 40% chance of staying empty so results read as recipes, not walls.
+// Cell WEIGHTS are deliberately left alone: DICE is specified as "fill random
+// cells with random materials (base kept)", and silently resetting the user's
+// weight sliders would be a second, undocumented effect.
 inline void craftDice (CraftGrid& g, std::uint64_t seed) noexcept
 {
     CraftRng rng (seed);

@@ -24,8 +24,20 @@
 // 100% and 200% are exact integer transforms (pixel-perfect); the fractional
 // steps keep every mark a solid chunky block (integer-coordinate fillRects +
 // low-quality/nearest-neighbour image blits — uneven pixel sizes, no
-// smoothing filter). Scale persists as the session property "uiScale"
-// (percent; values < 10 are legacy 1x/2x integers, migrated on read).
+// smoothing filter).
+//
+// SCALE PERSISTENCE (producer + architect). The chosen scale is stored in two
+// places and read with a fixed precedence:
+//   1. the SESSION property "uiScale" in apvts.state (percent; values < 10
+//      are legacy 1x/2x integers, migrated on read) — travels with the
+//      project, so an old project reopens looking exactly as it was saved;
+//   2. else the GLOBAL store (plugin/GlobalSettings.h,
+//      ~/Documents/BLOCKWAVE/Settings.json) — so a fresh instance in a brand
+//      new project comes up at the size this user actually works at;
+//   3. else 100 %.
+// Moving the top-bar scale slider writes BOTH. Restoring on open writes only
+// the session copy, which keeps the global file lazily created: a user who
+// never touches the slider never gets a Settings.json.
 //
 // Tabs: CRAFT (default per SPEC — the crafting bench, Phase 4) and TWEAK
 // (all 61 parameters). Top bar is always visible. Preset browser and save
@@ -33,6 +45,7 @@
 // traffic goes exclusively through APVTS attachments.
 
 #include "PluginProcessor.h"
+#include "GlobalSettings.h"
 #include "ui/PixelLookAndFeel.h"
 #include "ui/TopBar.h"
 #include "ui/TweakTab.h"
@@ -50,7 +63,9 @@ public:
     // Also used by tools/screenshots to render every screen offscreen.
     void setActiveTab (Tab);
     Tab getActiveTab() const { return activeTab; }
-    void setUiScale (int scalePercent);               // snapped to 100..200 by 25
+    // Snapped to 100..200 by 25. writeGlobal = false is the restore path
+    // (session only); the top-bar slider passes true and updates both stores.
+    void setUiScale (int scalePercent, bool writeGlobal = true);
     int getUiScale() const { return uiScale; }        // percent
     void showPresetBrowser (bool shouldShow);
     void showSavePanel (bool shouldShow);
@@ -69,6 +84,10 @@ private:
     };
 
     BlockwaveAudioProcessor& proc;
+    // Machine-wide UI preferences (currently just the scale). Built from
+    // GlobalSettings::defaultFile(), which tools/tests can redirect before
+    // any editor is constructed.
+    blockwave::GlobalSettings settings;
     blockwave::ui::PixelLookAndFeel lnf;
     Content content;
     blockwave::ui::TopBar topBar;

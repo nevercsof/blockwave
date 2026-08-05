@@ -19,10 +19,11 @@
   },
   "params": {
     "env1_a": 0.001,
-    "oscA_level": 0.3,
+    "oscA_level": 0.35,
     "filt_cutoff": 1500,
     "env1_d": 0.1,
     "cave_mix": 0.25,
-    "master_gain": 6.0
+    "master_gain": 6.0,
+    "noise_level": 1.0
   }
 }

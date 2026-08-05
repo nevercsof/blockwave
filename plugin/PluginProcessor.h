@@ -96,6 +96,29 @@ public:
     // Forgets the grid (parameters stay as they are).
     void clearCraftGrid();
 
+    // ---- per-cell WEIGHT / MIX (message thread only) -----------------------
+    // The on-block slider's back end. Weight is 0..1 (1.0 = 100%, the
+    // default); the UI displays it as a percentage. Semantics are documented
+    // in full in src/CraftEngine.h (CELL WEIGHT block) — the two that matter
+    // for the UI:
+    //   - a weight change NEVER affects recipe detection, the active recipe
+    //     name or the auto-name, and never registers a discovery;
+    //   - it re-crafts through the same atomic APVTS path as any other grid
+    //     edit, so the engine glides it over ~25 ms (click-free mid-note).
+
+    // Current weight of a cell. Returns 1.0 for an out-of-range index or when
+    // no grid is set.
+    float getCraftCellWeight (int cellIndex) const;
+
+    // Sets one cell's weight (clamped to 0..1) and re-applies the craft.
+    // No-op without a grid, for an out-of-range index, or when the weight is
+    // already that value (so a slider drag that lands back on its start does
+    // not re-write 67 parameters).
+    void setCraftCellWeight (int cellIndex, float weight01);
+
+    // Sets every placed cell at once (nullptr-safe count = kNumCells).
+    void setCraftCellWeights (const float* weights01, int count);
+
     // DICE: random materials into the outer cells, base kept. No-op without
     // a grid. The seeded variants are deterministic (tests/tools).
     void diceCraft();
@@ -152,6 +175,11 @@ public:
 private:
     void loadFactoryBank();
     void loadRecipeBook();
+
+    // The one place a grid becomes parameters + stored state. setCraftGrid()
+    // is the user-edit entry point (registerDiscovery = true); weight edits
+    // go through it with registerDiscovery = false.
+    void applyCraftGrid (const blockwave::CraftGrid& grid, bool registerDiscovery);
 
     // Audio thread only.
     void drainUiMidi() noexcept;

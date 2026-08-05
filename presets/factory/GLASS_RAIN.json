@@ -23,6 +23,7 @@
     "dly_mix": 0.5,
     "env2_pitch": 17,
     "env2_d": 0.03,
-    "master_gain": 6.0
+    "master_gain": 6.0,
+    "oscA_level": 1.0
   }
 }

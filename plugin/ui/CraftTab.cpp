@@ -444,6 +444,14 @@ CraftTab::CraftTab (BlockwaveAudioProcessor& processor)
         }
         repaint();
     };
+    // Mix-rail edits take the weight-only processor path: it re-crafts through
+    // the same atomic APVTS write, but never registers a discovery and never
+    // touches the recipe name or the auto-name (engine guarantee) — so there
+    // is deliberately no refreshLabels() here.
+    gridComp.onCellWeightEdited = [this] (int slot, float w)
+    {
+        proc.setCraftCellWeight (slot, w);
+    };
 
     addAndMakeVisible (palette);
     palette.onTileClicked = [this] (Material m) { tileClicked (m); };
@@ -605,7 +613,10 @@ void CraftTab::doClear()
 {
     auto g = gridComp.getGrid();
     for (int i = 0; i < kNumCells; ++i)
+    {
         g.cells[i] = Material::none;
+        g.setCellWeight (i, kCellWeightDefault);   // an empty bench is 100 %
+    }
     gridComp.setGrid (g);
     for (int i = 0; i < kNumCells; ++i)
         gridComp.flashSlot (i);
@@ -647,7 +658,10 @@ void CraftTab::timerCallback()
         syncCountdown = 15;
         CraftGrid g;
         const bool valid = proc.getCraftGrid (g);
-        if (valid != hasGrid || (valid && ! (g == gridComp.getGrid()))
+        // equalsWithWeights, not operator== : the mix rail can change a grid
+        // without changing its recipe identity, and a preset load carrying
+        // different weights must still resync the bench.
+        if (valid != hasGrid || (valid && ! g.equalsWithWeights (gridComp.getGrid()))
             || patchName != proc.getCraftAutoName().toUpperCase())
             refreshFromProcessor();
     }
@@ -662,6 +676,9 @@ juce::String CraftTab::hintText() const
         return "SLOT PICKED - NOW CLICK A MATERIAL";
     if (! hasGrid)
         return "PLACE A BLOCK TO START CRAFTING";
+    for (int i = 0; i < kNumCells; ++i)
+        if (gridComp.getGrid().cells[i] != Material::none)
+            return "SIDE RAIL MIXES A BLOCK - RIGHT CLICK CLEARS";
     return "DRAG BLOCKS IN - RIGHT CLICK CLEARS";
 }
 

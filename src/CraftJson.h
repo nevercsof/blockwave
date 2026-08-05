@@ -41,6 +41,28 @@ namespace blockwave
 
 // ---- CraftGrid <-> juce::var ------------------------------------------------
 
+// CRAFT JSON SHAPE (SPEC §Preset format):
+//
+//   "craft": {
+//     "base": "PAD",
+//     "cells":   ["ICE","ICE","ICE","","","","","CLOUD"],
+//     "weights": [1, 1, 0.5, 1, 1, 1, 1, 0.25]        // OPTIONAL
+//   }
+//
+// MIGRATION RULE (the whole reason "weights" is optional): a grid with no
+// "weights" key — every factory preset, every user preset saved before this
+// build, every hand-written JSON — reads as every placed cell at 1.0 (100%),
+// which is bit-identical to the pre-weight engine. Nothing needs rewriting.
+//
+//  - values are 0..1 (1.0 = 100%); out-of-range values clamp, non-numeric
+//    entries and missing trailing entries default to 1.0;
+//  - a shorter array is legal (the tail defaults); a longer one is truncated;
+//  - the weight of an EMPTY cell is meaningless: it is never compared
+//    (CraftGrid::equalsWithWeights) and never decides whether the key is
+//    written;
+//  - the key is written only when at least one PLACED cell is off 1.0, so
+//    saving an untouched craft still produces the exact same JSON as before.
+
 // Parses a preset "craft" object. Returns false when there is no usable grid
 // (missing/empty/unknown base — the SPEC INIT state). Unknown material names
 // are treated as empty cells (forward compatibility).
@@ -65,6 +87,15 @@ inline bool craftGridFromVar (const juce::var& craftVar, CraftGrid& out)
             g.cells[i] = m;
         }
     }
+    if (auto* weights = obj->getProperty ("weights").getArray())
+    {
+        for (int i = 0; i < kNumCells && i < weights->size(); ++i)
+        {
+            const auto& v = weights->getUnchecked (i);
+            if (v.isDouble() || v.isInt() || v.isInt64())
+                g.setCellWeight (i, static_cast<float> (static_cast<double> (v)));
+        }
+    }
     out = g;
     return true;
 }
@@ -77,6 +108,13 @@ inline juce::var craftGridToVar (const CraftGrid& g)
     for (int i = 0; i < kNumCells; ++i)
         cells.add (juce::String (materialName (g.cells[i])));
     obj->setProperty ("cells", cells);
+    if (! g.allCellWeightsDefault())
+    {
+        juce::Array<juce::var> weights;
+        for (int i = 0; i < kNumCells; ++i)
+            weights.add (static_cast<double> (g.cellWeight (i)));
+        obj->setProperty ("weights", weights);
+    }
     return juce::var (obj);
 }
 

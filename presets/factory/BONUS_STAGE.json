@@ -21,6 +21,7 @@
     "env1_s": 0.5,
     "dly_time": "1/16",
     "dly_mix": 0.25,
-    "master_gain": 5.0
+    "master_gain": 5.0,
+    "filt_cutoff": 9000
   }
 }

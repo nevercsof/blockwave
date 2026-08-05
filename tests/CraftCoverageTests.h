@@ -58,6 +58,15 @@ inline CraftGrid gridOf (CraftBase base, Material fill = Material::none, int cou
     return g;
 }
 
+// Same, with every placed cell at `weight` (per-cell WEIGHT/MIX, 0..1).
+inline CraftGrid weightedGridOf (CraftBase base, Material fill, int count, float weight)
+{
+    CraftGrid g = gridOf (base, fill, count);
+    for (int i = 0; i < count && i < kNumCells; ++i)
+        g.setCellWeight (i, weight);
+    return g;
+}
+
 inline juce::File repoDataFile (const char* leaf)
 {
     return juce::File (BLOCKWAVE_TEST_DIR).getParentDirectory()
@@ -201,6 +210,46 @@ inline void test_recipe_book_coverage (BlockwaveAudioProcessor& proc)
         }
     }
 
+    // ---- (f) recipe detection is INDIFFERENT to per-cell weights ----------
+    // The producer's non-negotiable rule: a grid with the right blocks still
+    // triggers its recipe at any weight, including 0. This protects every
+    // already-discovered recipe. Data-driven over the whole shipped book.
+    {
+        static const float kWeightSets[][kNumCells] =
+        {
+            { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
+            { 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f },
+            { 0.0f, 1.0f, 0.25f, 0.9f, 0.05f, 0.6f, 0.33f, 1.0f },
+            { 0.01f, 0.99f, 0.5f, 0.0f, 1.0f, 0.2f, 0.8f, 0.4f },
+        };
+        int weightChecks = 0;
+        for (int i = 0; i < n; ++i)
+        {
+            const auto& rec = fromDisk.getRecipe (i);
+            for (const auto& ws : kWeightSets)
+            {
+                CraftGrid g = rec.pattern;
+                for (int c = 0; c < kNumCells; ++c)
+                    g.setCellWeight (c, ws[c]);
+                const auto* hit = fromDisk.match (g);
+                CHECK_MSG (hit == &rec,
+                           "'%s' stopped matching once its cells were weighted — "
+                           "weights must NEVER affect recipe detection",
+                           rec.name.toRawUTF8());
+                // The override patch still applies, and the recipe name the
+                // processor would report is unchanged.
+                juce::String named;
+                craftSnapshotWithRecipes (g, &fromDisk, &named);
+                CHECK_MSG (named == rec.name,
+                           "'%s': craftSnapshotWithRecipes reported '%s' for a "
+                           "weighted grid", rec.name.toRawUTF8(), named.toRawUTF8());
+                ++weightChecks;
+            }
+        }
+        std::printf ("  %d recipes x %d weight sets: all still detected (%d checks)\n",
+                     n, static_cast<int> (std::size (kWeightSets)), weightChecks);
+    }
+
     std::printf ("  %d recipes: disk == BinaryData (%d bytes), 0 duplicate patterns,\n"
                  "  all reachable via match(), %d single-cell near-misses rejected,\n"
                  "  every override changes the craft result\n",
@@ -326,6 +375,38 @@ inline void test_craft_transition_click_free (BlockwaveAudioProcessor& proc)
         // override parks ENV2 at sustain 1.0 with filt_env -0.7.
         { "REGRESSION PAD+OBSIDIANx8 -> BASS",      padObs8, bass     },
         { "REGRESSION PAD+OBSIDIANx8 -> BASS+LAVA", padObs8, bassLava },
+        // Per-cell WEIGHT / MIX: dragging the on-block slider mid-note is a
+        // re-craft like any other, so it must glide the same way. Both ends of
+        // the slider and the full-range jumps, on materials that switch things
+        // on (STONE = raw, LAVA = crush, CRYSTAL = sync, SAND = noise) since a
+        // weight of 0 is what turns those switches back off.
+        { "weight 100% -> 0% (PAD+ICE)",
+          weightedGridOf (CraftBase::PAD, Material::ICE, 1, 1.0f),
+          weightedGridOf (CraftBase::PAD, Material::ICE, 1, 0.0f) },
+        { "weight 0% -> 100% (PAD+ICE)",
+          weightedGridOf (CraftBase::PAD, Material::ICE, 1, 0.0f),
+          weightedGridOf (CraftBase::PAD, Material::ICE, 1, 1.0f) },
+        { "weight 100% -> 50% (PAD+ICE)",
+          weightedGridOf (CraftBase::PAD, Material::ICE, 1, 1.0f),
+          weightedGridOf (CraftBase::PAD, Material::ICE, 1, 0.5f) },
+        { "weight 25% -> 75% (PAD+ICEx4)",
+          weightedGridOf (CraftBase::PAD, Material::ICE, 4, 0.25f),
+          weightedGridOf (CraftBase::PAD, Material::ICE, 4, 0.75f) },
+        { "weight RAW off via 100% -> 0% (STONE)",
+          weightedGridOf (CraftBase::PAD, Material::STONE, 1, 1.0f),
+          weightedGridOf (CraftBase::PAD, Material::STONE, 1, 0.0f) },
+        { "weight crush off via 100% -> 0% (LAVA)",
+          weightedGridOf (CraftBase::PAD, Material::LAVA, 1, 1.0f),
+          weightedGridOf (CraftBase::PAD, Material::LAVA, 1, 0.0f) },
+        { "weight sync on via 0% -> 100% (CRYSTAL)",
+          weightedGridOf (CraftBase::PAD, Material::CRYSTAL, 1, 0.0f),
+          weightedGridOf (CraftBase::PAD, Material::CRYSTAL, 1, 1.0f) },
+        { "weight noise on via 0% -> 100% (SAND)",
+          weightedGridOf (CraftBase::PAD, Material::SAND, 1, 0.0f),
+          weightedGridOf (CraftBase::PAD, Material::SAND, 1, 1.0f) },
+        { "weight 100% -> 0% (BASS+OBSIDIANx8)",
+          weightedGridOf (CraftBase::BASS, Material::OBSIDIAN, 8, 1.0f),
+          weightedGridOf (CraftBase::BASS, Material::OBSIDIAN, 8, 0.0f) },
     };
 
     // Gate. The 13 non-regression transitions here score 0.62..1.48; the two

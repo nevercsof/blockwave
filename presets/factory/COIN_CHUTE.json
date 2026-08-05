@@ -22,6 +22,8 @@
     "env1_d": 0.09,
     "env2_pitch": -5,
     "env2_d": 0.05,
-    "master_gain": 6.0
+    "master_gain": 6.0,
+    "filt_cutoff": 9000,
+    "oscA_level": 0.82
   }
 }

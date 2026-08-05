@@ -20,6 +20,7 @@
   "params": {
     "filt_keytrack": 0.4,
     "dly_hp": 150.0,
-    "master_gain": 4.3
+    "master_gain": 4.3,
+    "env1_a": 0.008
   }
 }

@@ -22,6 +22,7 @@
     "env2_pitch": 18,
     "filt_cutoff": 600,
     "cave_mix": 0.3,
-    "master_gain": 6.0
+    "master_gain": 6.0,
+    "oscA_level": 1.0
   }
 }

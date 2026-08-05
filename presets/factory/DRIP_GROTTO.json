@@ -24,6 +24,7 @@
     "dly_fb": 0.6,
     "dly_mix": 0.5,
     "cave_size": 0.9,
-    "master_gain": 6.0
+    "master_gain": 6.0,
+    "oscA_level": 1.0
   }
 }

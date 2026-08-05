@@ -1,0 +1,798 @@
+Random seed: 0x1f8326e
+Validation started
+	5 Aug 2026 7:48:33pm
+
+Strictness level: 10
+-----------------------------------------------------------------
+Starting tests in: pluginval / Scan for plugins located in: /Users/kirillboyko/Downloads/blockwave-kickoff/build/release/BLOCKWAVE_artefacts/Release/VST3/BLOCKWAVE.vst3...
+Num plugins found: 1
+
+Testing plugin: VST3-BLOCKWAVE-943ec6c8-b3ae67f6
+Kirill Boyko: BLOCKWAVE v0.1.0
+Completed tests in pluginval / Scan for plugins located in: /Users/kirillboyko/Downloads/blockwave-kickoff/build/release/BLOCKWAVE_artefacts/Release/VST3/BLOCKWAVE.vst3
+-----------------------------------------------------------------
+Starting tests in: pluginval / Open plugin (cold)...
+
+Time taken to open plugin (cold): 169 ms
+Completed tests in pluginval / Open plugin (cold)
+-----------------------------------------------------------------
+Starting tests in: pluginval / Open plugin (warm)...
+
+Time taken to open plugin (warm): 12 ms
+Running tests 1 times
+Completed tests in pluginval / Open plugin (warm)
+-----------------------------------------------------------------
+Starting tests in: pluginval / Plugin info...
+
+Plugin name: BLOCKWAVE
+Alternative names: BLOCKWAVE
+SupportsDoublePrecision: no
+Reported latency: 0
+Reported taillength: 0
+
+Time taken to run test: 0
+Completed tests in pluginval / Plugin info
+-----------------------------------------------------------------
+Starting tests in: pluginval / Plugin programs...
+Num programs: 0
+All program names checked
+
+Time taken to run test: 0
+Completed tests in pluginval / Plugin programs
+-----------------------------------------------------------------
+Starting tests in: pluginval / Editor...
+
+Time taken to open editor (cold): 227 ms
+Time taken to open editor (warm): 206 ms
+
+Time taken to run test: 438 ms
+Completed tests in pluginval / Editor
+-----------------------------------------------------------------
+Starting tests in: pluginval / Open editor whilst processing...
+
+Time taken to run test: 208 ms
+Completed tests in pluginval / Open editor whilst processing
+-----------------------------------------------------------------
+Starting tests in: pluginval / Audio processing...
+Testing with sample rate [44100] and block size [64]
+Testing with sample rate [44100] and block size [128]
+Testing with sample rate [44100] and block size [256]
+Testing with sample rate [44100] and block size [512]
+Testing with sample rate [44100] and block size [1024]
+Testing with sample rate [48000] and block size [64]
+Testing with sample rate [48000] and block size [128]
+Testing with sample rate [48000] and block size [256]
+Testing with sample rate [48000] and block size [512]
+Testing with sample rate [48000] and block size [1024]
+Testing with sample rate [96000] and block size [64]
+Testing with sample rate [96000] and block size [128]
+Testing with sample rate [96000] and block size [256]
+Testing with sample rate [96000] and block size [512]
+Testing with sample rate [96000] and block size [1024]
+
+Time taken to run test: 6 ms
+Completed tests in pluginval / Audio processing
+-----------------------------------------------------------------
+Starting tests in: pluginval / Non-releasing audio processing...
+Testing with sample rate [44100] and block size [64]
+Testing with sample rate [44100] and block size [128]
+Testing with sample rate [44100] and block size [256]
+Testing with sample rate [44100] and block size [512]
+Testing with sample rate [44100] and block size [1024]
+Testing with sample rate [48000] and block size [64]
+Testing with sample rate [48000] and block size [128]
+Testing with sample rate [48000] and block size [256]
+Testing with sample rate [48000] and block size [512]
+Testing with sample rate [48000] and block size [1024]
+Testing with sample rate [96000] and block size [64]
+Testing with sample rate [96000] and block size [128]
+Testing with sample rate [96000] and block size [256]
+Testing with sample rate [96000] and block size [512]
+Testing with sample rate [96000] and block size [1024]
+
+Time taken to run test: 4 ms
+Completed tests in pluginval / Non-releasing audio processing
+-----------------------------------------------------------------
+Starting tests in: pluginval / Plugin state...
+
+Time taken to run test: 1 ms
+Completed tests in pluginval / Plugin state
+-----------------------------------------------------------------
+Starting tests in: pluginval / Plugin state restoration...
+
+Time taken to run test: 9 ms
+Completed tests in pluginval / Plugin state restoration
+-----------------------------------------------------------------
+Starting tests in: pluginval / Automation...
+Testing with sample rate [44100] and block size [64] and sub-block size [32]
+Testing with sample rate [44100] and block size [128] and sub-block size [32]
+Testing with sample rate [44100] and block size [256] and sub-block size [32]
+Testing with sample rate [44100] and block size [512] and sub-block size [32]
+Testing with sample rate [44100] and block size [1024] and sub-block size [32]
+Testing with sample rate [48000] and block size [64] and sub-block size [32]
+Testing with sample rate [48000] and block size [128] and sub-block size [32]
+Testing with sample rate [48000] and block size [256] and sub-block size [32]
+Testing with sample rate [48000] and block size [512] and sub-block size [32]
+Testing with sample rate [48000] and block size [1024] and sub-block size [32]
+Testing with sample rate [96000] and block size [64] and sub-block size [32]
+Testing with sample rate [96000] and block size [128] and sub-block size [32]
+Testing with sample rate [96000] and block size [256] and sub-block size [32]
+Testing with sample rate [96000] and block size [512] and sub-block size [32]
+Testing with sample rate [96000] and block size [1024] and sub-block size [32]
+
+Time taken to run test: 4 ms
+Completed tests in pluginval / Automation
+-----------------------------------------------------------------
+Starting tests in: pluginval / Editor Automation...
+
+Time taken to run test: 12 secs
+Completed tests in pluginval / Editor Automation
+-----------------------------------------------------------------
+Starting tests in: pluginval / Automatable Parameters...
+
+Testing parameter: 0 - oscA_on
+Parameter info: index - 0, paramName - oscA_on, defaultValue - 1, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 1 - oscB_on
+Parameter info: index - 1, paramName - oscB_on, defaultValue - 0, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 2 - sub_on
+Parameter info: index - 2, paramName - sub_on, defaultValue - 0, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 3 - noise_on
+Parameter info: index - 3, paramName - noise_on, defaultValue - 0, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 4 - oscA_oct
+Parameter info: index - 4, paramName - oscA_oct, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 5 - oscB_oct
+Parameter info: index - 5, paramName - oscB_oct, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 6 - oscA_semi
+Parameter info: index - 6, paramName - oscA_semi, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 7 - oscB_semi
+Parameter info: index - 7, paramName - oscB_semi, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 8 - oscA_fine
+Parameter info: index - 8, paramName - oscA_fine, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 9 - oscB_fine
+Parameter info: index - 9, paramName - oscB_fine, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 10 - oscA_pw
+Parameter info: index - 10, paramName - oscA_pw, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 11 - oscB_pw
+Parameter info: index - 11, paramName - oscB_pw, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 12 - oscA_level
+Parameter info: index - 12, paramName - oscA_level, defaultValue - 0.8, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 13 - oscB_level
+Parameter info: index - 13, paramName - oscB_level, defaultValue - 0.8, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 14 - oscB_sync
+Parameter info: index - 14, paramName - oscB_sync, defaultValue - 0, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 15 - sub_oct
+Parameter info: index - 15, paramName - sub_oct, defaultValue - 0, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 16 - sub_level
+Parameter info: index - 16, paramName - sub_level, defaultValue - 0.7, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 17 - noise_mode
+Parameter info: index - 17, paramName - noise_mode, defaultValue - 0, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 18 - noise_level
+Parameter info: index - 18, paramName - noise_level, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 19 - uni_count
+Parameter info: index - 19, paramName - uni_count, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 20 - uni_detune
+Parameter info: index - 20, paramName - uni_detune, defaultValue - 0.15, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 21 - uni_spread
+Parameter info: index - 21, paramName - uni_spread, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 22 - voice_mode
+Parameter info: index - 22, paramName - voice_mode, defaultValue - 0, label - , numSteps - 3, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 23 - poly_count
+Parameter info: index - 23, paramName - poly_count, defaultValue - 0.466667, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 24 - glide_time
+Parameter info: index - 24, paramName - glide_time, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 25 - glide_mode
+Parameter info: index - 25, paramName - glide_mode, defaultValue - 1, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 26 - filt_type
+Parameter info: index - 26, paramName - filt_type, defaultValue - 0, label - , numSteps - 4, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 27 - filt_cutoff
+Parameter info: index - 27, paramName - filt_cutoff, defaultValue - 1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 28 - filt_res
+Parameter info: index - 28, paramName - filt_res, defaultValue - 0.1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 29 - filt_env
+Parameter info: index - 29, paramName - filt_env, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 30 - filt_keytrack
+Parameter info: index - 30, paramName - filt_keytrack, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 31 - env1_a
+Parameter info: index - 31, paramName - env1_a, defaultValue - 0.107183, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 32 - env1_d
+Parameter info: index - 32, paramName - env1_d, defaultValue - 0.325383, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 33 - env1_s
+Parameter info: index - 33, paramName - env1_s, defaultValue - 0.8, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 34 - env1_r
+Parameter info: index - 34, paramName - env1_r, defaultValue - 0.287996, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 35 - env2_a
+Parameter info: index - 35, paramName - env2_a, defaultValue - 0.107183, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 36 - env2_d
+Parameter info: index - 36, paramName - env2_d, defaultValue - 0.379471, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 37 - env2_s
+Parameter info: index - 37, paramName - env2_s, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 38 - env2_r
+Parameter info: index - 38, paramName - env2_r, defaultValue - 0.308006, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 39 - env2_pitch
+Parameter info: index - 39, paramName - env2_pitch, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 40 - lfo1_rate
+Parameter info: index - 40, paramName - lfo1_rate, defaultValue - 0.54016, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 41 - lfo1_sync
+Parameter info: index - 41, paramName - lfo1_sync, defaultValue - 1, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 42 - lfo1_pwm
+Parameter info: index - 42, paramName - lfo1_pwm, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 43 - lfo2_rate
+Parameter info: index - 43, paramName - lfo2_rate, defaultValue - 0.426623, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 44 - lfo2_sync
+Parameter info: index - 44, paramName - lfo2_sync, defaultValue - 1, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 45 - lfo2_shape
+Parameter info: index - 45, paramName - lfo2_shape, defaultValue - 0.5, label - , numSteps - 3, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 46 - lfo2_amt
+Parameter info: index - 46, paramName - lfo2_amt, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 47 - lfo2_dest
+Parameter info: index - 47, paramName - lfo2_dest, defaultValue - 0.333333, label - , numSteps - 4, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 48 - crush_bits
+Parameter info: index - 48, paramName - crush_bits, defaultValue - 1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 49 - crush_down
+Parameter info: index - 49, paramName - crush_down, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 50 - crush_mix
+Parameter info: index - 50, paramName - crush_mix, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 51 - dly_time
+Parameter info: index - 51, paramName - dly_time, defaultValue - 0.4, label - , numSteps - 11, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 52 - dly_fb
+Parameter info: index - 52, paramName - dly_fb, defaultValue - 0.388889, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 53 - dly_pingpong
+Parameter info: index - 53, paramName - dly_pingpong, defaultValue - 1, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 54 - dly_mix
+Parameter info: index - 54, paramName - dly_mix, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 55 - cave_size
+Parameter info: index - 55, paramName - cave_size, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 56 - cave_damp
+Parameter info: index - 56, paramName - cave_damp, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 57 - cave_mix
+Parameter info: index - 57, paramName - cave_mix, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 58 - vel_amp
+Parameter info: index - 58, paramName - vel_amp, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 59 - raw
+Parameter info: index - 59, paramName - raw, defaultValue - 0, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 60 - master_gain
+Parameter info: index - 60, paramName - master_gain, defaultValue - 0.909091, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 61 - cave_hp
+Parameter info: index - 61, paramName - cave_hp, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 62 - dly_hp
+Parameter info: index - 62, paramName - dly_hp, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 63 - crush_hp
+Parameter info: index - 63, paramName - crush_hp, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 64 - cave_lp
+Parameter info: index - 64, paramName - cave_lp, defaultValue - 1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 65 - dly_lp
+Parameter info: index - 65, paramName - dly_lp, defaultValue - 1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 66 - crush_lp
+Parameter info: index - 66, paramName - crush_lp, defaultValue - 1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Time taken to run test: 5 ms
+Completed tests in pluginval / Automatable Parameters
+-----------------------------------------------------------------
+Starting tests in: pluginval / Parameters...
+
+Testing parameter: 0 - oscA_on
+Parameter info: index - 0, paramName - oscA_on, defaultValue - 1, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 1 - oscB_on
+Parameter info: index - 1, paramName - oscB_on, defaultValue - 0, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 2 - sub_on
+Parameter info: index - 2, paramName - sub_on, defaultValue - 0, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 3 - noise_on
+Parameter info: index - 3, paramName - noise_on, defaultValue - 0, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 4 - oscA_oct
+Parameter info: index - 4, paramName - oscA_oct, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 5 - oscB_oct
+Parameter info: index - 5, paramName - oscB_oct, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 6 - oscA_semi
+Parameter info: index - 6, paramName - oscA_semi, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 7 - oscB_semi
+Parameter info: index - 7, paramName - oscB_semi, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 8 - oscA_fine
+Parameter info: index - 8, paramName - oscA_fine, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 9 - oscB_fine
+Parameter info: index - 9, paramName - oscB_fine, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 10 - oscA_pw
+Parameter info: index - 10, paramName - oscA_pw, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 11 - oscB_pw
+Parameter info: index - 11, paramName - oscB_pw, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 12 - oscA_level
+Parameter info: index - 12, paramName - oscA_level, defaultValue - 0.8, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 13 - oscB_level
+Parameter info: index - 13, paramName - oscB_level, defaultValue - 0.8, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 14 - oscB_sync
+Parameter info: index - 14, paramName - oscB_sync, defaultValue - 0, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 15 - sub_oct
+Parameter info: index - 15, paramName - sub_oct, defaultValue - 0, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 16 - sub_level
+Parameter info: index - 16, paramName - sub_level, defaultValue - 0.7, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 17 - noise_mode
+Parameter info: index - 17, paramName - noise_mode, defaultValue - 0, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 18 - noise_level
+Parameter info: index - 18, paramName - noise_level, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 19 - uni_count
+Parameter info: index - 19, paramName - uni_count, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 20 - uni_detune
+Parameter info: index - 20, paramName - uni_detune, defaultValue - 0.15, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 21 - uni_spread
+Parameter info: index - 21, paramName - uni_spread, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 22 - voice_mode
+Parameter info: index - 22, paramName - voice_mode, defaultValue - 0, label - , numSteps - 3, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 23 - poly_count
+Parameter info: index - 23, paramName - poly_count, defaultValue - 0.466667, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 24 - glide_time
+Parameter info: index - 24, paramName - glide_time, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 25 - glide_mode
+Parameter info: index - 25, paramName - glide_mode, defaultValue - 1, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 26 - filt_type
+Parameter info: index - 26, paramName - filt_type, defaultValue - 0, label - , numSteps - 4, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 27 - filt_cutoff
+Parameter info: index - 27, paramName - filt_cutoff, defaultValue - 1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 28 - filt_res
+Parameter info: index - 28, paramName - filt_res, defaultValue - 0.1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 29 - filt_env
+Parameter info: index - 29, paramName - filt_env, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 30 - filt_keytrack
+Parameter info: index - 30, paramName - filt_keytrack, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 31 - env1_a
+Parameter info: index - 31, paramName - env1_a, defaultValue - 0.107183, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 32 - env1_d
+Parameter info: index - 32, paramName - env1_d, defaultValue - 0.325383, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 33 - env1_s
+Parameter info: index - 33, paramName - env1_s, defaultValue - 0.8, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 34 - env1_r
+Parameter info: index - 34, paramName - env1_r, defaultValue - 0.287996, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 35 - env2_a
+Parameter info: index - 35, paramName - env2_a, defaultValue - 0.107183, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 36 - env2_d
+Parameter info: index - 36, paramName - env2_d, defaultValue - 0.379471, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 37 - env2_s
+Parameter info: index - 37, paramName - env2_s, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 38 - env2_r
+Parameter info: index - 38, paramName - env2_r, defaultValue - 0.308006, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 39 - env2_pitch
+Parameter info: index - 39, paramName - env2_pitch, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 40 - lfo1_rate
+Parameter info: index - 40, paramName - lfo1_rate, defaultValue - 0.54016, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 41 - lfo1_sync
+Parameter info: index - 41, paramName - lfo1_sync, defaultValue - 1, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 42 - lfo1_pwm
+Parameter info: index - 42, paramName - lfo1_pwm, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 43 - lfo2_rate
+Parameter info: index - 43, paramName - lfo2_rate, defaultValue - 0.426623, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 44 - lfo2_sync
+Parameter info: index - 44, paramName - lfo2_sync, defaultValue - 1, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 45 - lfo2_shape
+Parameter info: index - 45, paramName - lfo2_shape, defaultValue - 0.5, label - , numSteps - 3, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 46 - lfo2_amt
+Parameter info: index - 46, paramName - lfo2_amt, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 47 - lfo2_dest
+Parameter info: index - 47, paramName - lfo2_dest, defaultValue - 0.333333, label - , numSteps - 4, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 48 - crush_bits
+Parameter info: index - 48, paramName - crush_bits, defaultValue - 1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 49 - crush_down
+Parameter info: index - 49, paramName - crush_down, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 50 - crush_mix
+Parameter info: index - 50, paramName - crush_mix, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 51 - dly_time
+Parameter info: index - 51, paramName - dly_time, defaultValue - 0.4, label - , numSteps - 11, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 52 - dly_fb
+Parameter info: index - 52, paramName - dly_fb, defaultValue - 0.388889, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 53 - dly_pingpong
+Parameter info: index - 53, paramName - dly_pingpong, defaultValue - 1, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 54 - dly_mix
+Parameter info: index - 54, paramName - dly_mix, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 55 - cave_size
+Parameter info: index - 55, paramName - cave_size, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 56 - cave_damp
+Parameter info: index - 56, paramName - cave_damp, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 57 - cave_mix
+Parameter info: index - 57, paramName - cave_mix, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 58 - vel_amp
+Parameter info: index - 58, paramName - vel_amp, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 59 - raw
+Parameter info: index - 59, paramName - raw, defaultValue - 0, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 60 - master_gain
+Parameter info: index - 60, paramName - master_gain, defaultValue - 0.909091, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 61 - cave_hp
+Parameter info: index - 61, paramName - cave_hp, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 62 - dly_hp
+Parameter info: index - 62, paramName - dly_hp, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 63 - crush_hp
+Parameter info: index - 63, paramName - crush_hp, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 64 - cave_lp
+Parameter info: index - 64, paramName - cave_lp, defaultValue - 1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 65 - dly_lp
+Parameter info: index - 65, paramName - dly_lp, defaultValue - 1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 66 - crush_lp
+Parameter info: index - 66, paramName - crush_lp, defaultValue - 1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Time taken to run test: 3 ms
+Completed tests in pluginval / Parameters
+-----------------------------------------------------------------
+Starting tests in: pluginval / Background thread state...
+
+Time taken to run test: 2 secs
+Completed tests in pluginval / Background thread state
+-----------------------------------------------------------------
+Starting tests in: pluginval / Parameter thread safety...
+
+Time taken to run test: 14 ms
+Completed tests in pluginval / Parameter thread safety
+-----------------------------------------------------------------
+Starting tests in: pluginval / auval...
+
+Time taken to run test: 0
+Completed tests in pluginval / auval
+-----------------------------------------------------------------
+Starting tests in: pluginval / vst3 validator...
+INFO: Skipping vst3 validator as validator path hasn't been set
+
+Time taken to run test: 0
+Completed tests in pluginval / vst3 validator
+-----------------------------------------------------------------
+Starting tests in: pluginval / Basic bus...
+Completed tests in pluginval / Basic bus
+-----------------------------------------------------------------
+Starting tests in: pluginval / Listing available buses...
+Inputs:
+	Named layouts: None
+	Discrete layouts: None
+Outputs:
+	Named layouts: Mono, Stereo
+	Discrete layouts: Discrete #1
+Main bus num input channels: 0
+Main bus num output channels: 2
+Completed tests in pluginval / Listing available buses
+-----------------------------------------------------------------
+Starting tests in: pluginval / Enabling all buses...
+Completed tests in pluginval / Enabling all buses
+-----------------------------------------------------------------
+Starting tests in: pluginval / Disabling non-main busses...
+Completed tests in pluginval / Disabling non-main busses
+-----------------------------------------------------------------
+Starting tests in: pluginval / Restoring default layout...
+Main bus num input channels: 0
+Main bus num output channels: 2
+
+Time taken to run test: 0
+Completed tests in pluginval / Restoring default layout
+-----------------------------------------------------------------
+Starting tests in: pluginval / Fuzz parameters...
+Fuzz testing parameter: 0 - oscA_on
+Fuzz testing parameter: 1 - oscB_on
+Fuzz testing parameter: 2 - sub_on
+Fuzz testing parameter: 3 - noise_on
+Fuzz testing parameter: 4 - oscA_oct
+Fuzz testing parameter: 5 - oscB_oct
+Fuzz testing parameter: 6 - oscA_semi
+Fuzz testing parameter: 7 - oscB_semi
+Fuzz testing parameter: 8 - oscA_fine
+Fuzz testing parameter: 9 - oscB_fine
+Fuzz testing parameter: 10 - oscA_pw
+Fuzz testing parameter: 11 - oscB_pw
+Fuzz testing parameter: 12 - oscA_level
+Fuzz testing parameter: 13 - oscB_level
+Fuzz testing parameter: 14 - oscB_sync
+Fuzz testing parameter: 15 - sub_oct
+Fuzz testing parameter: 16 - sub_level
+Fuzz testing parameter: 17 - noise_mode
+Fuzz testing parameter: 18 - noise_level
+Fuzz testing parameter: 19 - uni_count
+Fuzz testing parameter: 20 - uni_detune
+Fuzz testing parameter: 21 - uni_spread
+Fuzz testing parameter: 22 - voice_mode
+Fuzz testing parameter: 23 - poly_count
+Fuzz testing parameter: 24 - glide_time
+Fuzz testing parameter: 25 - glide_mode
+Fuzz testing parameter: 26 - filt_type
+Fuzz testing parameter: 27 - filt_cutoff
+Fuzz testing parameter: 28 - filt_res
+Fuzz testing parameter: 29 - filt_env
+Fuzz testing parameter: 30 - filt_keytrack
+Fuzz testing parameter: 31 - env1_a
+Fuzz testing parameter: 32 - env1_d
+Fuzz testing parameter: 33 - env1_s
+Fuzz testing parameter: 34 - env1_r
+Fuzz testing parameter: 35 - env2_a
+Fuzz testing parameter: 36 - env2_d
+Fuzz testing parameter: 37 - env2_s
+Fuzz testing parameter: 38 - env2_r
+Fuzz testing parameter: 39 - env2_pitch
+Fuzz testing parameter: 40 - lfo1_rate
+Fuzz testing parameter: 41 - lfo1_sync
+Fuzz testing parameter: 42 - lfo1_pwm
+Fuzz testing parameter: 43 - lfo2_rate
+Fuzz testing parameter: 44 - lfo2_sync
+Fuzz testing parameter: 45 - lfo2_shape
+Fuzz testing parameter: 46 - lfo2_amt
+Fuzz testing parameter: 47 - lfo2_dest
+Fuzz testing parameter: 48 - crush_bits
+Fuzz testing parameter: 49 - crush_down
+Fuzz testing parameter: 50 - crush_mix
+Fuzz testing parameter: 51 - dly_time
+Fuzz testing parameter: 52 - dly_fb
+Fuzz testing parameter: 53 - dly_pingpong
+Fuzz testing parameter: 54 - dly_mix
+Fuzz testing parameter: 55 - cave_size
+Fuzz testing parameter: 56 - cave_damp
+Fuzz testing parameter: 57 - cave_mix
+Fuzz testing parameter: 58 - vel_amp
+Fuzz testing parameter: 59 - raw
+Fuzz testing parameter: 60 - master_gain
+Fuzz testing parameter: 61 - cave_hp
+Fuzz testing parameter: 62 - dly_hp
+Fuzz testing parameter: 63 - crush_hp
+Fuzz testing parameter: 64 - cave_lp
+Fuzz testing parameter: 65 - dly_lp
+Fuzz testing parameter: 66 - crush_lp
+
+Time taken to run test: 8 ms
+
+Time taken to run all tests: 15 secs
+Completed tests in pluginval / Fuzz parameters
+SUCCESS

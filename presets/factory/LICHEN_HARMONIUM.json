@@ -3,7 +3,7 @@
   "name": "LICHEN HARMONIUM",
   "category": "KEYS",
   "author": "BLOCKWAVE Factory",
-  "note": "hazy harmonium \u2014 lo-fi crush with CLOUD air",
+  "note": "technique 11 lo-fi haze \u2014 MOSS grit moved from downsample images to bit depth, CLOUD air",
   "craft": {
     "base": "KEYS",
     "cells": [
@@ -19,6 +19,8 @@
   },
   "params": {
     "env1_s": 0.9,
-    "env1_a": 0.15
+    "env1_a": 0.15,
+    "crush_down": 4,
+    "crush_bits": 7
   }
 }

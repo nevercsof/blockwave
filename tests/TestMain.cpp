@@ -353,8 +353,10 @@ static void test_block_size_invariance()
     p.dly_time = 10; p.dly_fb = 0.5f; p.dly_pingpong = true; p.dly_mix = 0.4f;
     p.cave_size = 0.6f; p.cave_damp = 0.5f; p.cave_mix = 0.4f;
     // Phase-6 addendum: wet-path HP engaged on all three FX — the smoothed
-    // cutoffs and engage gates must also be block-size invariant.
+    // cutoffs and engage gates must also be block-size invariant. Addendum 2
+    // adds the matching LPs, so all SIX wet-path filters run here.
     p.crush_hp = 400.0f; p.dly_hp = 150.0f; p.cave_hp = 150.0f;
+    p.crush_lp = 5500.0f; p.dly_lp = 2200.0f; p.cave_lp = 900.0f;
 
     auto ref = renderNote (p, 48, 48000.0, 0.3, 0.4, 512);
     const int sizes[] = { 16, 61, 128, 1024, 4096 };
@@ -406,7 +408,8 @@ static double measureCpuRatio (double sr, int blockSize)
 {
     // Worst realtime patch: everything on, 16 held notes x full 8-way unison
     // = 128 stacks (kMaxUnisonStacks raised 64 -> 128, Phase-2 amendment),
-    // plus the entire Phase-5 FX block engaged.
+    // plus the entire Phase-5 FX block engaged AND all six Phase-6 wet-path
+    // filters (3 x HP addendum, 3 x LP addendum 2) running.
     ParamSnapshot p;
     p.oscB_on = true; p.oscB_sync = true; p.sub_on = true; p.noise_on = true;
     p.uni_count = 8; p.poly_count = 16;
@@ -415,6 +418,8 @@ static double measureCpuRatio (double sr, int blockSize)
     p.crush_bits = 4; p.crush_down = 2; p.crush_mix = 1.0f;
     p.dly_fb = 0.9f; p.dly_pingpong = true; p.dly_mix = 0.5f;
     p.cave_size = 0.9f; p.cave_damp = 0.5f; p.cave_mix = 0.5f;
+    p.crush_hp = 200.0f; p.dly_hp = 200.0f; p.cave_hp = 200.0f;
+    p.crush_lp = 4000.0f; p.dly_lp = 4000.0f; p.cave_lp = 4000.0f;
 
     BlockwaveEngine engine;
     engine.setParams (p);
@@ -1089,6 +1094,9 @@ int main()
     fxtests::test_cave_damp_spectral();
     fxtests::test_fx_hp_default_transparent();
     fxtests::test_fx_hp_wet_rumble_cut();
+    fxtests::test_fx_lp_ceiling_is_bypass();
+    fxtests::test_fx_lp_wet_hf_cut();
+    fxtests::test_fx_lp_engage_click_free();
 
     // Phase-4 CRAFT engine (tests/CraftTests.h):
     crafttests::runAll();

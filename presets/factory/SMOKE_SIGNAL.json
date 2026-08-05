@@ -18,7 +18,7 @@
     ]
   },
   "params": {
-    "crush_down": 6,
+    "crush_down": 3,
     "master_gain": 3.6
   }
 }

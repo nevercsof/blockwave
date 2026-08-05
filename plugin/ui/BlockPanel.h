@@ -22,6 +22,12 @@
 // ParamCells and an optional on/off toggle in the title bar (OSC A/B, SUB,
 // NOISE). Static frame art is cheap (a handful of fillRects), children are
 // separate components so only the touched cell repaints.
+//
+// Cell pitch is per-panel (setCellWidth) rather than a global constant: the
+// FX row runs at 40 px because at the standard 48 the six-cell DELAY panel
+// no longer fits the fixed canvas — see TweakTab.cpp for that layout note.
+// Everything inside a ParamCell is drawn relative to its own width, so a
+// narrower pitch only tightens the spacing around the 24 px knob.
 
 #include "ParamCells.h"
 
@@ -36,11 +42,16 @@ public:
     ParamCell& addCell (std::unique_ptr<ParamCell> cell);
     juce::ToggleButton& addTitleToggle (const juce::String& tooltip);
 
+    // Horizontal pitch of this panel's cells (default ParamCell::cellW).
+    // Panel width should stay 2 * kPanelPad + numCells * cellWidth.
+    void setCellWidth (int px);
+
     void paint (juce::Graphics&) override;
     void resized() override;
 
 private:
     juce::String title;
+    int cellWidth = ParamCell::cellW;
     std::vector<std::unique_ptr<ParamCell>> cells;
     std::unique_ptr<juce::ToggleButton> titleToggle;
 

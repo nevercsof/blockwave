@@ -20,6 +20,7 @@
   "params": {
     "env1_a": 0.015,
     "cave_mix": 0.2,
-    "master_gain": 5.0
+    "master_gain": 5.0,
+    "filt_cutoff": 9000
   }
 }

@@ -445,7 +445,8 @@ bool BlockwaveAudioProcessor::getCraftGrid (blockwave::CraftGrid& out) const
     return true;
 }
 
-void BlockwaveAudioProcessor::setCraftGrid (const blockwave::CraftGrid& grid)
+void BlockwaveAudioProcessor::applyCraftGrid (const blockwave::CraftGrid& grid,
+                                              bool registerDiscovery)
 {
     // Recompute the full parameter set on the message thread; the APVTS
     // write path is atomic and the engine smooths audible params (~25 ms).
@@ -453,7 +454,8 @@ void BlockwaveAudioProcessor::setCraftGrid (const blockwave::CraftGrid& grid)
     const auto snap = blockwave::craftSnapshotWithRecipes (grid, &recipeBook, &recipeName);
     blockwave::applySnapshotToApvts (snap, apvts);
 
-    const bool newDiscovery = recipeName.isNotEmpty() && discoveries.add (recipeName);
+    const bool newDiscovery = registerDiscovery && recipeName.isNotEmpty()
+                           && discoveries.add (recipeName);
 
     const juce::ScopedLock sl (metaLock);
     craftValid = true;
@@ -462,6 +464,58 @@ void BlockwaveAudioProcessor::setCraftGrid (const blockwave::CraftGrid& grid)
     activeRecipeName = recipeName;
     if (newDiscovery)
         pendingDiscovery = recipeName;
+}
+
+void BlockwaveAudioProcessor::setCraftGrid (const blockwave::CraftGrid& grid)
+{
+    applyCraftGrid (grid, true);
+}
+
+// ---- per-cell weight / mix (message thread only) ----------------------------
+
+float BlockwaveAudioProcessor::getCraftCellWeight (int cellIndex) const
+{
+    const juce::ScopedLock sl (metaLock);
+    if (! craftValid)
+        return blockwave::kCellWeightDefault;
+    return craftGrid.cellWeight (cellIndex);
+}
+
+void BlockwaveAudioProcessor::setCraftCellWeight (int cellIndex, float weight01)
+{
+    if (cellIndex < 0 || cellIndex >= blockwave::kNumCells)
+        return;
+    blockwave::CraftGrid grid;
+    if (! getCraftGrid (grid))
+        return;
+    const float w = blockwave::clampCellWeight (weight01);
+    if (grid.cellWeight (cellIndex) == w)
+        return;                              // nothing to re-craft
+    grid.setCellWeight (cellIndex, w);
+    // Weights can neither create nor destroy a recipe match, so a weight edit
+    // never registers a discovery (the blocks were already placed to get one).
+    applyCraftGrid (grid, false);
+}
+
+void BlockwaveAudioProcessor::setCraftCellWeights (const float* weights01, int count)
+{
+    if (weights01 == nullptr || count <= 0)
+        return;
+    blockwave::CraftGrid grid;
+    if (! getCraftGrid (grid))
+        return;
+    bool changed = false;
+    for (int i = 0; i < count && i < blockwave::kNumCells; ++i)
+    {
+        const float w = blockwave::clampCellWeight (weights01[i]);
+        if (grid.cellWeight (i) != w)
+        {
+            grid.setCellWeight (i, w);
+            changed = true;
+        }
+    }
+    if (changed)
+        applyCraftGrid (grid, false);
 }
 
 void BlockwaveAudioProcessor::clearCraftGrid()

@@ -155,6 +155,9 @@ static int compareSnapshots (const ParamSnapshot& a, const ParamSnapshot& b,
     num ("cave_hp", a.cave_hp, b.cave_hp);
     num ("dly_hp", a.dly_hp, b.dly_hp);
     num ("crush_hp", a.crush_hp, b.crush_hp);
+    num ("cave_lp", a.cave_lp, b.cave_lp);
+    num ("dly_lp", a.dly_lp, b.dly_lp);
+    num ("crush_lp", a.crush_lp, b.crush_lp);
 
     if (maxRel != nullptr)
         *maxRel = worst;
@@ -163,9 +166,10 @@ static int compareSnapshots (const ParamSnapshot& a, const ParamSnapshot& b,
 
 // ---------------------------------------------------------------------------
 // The FROZEN parameter ID list — 61 IDs in SPEC-table order plus the 3-ID
-// Phase-6 addendum (cave_hp/dly_hp/crush_hp, appended only — no existing
-// index moved). This array is a deliberate, independent copy: if
-// src/ParamSpec.h ever drifts, this fails.
+// Phase-6 addendum (cave_hp/dly_hp/crush_hp) and the 3-ID addendum 2
+// (cave_lp/dly_lp/crush_lp), both appended only — no existing index moved.
+// This array is a deliberate, independent copy: if src/ParamSpec.h ever
+// drifts, this fails.
 static const char* const kFrozenIds[] =
 {
     "oscA_on", "oscB_on", "sub_on", "noise_on",
@@ -185,13 +189,14 @@ static const char* const kFrozenIds[] =
     "cave_size", "cave_damp", "cave_mix",
     "vel_amp", "raw", "master_gain",
     "cave_hp", "dly_hp", "crush_hp",        // frozen-table addendum (Phase 6)
+    "cave_lp", "dly_lp", "crush_lp",        // frozen-table addendum 2 (Phase 6)
 };
 
 static void test_frozen_parameter_ids (BlockwaveAudioProcessor& proc)
 {
     std::printf ("[frozen_parameter_ids]\n");
     constexpr int expected = static_cast<int> (std::size (kFrozenIds));
-    CHECK_MSG (expected == 64, "frozen list itself must have 64 entries (has %d)", expected);
+    CHECK_MSG (expected == 67, "frozen list itself must have 67 entries (has %d)", expected);
     CHECK_MSG (kNumParams == expected, "ParamSpec has %d params, frozen list %d",
                kNumParams, expected);
 
@@ -256,6 +261,19 @@ static void test_defaults_match_engine (BlockwaveAudioProcessor& proc)
                    "%s range wrong", id);
         CHECK_MSG (range (id).skew < 1.0f, "%s must be log-tapered", id);
     }
+    // Frozen-table addendum 2: FX wet-path LP cutoffs. The default must land
+    // EXACTLY on the 20 kHz ceiling after the APVTS normalize round trip —
+    // that exactness is what makes the bypass (and every existing golden)
+    // bit-exact.
+    for (const char* id : { "cave_lp", "dly_lp", "crush_lp" })
+    {
+        CHECK_MSG (range (id).start == 200.0f && range (id).end == 20000.0f,
+                   "%s range wrong", id);
+        CHECK_MSG (range (id).skew < 1.0f, "%s must be log-tapered", id);
+        CHECK_MSG (proc.apvts.getRawParameterValue (id)->load() == 20000.0f,
+                   "%s default %f is not exactly the 20 kHz bypass ceiling", id,
+                   static_cast<double> (proc.apvts.getRawParameterValue (id)->load()));
+    }
     std::printf ("  defaults + range spot checks OK\n");
 }
 
@@ -288,7 +306,8 @@ static const char* kStressPresetJson = R"JSON(
     "dly_time": "1/8D", "dly_fb": 0.5, "dly_pingpong": false, "dly_mix": 0.3,
     "cave_size": 0.7, "cave_damp": 0.2, "cave_mix": 0.4,
     "vel_amp": 0.9, "raw": true, "master_gain": -66.5,
-    "cave_hp": 150.0, "dly_hp": 95.5, "crush_hp": 2500.0
+    "cave_hp": 150.0, "dly_hp": 95.5, "crush_hp": 2500.0,
+    "cave_lp": 3500.0, "dly_lp": 812.5, "crush_lp": 120.0
   }
 }
 )JSON";
@@ -347,6 +366,9 @@ static void test_render_plugin_agreement (BlockwaveAudioProcessor& proc)
                static_cast<double> (s.master_gain));
     CHECK_MSG (std::abs (s.crush_hp - 2000.0f) < 1.0e-3f, "crush_hp clamp: %f",
                static_cast<double> (s.crush_hp));
+    // addendum 2: crush_lp 120 -> the 200 Hz minimum.
+    CHECK_MSG (std::abs (s.crush_lp - 200.0f) < 1.0e-3f, "crush_lp clamp: %f",
+               static_cast<double> (s.crush_lp));
 }
 
 // ---------------------------------------------------------------------------
@@ -664,7 +686,15 @@ static void test_session_state_round_trip()
                "cave_hp lost in session state");
     CHECK_MSG (std::abs (b.apvts.getRawParameterValue ("dly_hp")->load() - 95.5f) < 0.5f,
                "dly_hp lost in session state");
-    std::printf ("  64 params + preset meta + craft survive the round trip\n");
+    // Addendum 2 params (off-default in the stress preset, incl. the clamp
+    // case crush_lp 120 -> 200).
+    CHECK_MSG (std::abs (b.apvts.getRawParameterValue ("cave_lp")->load() - 3500.0f) < 2.0f,
+               "cave_lp lost in session state");
+    CHECK_MSG (std::abs (b.apvts.getRawParameterValue ("dly_lp")->load() - 812.5f) < 0.5f,
+               "dly_lp lost in session state");
+    CHECK_MSG (std::abs (b.apvts.getRawParameterValue ("crush_lp")->load() - 200.0f) < 0.5f,
+               "crush_lp (clamped to the 200 Hz minimum) lost in session state");
+    std::printf ("  67 params + preset meta + craft survive the round trip\n");
 }
 
 // ---------------------------------------------------------------------------
@@ -1040,6 +1070,208 @@ static void test_craft_save_and_session()
 
     a.getDiscoveries().getFile().getParentDirectory().deleteRecursively();
     std::printf ("  minimal-diff save, preset + session round trips OK\n");
+}
+
+// ---------------------------------------------------------------------------
+// Per-cell WEIGHT / MIX: JSON format, migration, persistence and the
+// processor API the CRAFT tab's on-block slider will call.
+// Semantics live in src/CraftEngine.h; the format rule in src/CraftJson.h.
+static void test_craft_cell_weight_state()
+{
+    std::printf ("[craft_cell_weight_state]\n");
+
+    // ---- (a) MIGRATION: no "weights" key => every placed cell at 100%
+    {
+        const auto legacy = juce::JSON::parse (juce::String (R"JSON(
+            { "base": "PAD", "cells": ["ICE","ICE","","","","","","CLOUD"] })JSON"));
+        CraftGrid g;
+        CHECK_MSG (craftGridFromVar (legacy, g), "legacy craft object failed to parse");
+        for (int i = 0; i < kNumCells; ++i)
+            CHECK_MSG (g.cellWeight (i) == 1.0f,
+                       "legacy grid cell %d came back at weight %.3f, expected 1.0",
+                       i, static_cast<double> (g.cellWeight (i)));
+        // ...and it crafts exactly like the pre-weight engine.
+        CraftGrid plain;
+        plain.base = CraftBase::PAD;
+        plain.cells[0] = Material::ICE;
+        plain.cells[1] = Material::ICE;
+        plain.cells[7] = Material::CLOUD;
+        CHECK_MSG (hashSnapshot (craftApply (g)) == hashSnapshot (craftApply (plain)),
+                   "a weightless craft object no longer crafts like the old engine");
+    }
+
+    // ---- (b) parse: values, clamping, short array, junk entries
+    {
+        const auto v = juce::JSON::parse (juce::String (R"JSON(
+            { "base": "BASS", "cells": ["ICE","LAVA","STONE","WOOD","","","",""],
+              "weights": [0.25, 1.5, -2, "nonsense"] })JSON"));
+        CraftGrid g;
+        CHECK_MSG (craftGridFromVar (v, g), "weighted craft object failed to parse");
+        CHECK_MSG (g.cellWeight (0) == 0.25f, "weight 0.25 lost (%.3f)",
+                   static_cast<double> (g.cellWeight (0)));
+        CHECK_MSG (g.cellWeight (1) == 1.0f, "weight 1.5 must clamp to 1.0 (%.3f)",
+                   static_cast<double> (g.cellWeight (1)));
+        CHECK_MSG (g.cellWeight (2) == 0.0f, "weight -2 must clamp to 0.0 (%.3f)",
+                   static_cast<double> (g.cellWeight (2)));
+        CHECK_MSG (g.cellWeight (3) == 1.0f, "a non-numeric weight must default to 1.0");
+        CHECK_MSG (g.cellWeight (7) == 1.0f, "a missing trailing weight must default to 1.0");
+    }
+
+    // ---- (c) write: key omitted at all-default, present and exact otherwise
+    {
+        CraftGrid plain;
+        plain.base = CraftBase::KEYS;
+        plain.cells[0] = Material::WOOD;
+        const auto plainVar = craftGridToVar (plain);
+        CHECK_MSG (! plainVar.getDynamicObject()->hasProperty ("weights"),
+                   "an all-100%% grid must not write a \"weights\" key "
+                   "(byte-shape compatibility with every existing preset)");
+
+        // A weight on an EMPTY cell is meaningless and must not trigger the key.
+        CraftGrid emptyCellWeighted = plain;
+        emptyCellWeighted.setCellWeight (5, 0.1f);       // cell 5 holds nothing
+        CHECK_MSG (! craftGridToVar (emptyCellWeighted).getDynamicObject()
+                        ->hasProperty ("weights"),
+                   "an empty cell's weight must not force the \"weights\" key");
+        CHECK_MSG (emptyCellWeighted.equalsWithWeights (plain),
+                   "an empty cell's weight must not count as a difference");
+
+        CraftGrid weighted = plain;
+        weighted.setCellWeight (0, 0.375f);
+        const auto var = craftGridToVar (weighted);
+        auto* arr = var.getDynamicObject()->getProperty ("weights").getArray();
+        CHECK_MSG (arr != nullptr && arr->size() == kNumCells,
+                   "weighted grid wrote %d weights, expected %d",
+                   arr != nullptr ? arr->size() : -1, kNumCells);
+        CraftGrid back;
+        CHECK_MSG (craftGridFromVar (var, back), "written craft object failed to re-parse");
+        CHECK_MSG (back.equalsWithWeights (weighted), "craft JSON weight round trip lost data");
+    }
+
+    // ---- (d) processor API + preset save/load + session state
+    {
+        BlockwaveAudioProcessor a;
+        a.getDiscoveries().setFile (
+            juce::File::getSpecialLocation (juce::File::tempDirectory)
+                .getChildFile ("blockwave_weight_tests").getChildFile ("Discoveries.json"));
+
+        // No grid: the getter is safe and the setter is a no-op.
+        CHECK_MSG (a.getCraftCellWeight (0) == 1.0f, "weight getter without a grid");
+        a.setCraftCellWeight (0, 0.5f);
+        CraftGrid none;
+        CHECK_MSG (! a.getCraftGrid (none), "setCraftCellWeight created a grid");
+
+        CraftGrid g;
+        g.base = CraftBase::PAD;
+        g.cells[0] = Material::ICE;
+        g.cells[3] = Material::CLOUD;
+        a.setCraftGrid (g);
+        CHECK_MSG (a.getCraftCellWeight (0) == 1.0f, "fresh grid is not at 100%%");
+        CHECK_MSG (a.getCraftCellWeight (-1) == 1.0f && a.getCraftCellWeight (99) == 1.0f,
+                   "out-of-range cell index must return the 1.0 default");
+
+        const float fullDetune = a.apvts.getRawParameterValue ("uni_detune")->load();
+        a.setCraftCellWeight (0, 0.5f);
+        CHECK_MSG (a.getCraftCellWeight (0) == 0.5f, "weight setter did not stick");
+        const float halfDetune = a.apvts.getRawParameterValue ("uni_detune")->load();
+        CHECK_MSG (halfDetune < fullDetune,
+                   "setCraftCellWeight did not reach the APVTS (uni_detune %.3f -> %.3f)",
+                   static_cast<double> (fullDetune), static_cast<double> (halfDetune));
+        a.setCraftCellWeight (0, 5.0f);
+        CHECK_MSG (a.getCraftCellWeight (0) == 1.0f, "setter must clamp to 1.0");
+        a.setCraftCellWeight (0, -1.0f);
+        CHECK_MSG (a.getCraftCellWeight (0) == 0.0f, "setter must clamp to 0.0");
+
+        const float bulk[kNumCells] = { 0.25f, 1.0f, 1.0f, 0.75f, 1.0f, 1.0f, 1.0f, 1.0f };
+        a.setCraftCellWeights (bulk, kNumCells);
+        CHECK_MSG (a.getCraftCellWeight (0) == 0.25f && a.getCraftCellWeight (3) == 0.75f,
+                   "bulk weight setter did not stick");
+        a.setCraftCellWeights (nullptr, kNumCells);      // must not crash
+        CHECK_MSG (a.getCraftCellWeight (0) == 0.25f, "nullptr bulk setter changed state");
+
+        // A weight edit never fires a discovery and never changes the name.
+        int n = 0;
+        const auto* pats = specRecipePatterns (n);
+        a.setCraftGrid (pats[0].grid);                   // PERMAFROST: discovers
+        juce::String discovered;
+        CHECK_MSG (a.consumeRecipeDiscovery (discovered), "recipe setup did not discover");
+        a.setCraftCellWeight (0, 0.2f);
+        CHECK_MSG (! a.consumeRecipeDiscovery (discovered),
+                   "a weight edit fired a discovery");
+        CHECK_MSG (a.getActiveRecipeName() == "PERMAFROST",
+                   "a weight edit dropped the active recipe: '%s'",
+                   a.getActiveRecipeName().toRawUTF8());
+        CHECK_MSG (a.getCraftAutoName() == "PERMAFROST",
+                   "a weight edit changed the auto-name");
+
+        // Preset save -> reload keeps the weights AND the params.
+        a.setCraftGrid (g);
+        a.setCraftCellWeight (0, 0.375f);
+        a.setCraftCellWeight (3, 0.125f);
+        CraftGrid ga;
+        a.getCraftGrid (ga);
+        const auto preset = a.buildCurrentPresetVar ("WEIGHTED", "PAD", "tests");
+        BlockwaveAudioProcessor b;
+        juce::String err;
+        CHECK_MSG (b.loadPresetVar (preset, err), "weighted preset reload failed: %s",
+                   err.toRawUTF8());
+        CraftGrid gb;
+        CHECK_MSG (b.getCraftGrid (gb), "weighted preset lost the grid");
+        CHECK_MSG (gb.equalsWithWeights (ga),
+                   "weighted preset round trip lost the weights (%.3f / %.3f)",
+                   static_cast<double> (gb.cellWeight (0)),
+                   static_cast<double> (gb.cellWeight (3)));
+        RawParams rawA, rawB;
+        rawA.attach (a.apvts);
+        rawB.attach (b.apvts);
+        ParamSnapshot sa, sb;
+        rawA.toSnapshot (sa);
+        rawB.toSnapshot (sb);
+        CHECK_MSG (compareSnapshots (sa, sb, 1.0e-5, "weighted_preset") == 0,
+                   "weighted preset round trip drifted the parameters");
+
+        // Session state keeps the weights too.
+        juce::MemoryBlock blob;
+        a.getStateInformation (blob);
+        BlockwaveAudioProcessor c;
+        c.setStateInformation (blob.getData(), static_cast<int> (blob.getSize()));
+        CraftGrid gc;
+        CHECK_MSG (c.getCraftGrid (gc), "session state lost the grid");
+        CHECK_MSG (gc.equalsWithWeights (ga),
+                   "session state lost the weights (%.3f / %.3f)",
+                   static_cast<double> (gc.cellWeight (0)),
+                   static_cast<double> (gc.cellWeight (3)));
+
+        a.getDiscoveries().getFile().getParentDirectory().deleteRecursively();
+    }
+    std::printf ("  migration, clamping, JSON shape, processor API, preset + "
+                 "session round trips OK\n");
+}
+
+// ---------------------------------------------------------------------------
+// Every shipped factory preset must still read as an all-100%% grid — that is
+// the migration guarantee for the 128-preset bank in one assertion.
+static void test_factory_bank_weight_migration (BlockwaveAudioProcessor& proc)
+{
+    std::printf ("[factory_bank_weight_migration]\n");
+    auto& lib = proc.getPresetLibrary();
+    int withGrid = 0;
+    for (int i = 0; i < lib.getNumPresets(); ++i)
+    {
+        const auto& e = lib.getPreset (i);
+        if (! e.isFactory)
+            continue;
+        CraftGrid g;
+        if (! craftGridFromVar (e.root.getProperty ("craft", juce::var()), g))
+            continue;
+        ++withGrid;
+        CHECK_MSG (g.allCellWeightsDefault(),
+                   "factory preset '%s' did not read as an all-100%% grid",
+                   e.name.toRawUTF8());
+    }
+    CHECK_MSG (withGrid >= 100, "only %d factory presets carry a craft grid", withGrid);
+    std::printf ("  %d factory craft grids all read as 100%% (no JSON rewrite needed)\n",
+                 withGrid);
 }
 
 // ---------------------------------------------------------------------------
@@ -1501,6 +1733,7 @@ int main()
         test_render_plugin_agreement (proc);
         test_preset_save_round_trip (proc);
         test_factory_bank (proc);
+        test_factory_bank_weight_migration (proc);
         test_tail_length_report (proc);
         test_craft_recipe_book (proc);
         test_craft_first_then_params (proc);
@@ -1516,6 +1749,7 @@ int main()
     test_factory_presets_render_clean();
     test_processor_craft_api();
     test_craft_save_and_session();
+    test_craft_cell_weight_state();
 
     // Phase 4: UI audition keyboard + discovery jingle.
     test_ui_keyboard_path();

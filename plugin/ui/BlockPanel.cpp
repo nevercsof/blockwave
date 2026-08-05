@@ -58,11 +58,17 @@ void BlockPanel::paint (juce::Graphics& g)
     drawPixelText (g, title, 14, 6, 1, label);
 }
 
+void BlockPanel::setCellWidth (int px)
+{
+    cellWidth = juce::jmax (16, px);
+    resized();
+}
+
 void BlockPanel::resized()
 {
     for (size_t i = 0; i < cells.size(); ++i)
-        cells[i]->setBounds (kPanelPad + static_cast<int> (i) * ParamCell::cellW,
-                             kPanelTitleH + 8, ParamCell::cellW, ParamCell::cellH);
+        cells[i]->setBounds (kPanelPad + static_cast<int> (i) * cellWidth,
+                             kPanelTitleH + 8, cellWidth, ParamCell::cellH);
     if (titleToggle != nullptr)
         titleToggle->setBounds (getWidth() - 27, 3, 22, 12);
 }

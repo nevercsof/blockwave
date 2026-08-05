@@ -18,6 +18,7 @@
     ]
   },
   "params": {
-    "vel_amp": 0.4
+    "vel_amp": 0.4,
+    "filt_cutoff": 9000
   }
 }

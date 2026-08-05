@@ -17,6 +17,7 @@
 */
 
 #include "CraftBlocks.h"
+#include <cmath>
 
 namespace blockwave::ui
 {
@@ -65,6 +66,31 @@ Material materialFromDrag (const juce::var& payload, int& fromCell)
     return Material::none;
 }
 
+// Linear walk order for LEFT/RIGHT: the 3x3 in reading order with the base
+// in the middle (-1). UP/DOWN belong to the mix rail on filled cells, so this
+// single axis has to reach every cell on its own — hence the wrap.
+const int kWalkOrder[9] = { 0, 1, 2, 3, -1, 4, 5, 6, 7 };
+
+int walkIndexOf (int slot)
+{
+    for (int i = 0; i < 9; ++i)
+        if (kWalkOrder[i] == slot)
+            return i;
+    return 4;                                     // base
+}
+
+// Mix weights live on a 5 % lattice: round readouts, 21 reachable values.
+float snapMixWeight (float w)
+{
+    const float snapped = std::round (juce::jlimit (0.0f, 1.0f, w) / kMixStep) * kMixStep;
+    return juce::jlimit (0.0f, 1.0f, snapped);
+}
+
+juce::String mixPercentText (float w)
+{
+    return juce::String (juce::roundToInt (w * 100.0f)) + "%";
+}
+
 } // namespace
 
 // ---- CraftCell --------------------------------------------------------------
@@ -94,6 +120,7 @@ void CraftCell::paint (juce::Graphics& g)
     else
     {
         const auto m = grid.displayedMaterial (slot);
+        const float weight = grid.cellWeight (slot);
         if (m == Material::none)
         {
             drawBevelBox (g, r, chip, panelLight, panelDark, outline, true);
@@ -107,9 +134,15 @@ void CraftCell::paint (juce::Graphics& g)
         }
         else
         {
+            // Cached sprite, pre-dimmed for this cell's mix level — flat
+            // indexed pixel art either way, nothing translucent.
             g.setImageResamplingQuality (juce::Graphics::lowResamplingQuality);
-            g.drawImageAt (grid.getCache().material (m, 4), r.getX(), r.getY());
+            g.drawImageAt (grid.getCache().material (m, 4, weightDimLevel (weight)),
+                           r.getX(), r.getY());
         }
+
+        if (hasMixRail())
+            paintMixRail (g, weight);
 
         if (const int f = grid.slotFlash (slot); f > 0)
         {
@@ -134,16 +167,104 @@ void CraftCell::paint (juce::Graphics& g)
         g.drawRect (r, 1);
     }
 
+    if (hasMixRail() && grid.mixReadoutSlot() == slot)
+        paintMixReadout (g, grid.cellWeight (slot));
+
     if (hasKeyboardFocus (false))
         drawFocusTicks (g, r);
 }
 
+// ---- mix rail ----------------------------------------------------------------
+
+bool CraftCell::hasMixRail() const
+{
+    return ! baseSlot && slot >= 0 && slot < kNumCells
+        && grid.getGrid().cells[slot] != Material::none;
+}
+
+juce::Rectangle<int> CraftCell::railBounds() const
+{
+    return { getWidth() - kMixRailW, 0, kMixRailW, getHeight() };
+}
+
+void CraftCell::paintMixRail (juce::Graphics& g, float w)
+{
+    using namespace colours;
+    const auto rail = railBounds();
+    const int trackX = rail.getX() + 2;                     // 8-px wide well
+    const juce::Rectangle<int> track (trackX, kMixTrackY, 8, kMixTrackH);
+
+    drawBevelBox (g, track, chip, panelDark, panelLight, outline, true, 1);
+
+    // Filled portion, quantised to 4-px chunks (never a smooth gradient).
+    const int travel = kMixTrackH - 4;
+    const int fill = juce::jlimit (0, travel,
+        static_cast<int> (std::lround (w * static_cast<float> (travel) / 4.0f)) * 4);
+    if (fill > 0)
+    {
+        g.setColour (grass);
+        g.fillRect (track.getX() + 2, track.getBottom() - 2 - fill, 4, fill);
+    }
+
+    // Handle: chunky block spanning the whole rail so it reads as a grip.
+    const int span = kMixTrackH - kMixHandleH;
+    const int hy = kMixTrackY
+                 + juce::jlimit (0, span,
+                     static_cast<int> (std::lround ((1.0f - w)
+                         * static_cast<float> (span) / 2.0f)) * 2);
+    const juce::Rectangle<int> handle (rail.getX(), hy, kMixRailW, kMixHandleH);
+    drawBevelBox (g, handle, (railHot || mixDragging) ? panelLight : buttonFace,
+                  label, panelDark, outline, false, 1);
+    g.setColour (mixDragging ? lava : outline);
+    g.fillRect (handle.getX() + 2, handle.getCentreY() - 1, kMixRailW - 4, 1);
+
+    // Persistent "this block is turned down" tag: only below 100 %, small,
+    // bottom-left, out of the sprite's busiest area.
+    if (w < 1.0f)
+    {
+        const auto txt = mixPercentText (w);
+        const juce::Rectangle<int> tag (2, getHeight() - 11,
+                                        pixelTextWidth (txt, 1) + 5, 9);
+        drawBevelBox (g, tag, chip, panelDark, panelLight, outline, true, 1);
+        drawPixelTextCentred (g, txt, tag, 1, w > 0.0f ? ice : lava);
+    }
+}
+
+void CraftCell::paintMixReadout (juce::Graphics& g, float w)
+{
+    using namespace colours;
+    const auto txt = mixPercentText (w);
+    const int tw = pixelTextWidth (txt, 2);
+    juce::Rectangle<int> badge (0, 0, tw + 12, 20);
+    badge.setCentre (getWidth() / 2 - kMixRailW / 2, getHeight() / 2);
+    drawBevelBox (g, badge, chip, lava, juce::Colour (0xff3a2410), outline);
+    drawPixelTextCentred (g, txt, badge, 2, label);
+}
+
+// ---- mouse -------------------------------------------------------------------
+
 void CraftCell::mouseDown (const juce::MouseEvent& e)
 {
     grabKeyboardFocus();
+    mixDragging = false;
     if (baseSlot)
     {
         grid.cycleBase (e.mods.isPopupMenu() ? -1 : 1);
+        return;
+    }
+
+    // The rail owns the right edge of a filled block — except while a
+    // material is ARMED, when the whole cell places it (no dead zone in the
+    // guided flow) and except on right-click, which always clears.
+    if (hasMixRail() && ! e.mods.isPopupMenu()
+        && grid.getArmedMaterial() == Material::none
+        && railBounds().contains (e.getPosition()))
+    {
+        mixDragging = true;
+        mixDragStartY = e.getPosition().y;
+        mixDragStartWeight = grid.cellWeight (slot);
+        grid.selectSlot (slot);                   // a plain click still selects
+        repaint();
         return;
     }
     grid.cellClicked (slot, e.mods.isPopupMenu());
@@ -153,6 +274,17 @@ void CraftCell::mouseDrag (const juce::MouseEvent& e)
 {
     if (baseSlot || e.mods.isPopupMenu())
         return;
+
+    if (mixDragging)
+    {
+        // One rail height of travel = the full 0..100 % range, up = louder.
+        const int travel = juce::jmax (16, kMixTrackH - kMixHandleH);
+        const float delta = static_cast<float> (mixDragStartY - e.getPosition().y)
+                          / static_cast<float> (travel);
+        grid.setCellWeightFromDrag (slot, mixDragStartWeight + delta);
+        return;
+    }
+
     const auto m = grid.getGrid().cells[slot];
     if (m == Material::none || e.getDistanceFromDragStart() < 4)
         return;
@@ -164,16 +296,66 @@ void CraftCell::mouseDrag (const juce::MouseEvent& e)
     }
 }
 
-void CraftCell::mouseEnter (const juce::MouseEvent&) { hovering = true;  repaint(); }
-void CraftCell::mouseExit  (const juce::MouseEvent&) { hovering = false; repaint(); }
+void CraftCell::mouseUp (const juce::MouseEvent&)
+{
+    if (! mixDragging)
+        return;
+    mixDragging = false;
+    grid.endMixDrag();
+    repaint();
+}
+
+void CraftCell::mouseMove (const juce::MouseEvent& e)
+{
+    const bool hot = hasMixRail() && railBounds().contains (e.getPosition());
+    if (hot != railHot)
+    {
+        railHot = hot;
+        repaint (railBounds());
+    }
+}
+
+void CraftCell::mouseWheelMove (const juce::MouseEvent&,
+                                const juce::MouseWheelDetails& wheel)
+{
+    if (! hasMixRail() || wheel.deltaY == 0.0f)
+        return;
+    grid.nudgeCellWeight (slot, wheel.deltaY > 0.0f ? 1 : -1);
+}
+
+void CraftCell::mouseEnter (const juce::MouseEvent& e)
+{
+    hovering = true;
+    railHot = hasMixRail() && railBounds().contains (e.getPosition());
+    repaint();
+}
+
+void CraftCell::mouseExit (const juce::MouseEvent&)
+{
+    hovering = false;
+    railHot = false;
+    repaint();
+}
 
 bool CraftCell::keyPressed (const juce::KeyPress& k)
 {
     const int code = k.getKeyCode();
-    if (code == juce::KeyPress::leftKey)  { grid.focusNeighbour (slot, -1, 0); return true; }
-    if (code == juce::KeyPress::rightKey) { grid.focusNeighbour (slot,  1, 0); return true; }
-    if (code == juce::KeyPress::upKey)    { grid.focusNeighbour (slot, 0, -1); return true; }
-    if (code == juce::KeyPress::downKey)  { grid.focusNeighbour (slot, 0,  1); return true; }
+    // LEFT/RIGHT walk the WHOLE grid in reading order and wrap, so every cell
+    // is still reachable with the vertical arrows given over to the mix rail.
+    if (code == juce::KeyPress::leftKey)  { grid.focusStep (slot, -1); return true; }
+    if (code == juce::KeyPress::rightKey) { grid.focusStep (slot,  1); return true; }
+
+    if (code == juce::KeyPress::upKey || code == juce::KeyPress::downKey)
+    {
+        const int dir = code == juce::KeyPress::upKey ? 1 : -1;
+        if (hasMixRail())
+        {
+            grid.nudgeCellWeight (slot, dir * (k.getModifiers().isShiftDown() ? 5 : 1));
+            return true;
+        }
+        grid.focusNeighbour (slot, 0, -dir);       // nothing to mix: walk rows
+        return true;
+    }
 
     if (code == juce::KeyPress::returnKey || code == juce::KeyPress::spaceKey)
     {
@@ -223,7 +405,6 @@ CraftGridComponent::CraftGridComponent (BlockImageCache& imageCache)
     for (int s = 0; s < kNumCells; ++s)
     {
         auto cell = std::make_unique<CraftCell> (*this, s, false);
-        cell->setTooltip ("drop a block");
         addAndMakeVisible (*cell);
         cells.push_back (std::move (cell));
     }
@@ -232,7 +413,17 @@ CraftGridComponent::CraftGridComponent (BlockImageCache& imageCache)
     addAndMakeVisible (*baseCell);
     cells.push_back (std::move (baseCell));
 
+    refreshCellTooltips();
     setSize (kCraftGridW, kCraftGridW);
+}
+
+void CraftGridComponent::refreshCellTooltips()
+{
+    // 3 words max, product voice: a filled block advertises its mix rail, an
+    // empty one advertises the drop.
+    for (int s = 0; s < kNumCells; ++s)
+        cells[static_cast<size_t> (s)]->setTooltip (
+            grid.cells[s] == Material::none ? "drop a block" : "drag to mix");
 }
 
 void CraftGridComponent::resized()
@@ -262,6 +453,10 @@ void CraftGridComponent::setGrid (const CraftGrid& g)
 {
     grid = g;
     cells.back()->setTooltip (baseTooltip (grid.base));
+    refreshCellTooltips();
+    readoutSlot = -1;                            // no stale % badge on reload
+    readoutTicks = 0;
+    readoutHeld = false;
     for (auto& c : cells)
         c->repaint();
 }
@@ -292,7 +487,11 @@ void CraftGridComponent::placeMaterial (int slot, Material m)
         return;
     }
     grid.cells[slot] = m;
+    // A NEW block always arrives at 100 %: the mix belongs to the block you
+    // placed, never to the slot it landed in.
+    grid.setCellWeight (slot, kCellWeightDefault);
     flashSlot (slot);
+    refreshCellTooltips();
     cells[static_cast<size_t> (slot)]->repaint();
     notifyEdit();
 }
@@ -302,7 +501,11 @@ void CraftGridComponent::clearSlot (int slot)
     if (slot < 0 || slot >= kNumCells || grid.cells[slot] == Material::none)
         return;
     grid.cells[slot] = Material::none;
+    grid.setCellWeight (slot, kCellWeightDefault);   // block gone, mix gone
+    if (readoutSlot == slot)
+        readoutSlot = -1;
     flashSlot (slot);
+    refreshCellTooltips();
     cells[static_cast<size_t> (slot)]->repaint();
     notifyEdit();
 }
@@ -313,11 +516,74 @@ void CraftGridComponent::moveMaterial (int fromSlot, int toSlot)
         || toSlot < 0 || toSlot >= kNumCells)
         return;
     std::swap (grid.cells[fromSlot], grid.cells[toSlot]);   // swap keeps blocks
+    // ...and each block keeps its own mix: dragging a 40 % ICE across the
+    // bench must not silently turn it back up.
+    const float wFrom = grid.cellWeight (fromSlot);
+    grid.setCellWeight (fromSlot, grid.cellWeight (toSlot));
+    grid.setCellWeight (toSlot, wFrom);
     flashSlot (toSlot);
     flashSlot (fromSlot);
+    refreshCellTooltips();
     cells[static_cast<size_t> (fromSlot)]->repaint();
     cells[static_cast<size_t> (toSlot)]->repaint();
     notifyEdit();
+}
+
+// ---- per-cell WEIGHT / MIX ---------------------------------------------------
+
+float CraftGridComponent::cellWeight (int slot) const
+{
+    return grid.cellWeight (slot);
+}
+
+void CraftGridComponent::applyCellWeight (int slot, float w, bool hold)
+{
+    if (slot < 0 || slot >= kNumCells || grid.cells[slot] == Material::none)
+        return;
+
+    readoutSlot = slot;
+    readoutHeld = hold;
+    readoutTicks = hold ? 0 : kMixReadoutTicks;
+
+    const float snapped = snapMixWeight (w);
+    if (grid.cellWeight (slot) != snapped)
+    {
+        grid.setCellWeight (slot, snapped);
+        if (onCellWeightEdited)
+            onCellWeightEdited (slot, snapped);   // -> setCraftCellWeight()
+    }
+    cells[static_cast<size_t> (slot)]->repaint();
+}
+
+void CraftGridComponent::setCellWeightFromDrag (int slot, float w)
+{
+    applyCellWeight (slot, w, true);
+}
+
+void CraftGridComponent::endMixDrag()
+{
+    if (! readoutHeld)
+        return;
+    readoutHeld = false;
+    readoutTicks = kMixReadoutTicks;              // lingers, then fades out
+}
+
+void CraftGridComponent::nudgeCellWeight (int slot, int steps)
+{
+    if (slot < 0 || slot >= kNumCells || steps == 0)
+        return;
+    applyCellWeight (slot,
+                     grid.cellWeight (slot) + static_cast<float> (steps) * kMixStep,
+                     false);
+}
+
+void CraftGridComponent::focusStep (int slot, int delta)
+{
+    const int here = walkIndexOf (slot);
+    const int next = ((here + delta) % 9 + 9) % 9;      // wraps across rows
+    const int target = kWalkOrder[next];
+    const size_t idx = target < 0 ? cells.size() - 1 : static_cast<size_t> (target);
+    cells[idx]->grabKeyboardFocus();
 }
 
 void CraftGridComponent::cycleBase (int delta)
@@ -379,6 +645,20 @@ void CraftGridComponent::flashSlot (int slot)
 bool CraftGridComponent::animationTick()
 {
     bool busy = false;
+
+    // Mix readout: held while the rail is being dragged, then a short linger
+    // so a keyboard/wheel nudge is actually readable before it goes.
+    if (readoutSlot >= 0 && ! readoutHeld && readoutTicks > 0)
+    {
+        busy = true;
+        if (--readoutTicks <= 0)
+        {
+            const int done = readoutSlot;
+            readoutSlot = -1;
+            cells[static_cast<size_t> (done)]->repaint();
+        }
+    }
+
     const bool dicing = diceFrames > 0;
     if (dicing)
     {

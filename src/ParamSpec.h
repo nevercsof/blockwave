@@ -68,10 +68,14 @@ enum class PId : int
     // wet-path high-pass cutoffs, appended at the end per the append-only
     // rule — every pre-existing index is untouched. Architect ack pending.
     cave_hp, dly_hp, crush_hp,
+    // FROZEN-TABLE ADDENDUM 2 (Phase-6 producer feedback): the symmetric FX
+    // wet-path LOW-pass cutoffs. Appended after the HP trio in the same
+    // cave/dly/crush order — again append-only, no pre-existing index moved.
+    cave_lp, dly_lp, crush_lp,
     count
 };
 
-constexpr int kNumParams = static_cast<int> (PId::count);   // 64
+constexpr int kNumParams = static_cast<int> (PId::count);   // 67
 
 enum class PKind : int { boolean, integer, floating, choice };
 
@@ -170,6 +174,10 @@ inline const ParamDef& paramDef (PId id) noexcept
         { "cave_hp",       PKind::floating, 20.0f,   2000.0f, 20.0f,   200.0f, nullptr,           0 },
         { "dly_hp",        PKind::floating, 20.0f,   2000.0f, 20.0f,   200.0f, nullptr,           0 },
         { "crush_hp",      PKind::floating, 20.0f,   2000.0f, 20.0f,   200.0f, nullptr,           0 },
+        // Frozen-table addendum 2 (see PId): 20000 Hz default = hard bypass.
+        { "cave_lp",       PKind::floating, 200.0f,  20000.0f, 20000.0f, 2000.0f, nullptr,        0 },
+        { "dly_lp",        PKind::floating, 200.0f,  20000.0f, 20000.0f, 2000.0f, nullptr,        0 },
+        { "crush_lp",      PKind::floating, 200.0f,  20000.0f, 20000.0f, 2000.0f, nullptr,        0 },
     };
     return defs[static_cast<int> (id)];
 }
@@ -362,6 +370,11 @@ inline void applyToSnapshot (ParamSnapshot& p, PId id, float v) noexcept
         case PId::dly_hp:       p.dly_hp = v; break;
         case PId::crush_hp:     p.crush_hp = v; break;
 
+        // FX wet-path LP (frozen-table addendum 2):
+        case PId::cave_lp:      p.cave_lp = v; break;
+        case PId::dly_lp:       p.dly_lp = v; break;
+        case PId::crush_lp:     p.crush_lp = v; break;
+
         case PId::count:
         default:
             break;
@@ -439,6 +452,9 @@ inline float snapshotToPlain (const ParamSnapshot& p, PId id) noexcept
         case PId::cave_hp:      return p.cave_hp;
         case PId::dly_hp:       return p.dly_hp;
         case PId::crush_hp:     return p.crush_hp;
+        case PId::cave_lp:      return p.cave_lp;
+        case PId::dly_lp:       return p.dly_lp;
+        case PId::crush_lp:     return p.crush_lp;
         case PId::count:
         default:                return 0.0f;
     }
