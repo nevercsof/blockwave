@@ -105,6 +105,126 @@ jobs:
           path: dist/
           if-no-files-found: error
 
+      # --- Release packaging (tag pushes and manual runs only) ---------------
+      # Everything above this line runs on every push exactly as before; the two
+      # steps below are additive and skipped on ordinary pushes and PRs.
+      # macOS release zips are cut locally with scripts/package-macos.sh (they
+      # need the AU and the Standalone, which only the local build produces and
+      # only Kirill can smoke-test); Windows ships VST3 only, so CI can do it.
+      - name: Build release zip (Windows)
+        if: runner.os == 'Windows' && (startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch')
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION=$(tr -d '[:space:]' < build/win-release/blockwave-version.txt)
+          echo "Packaging BLOCKWAVE $VERSION"
+          PKG="BLOCKWAVE-${VERSION}-Windows"
+          rm -rf release
+          mkdir -p "release/$PKG"
+          VST3=$(find build/win-release -name "*.vst3" -type d | head -1)
+          [ -n "$VST3" ] || { echo "ERROR: no VST3 bundle found" >&2; exit 1; }
+          cp -R "$VST3" "release/$PKG/"
+          cp LICENSE "release/$PKG/LICENSE.txt"
+          # Quoted heredoc: the Windows paths below are full of backslashes and
+          # must reach the file verbatim. @VERSION@ is substituted afterwards.
+          cat > "release/$PKG/INSTALL.txt" <<'INSTALL_EOF'
+          BLOCKWAVE @VERSION@ - Windows install instructions
+          ===============================================================================
+
+          BLOCKWAVE is free software (GPLv3). Every sound is a square.
+
+          WHAT IS IN THIS FOLDER
+          -------------------------------------------------------------------------------
+            BLOCKWAVE.vst3     the VST3 plug-in (a FOLDER, not a single file - copy all
+                               of it, do not open it and copy only the .vst3 inside)
+            LICENSE.txt        the GNU General Public License, version 3
+            INSTALL.txt        this file
+
+          Windows ships the VST3 only. There is no VST2 build and no installer yet -
+          installing is one copy-paste, described below.
+
+          These binaries are not code-signed. Windows SmartScreen or your antivirus may
+          warn about them the first time. That is what an unsigned free plug-in looks
+          like; the full source is on GitHub and builds in one command (see the README).
+
+
+          1. INSTALL
+          -------------------------------------------------------------------------------
+          Copy the whole BLOCKWAVE.vst3 FOLDER into the standard VST3 location:
+
+            C:\Program Files\Common Files\VST3
+
+          Press Win+R, paste that path, press Enter - Explorer opens the folder. Drag
+          BLOCKWAVE.vst3 into it. Windows will ask for administrator permission; click
+          Continue. If the VST3 folder does not exist, create it.
+
+          If you cannot get administrator rights, a per-user location also works:
+
+            %LOCALAPPDATA%\Programs\Common\VST3
+
+          ...but you then have to add that folder to your DAW's plug-in search paths by
+          hand, so prefer the Program Files location if you can.
+
+
+          2. RESCAN IN YOUR DAW
+          -------------------------------------------------------------------------------
+            FL Studio : Options > Manage plugins > Find more plugins
+                        (make sure C:\Program Files\Common Files\VST3 is in the
+                        "Plugin search paths" list, then Start scan)
+            Live      : Preferences > Plug-Ins > Rescan
+            Reaper    : Preferences > Plug-ins > VST > Re-scan
+            Cubase    : Studio > VST Plug-in Manager > refresh
+            Bitwig    : Settings > Locations > Rescan
+
+          BLOCKWAVE then shows up as an instrument (synth) named BLOCKWAVE.
+
+
+          3. IF WINDOWS OR YOUR ANTIVIRUS BLOCKS IT
+          -------------------------------------------------------------------------------
+          Right-click BLOCKWAVE.vst3, choose Properties, and if there is an "Unblock"
+          checkbox at the bottom of the General tab, tick it and click OK - then copy it
+          into place. Some antivirus tools quarantine unsigned plug-ins on sight; if
+          yours does, add an exclusion for C:\Program Files\Common Files\VST3\BLOCKWAVE.vst3.
+
+
+          4. UNINSTALL
+          -------------------------------------------------------------------------------
+          Delete these; nothing else is touched:
+            C:\Program Files\Common Files\VST3\BLOCKWAVE.vst3
+            %USERPROFILE%\Documents\BLOCKWAVE   (your presets, favourites, discoveries)
+
+          Keep the Documents\BLOCKWAVE folder if you want to keep your own presets and
+          your discovered-recipe count.
+
+
+          REQUIREMENTS
+          -------------------------------------------------------------------------------
+            Windows 10 or 11, 64-bit. A host that loads VST3 instruments.
+
+
+          LICENSE
+          -------------------------------------------------------------------------------
+          BLOCKWAVE is free software released under the GNU General Public License v3.
+          See LICENSE.txt. Copyright (C) 2026 Kirill Boyko.
+          Source, manual and issue tracker: https://github.com/nevercsof/blockwave
+          INSTALL_EOF
+          sed -i "s/@VERSION@/$VERSION/" "release/$PKG/INSTALL.txt"
+          # CRLF so the file reads correctly in every Windows text editor.
+          sed -i 's/$/\r/' "release/$PKG/INSTALL.txt"
+          (cd release && 7z a -tzip -mx=9 "$PKG.zip" "$PKG" > /dev/null)
+          rm -rf "release/$PKG"
+          ls -l release/
+          echo "PKG_NAME=$PKG" >> "$GITHUB_ENV"
+
+      - name: Upload release zip (Windows)
+        if: runner.os == 'Windows' && (startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch')
+        uses: actions/upload-artifact@v4
+        with:
+          name: blockwave-release-Windows
+          path: release/*.zip
+          if-no-files-found: error
+          compression-level: 0
+
       - name: Upload pluginval logs
         if: always()
         uses: actions/upload-artifact@v4

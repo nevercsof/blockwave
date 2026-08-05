@@ -75,6 +75,11 @@ struct AllocGuard
     long count() const { return gGuardedAllocs.load(); }
 };
 
+// Phase-7 robustness sweeps (processor half). Included here, after AllocGuard,
+// because the preset-cycling sweep proves the audio thread stays
+// allocation-free while presets are switched underneath it.
+#include "RobustnessProcTests.h"
+
 using namespace blockwave;
 using namespace testutil;
 
@@ -1757,6 +1762,9 @@ int main()
     test_ui_keyboard_fifo_overflow();
     test_discovery_jingle_in_processor();
     test_ui_audio_path_no_allocation();
+
+    // Phase-7 robustness sweeps (tests/RobustnessProcTests.h):
+    robustproc::runAll();
 
     std::printf ("\n%d checks, %d failures\n", state().checks, state().failures);
     return state().failures == 0 ? 0 : 1;

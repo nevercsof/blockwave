@@ -6,7 +6,26 @@ cmake_minimum_required(VERSION 3.22)
 # ---------------------------------------------------------------------------
 set(BLOCKWAVE_PRODUCT_NAME "BLOCKWAVE")
 
-project(BLOCKWAVE VERSION 0.1.0 LANGUAGES C CXX)
+# --- Versioning -------------------------------------------------------------
+# CMake's project(VERSION) and JUCE's plugin VERSION must both be strictly
+# numeric (JUCE turns them into VST3/AU/bundle version codes), so a pre-release
+# suffix cannot live there. The numeric release version is therefore 1.0.0 and
+# the pre-release tag is carried separately:
+#
+#   BLOCKWAVE_VERSION         1.0.0        -> VST3 / AU / .app bundle version
+#   BLOCKWAVE_VERSION_TAG     rc1          -> "" for a final release
+#   BLOCKWAVE_VERSION_STRING  1.0.0-rc1    -> human-facing string (UI/About/zip)
+#
+# To ship 1.0.0 final: clear BLOCKWAVE_VERSION_TAG (set it to ""). Nothing else
+# changes. See docs/RELEASE.md.
+project(BLOCKWAVE VERSION 1.0.0 LANGUAGES C CXX)
+set(BLOCKWAVE_VERSION_TAG "rc1")
+if(BLOCKWAVE_VERSION_TAG STREQUAL "")
+    set(BLOCKWAVE_VERSION_STRING "${PROJECT_VERSION}")
+else()
+    set(BLOCKWAVE_VERSION_STRING "${PROJECT_VERSION}-${BLOCKWAVE_VERSION_TAG}")
+endif()
+message(STATUS "BLOCKWAVE version: ${BLOCKWAVE_VERSION_STRING} (numeric ${PROJECT_VERSION})")
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -42,6 +61,7 @@ endif()
 
 juce_add_plugin(${PROJECT_NAME}
     PRODUCT_NAME                "${BLOCKWAVE_PRODUCT_NAME}"
+    VERSION                     "${PROJECT_VERSION}"
     COMPANY_NAME                "Kirill Boyko"
     BUNDLE_ID                   "com.kirillboyko.blockwave"
     PLUGIN_MANUFACTURER_CODE    Krbk
@@ -98,7 +118,14 @@ target_compile_definitions(${PROJECT_NAME}
         JUCE_WEB_BROWSER=0
         JUCE_USE_CURL=0
         JUCE_VST3_CAN_REPLACE_VST2=0
+        BLOCKWAVE_VERSION_STRING="${BLOCKWAVE_VERSION_STRING}"
 )
+
+# Version stamp for the packaging scripts (scripts/package-macos.sh and the
+# Windows packaging step in .github/workflows/ci.yml read this file, so the zip
+# name can never drift from the built binaries).
+file(GENERATE OUTPUT "${CMAKE_BINARY_DIR}/blockwave-version.txt"
+     CONTENT "${BLOCKWAVE_VERSION_STRING}\n")
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
@@ -150,6 +177,7 @@ target_compile_definitions(blockwave_state_tests PRIVATE
     JUCE_WEB_BROWSER=0
     JUCE_USE_CURL=0
     JucePlugin_Name="BLOCKWAVE"
+    BLOCKWAVE_VERSION_STRING="${BLOCKWAVE_VERSION_STRING}"
     BLOCKWAVE_TEST_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests")
 target_link_libraries(blockwave_state_tests PRIVATE
     BlockwaveFactoryPresets
@@ -177,7 +205,8 @@ target_compile_definitions(blockwave_screenshots PRIVATE
     JUCE_WEB_BROWSER=0
     JUCE_USE_CURL=0
     JUCE_MODAL_LOOPS_PERMITTED=1
-    JucePlugin_Name="BLOCKWAVE")
+    JucePlugin_Name="BLOCKWAVE"
+    BLOCKWAVE_VERSION_STRING="${BLOCKWAVE_VERSION_STRING}")
 target_link_libraries(blockwave_screenshots PRIVATE
     BlockwaveFactoryPresets
     BlockwaveRecipeData

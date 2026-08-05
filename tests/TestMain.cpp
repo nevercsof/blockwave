@@ -71,6 +71,7 @@ static const std::string kTestDir = BLOCKWAVE_TEST_DIR;
 #include "FxTests.h"    // Phase-5 FX suite (uses kTestDir; same strict TU)
 #include "CraftTests.h" // Phase-4 CRAFT suite (pure CraftEngine)
 #include "UiAudioTests.h" // Phase-4 UI MIDI inbox + discovery jingle
+#include "RobustnessTests.h" // Phase-7 sample-rate/buffer/tempo/CPU sweeps
 
 // ---------------------------------------------------------------------------
 static void test_pitch_accuracy()
@@ -1103,6 +1104,9 @@ int main()
 
     // Phase-4 UI audio path (tests/UiAudioTests.h):
     uitests::runAll();
+
+    // Phase-7 robustness sweeps (tests/RobustnessTests.h):
+    robust::runAll();
 
     test_cpu_worst_case();
 

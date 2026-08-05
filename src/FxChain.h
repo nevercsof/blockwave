@@ -429,9 +429,21 @@ public:
         return 0.35f + 0.65f * s;
     }
 
+    // Input DC-blocker corner, expressed as its pole at 44.1 kHz. The pole of
+    // y[n] = x[n] - x[n-1] + R*y[n-1] must be re-derived per sample rate or the
+    // corner frequency rides the rate: the historical hard-coded R = 0.995 is
+    // ~35 Hz at 44.1 kHz but ~153 Hz at 192 kHz, which high-passes the reverb
+    // send itself and cost 1.5 dB of wet level at 192 kHz (Phase-7 finding F4).
+    // R = 1 - 2*pi*fc/sr is the standard first-order form; scaling (1 - R) by
+    // 44100/sr is the same expression with fc pinned to the 44.1 kHz corner,
+    // and it reproduces 0.995f bit-exactly at 44.1 kHz.
+    static constexpr double kDcPoleAt44k = 0.995;              // ~35.1 Hz
+
     void prepare (double sampleRate) noexcept
     {
         sr = sampleRate;
+        const double r = 1.0 - (1.0 - kDcPoleAt44k) * (44100.0 / sampleRate);
+        dcR = static_cast<float> (r < 0.0 ? 0.0 : (r > 0.9999 ? 0.9999 : r));
         lineCap = static_cast<int> (0.150 * sampleRate) + 4;   // >= 139.9 ms
         preCap  = static_cast<int> (0.060 * sampleRate) + 4;   // >= 50 ms
         for (int i = 0; i < kLines; ++i)
@@ -490,7 +502,7 @@ public:
                 x = hpIn.process (x, f.hpG);
             if (f.lpOn)
                 x = lpIn.process (x, f.lpG, f.lpMix);
-            const float hp = x - dcX + 0.995f * dcY;
+            const float hp = x - dcX + dcR * dcY;
             dcX = x;
             dcY = flushDenorm (hp);
             pre[static_cast<size_t> (preW)] = hp;
@@ -549,7 +561,8 @@ private:
     int preW = 0;
     float lp[kLines] {};                      // damping filter state
     float g[kLines] {};                       // per-line RT60 gain
-    float dcX = 0.0f, dcY = 0.0f;             // input DC blocker
+    float dcX = 0.0f, dcY = 0.0f;             // input DC blocker state
+    float dcR = static_cast<float> (kDcPoleAt44k);   // ... and its pole (prepare)
     OnePoleHp hpIn;                           // cave_hp (mono input)
     OnePoleLp lpIn;                           // cave_lp (mono input)
 };

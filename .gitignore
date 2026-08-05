@@ -2,6 +2,9 @@
 build/
 cmake-build-*/
 
+# Release packaging output (scripts/package-macos.sh)
+dist/
+
 # IDE / editor
 .vscode/
 .idea/
