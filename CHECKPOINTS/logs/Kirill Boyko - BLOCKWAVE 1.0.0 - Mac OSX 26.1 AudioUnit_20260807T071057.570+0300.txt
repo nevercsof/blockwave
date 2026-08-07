@@ -1,0 +1,1491 @@
+Random seed: 0x4ede077
+Validation started
+	7 Aug 2026 7:10:40am
+
+Strictness level: 10
+-----------------------------------------------------------------
+Starting tests in: pluginval / Scan for plugins located in: /Users/kirillboyko/Library/Audio/Plug-Ins/Components/BLOCKWAVE.component...
+Num plugins found: 1
+
+Testing plugin: AudioUnit-BLOCKWAVE-b8da5eee-686b6469
+Kirill Boyko: BLOCKWAVE v1.0.0
+Completed tests in pluginval / Scan for plugins located in: /Users/kirillboyko/Library/Audio/Plug-Ins/Components/BLOCKWAVE.component
+-----------------------------------------------------------------
+Starting tests in: pluginval / Open plugin (cold)...
+
+Time taken to open plugin (cold): 163 ms
+Completed tests in pluginval / Open plugin (cold)
+-----------------------------------------------------------------
+Starting tests in: pluginval / Open plugin (warm)...
+
+Time taken to open plugin (warm): 10 ms
+Running tests 1 times
+Completed tests in pluginval / Open plugin (warm)
+-----------------------------------------------------------------
+Starting tests in: pluginval / Plugin info...
+
+Plugin name: BLOCKWAVE
+Alternative names: BLOCKWAVE
+SupportsDoublePrecision: no
+Reported latency: 0
+Reported taillength: 0
+
+Time taken to run test: 0
+Completed tests in pluginval / Plugin info
+-----------------------------------------------------------------
+Starting tests in: pluginval / Plugin programs...
+Num programs: 1
+Program 0 name: Untitled
+All program names checked
+
+Changing program
+Changing program to: 0
+Changing program to: 0
+Changing program to: 0
+Changing program to: 0
+Changing program to: 0
+!!! WARNING: Current program is -1... Is this correct?
+
+Time taken to run test: 0
+Completed tests in pluginval / Plugin programs
+-----------------------------------------------------------------
+Starting tests in: pluginval / Editor...
+
+Time taken to open editor (cold): 227 ms
+Time taken to open editor (warm): 202 ms
+
+Time taken to run test: 446 ms
+Completed tests in pluginval / Editor
+-----------------------------------------------------------------
+Starting tests in: pluginval / Open editor whilst processing...
+
+Time taken to run test: 206 ms
+Completed tests in pluginval / Open editor whilst processing
+-----------------------------------------------------------------
+Starting tests in: pluginval / Audio processing...
+Testing with sample rate [44100] and block size [64]
+Testing with sample rate [44100] and block size [128]
+Testing with sample rate [44100] and block size [256]
+Testing with sample rate [44100] and block size [512]
+Testing with sample rate [44100] and block size [1024]
+Testing with sample rate [48000] and block size [64]
+Testing with sample rate [48000] and block size [128]
+Testing with sample rate [48000] and block size [256]
+Testing with sample rate [48000] and block size [512]
+Testing with sample rate [48000] and block size [1024]
+Testing with sample rate [96000] and block size [64]
+Testing with sample rate [96000] and block size [128]
+Testing with sample rate [96000] and block size [256]
+Testing with sample rate [96000] and block size [512]
+Testing with sample rate [96000] and block size [1024]
+
+Time taken to run test: 7 ms
+Completed tests in pluginval / Audio processing
+-----------------------------------------------------------------
+Starting tests in: pluginval / Non-releasing audio processing...
+Testing with sample rate [44100] and block size [64]
+Testing with sample rate [44100] and block size [128]
+Testing with sample rate [44100] and block size [256]
+Testing with sample rate [44100] and block size [512]
+Testing with sample rate [44100] and block size [1024]
+Testing with sample rate [48000] and block size [64]
+Testing with sample rate [48000] and block size [128]
+Testing with sample rate [48000] and block size [256]
+Testing with sample rate [48000] and block size [512]
+Testing with sample rate [48000] and block size [1024]
+Testing with sample rate [96000] and block size [64]
+Testing with sample rate [96000] and block size [128]
+Testing with sample rate [96000] and block size [256]
+Testing with sample rate [96000] and block size [512]
+Testing with sample rate [96000] and block size [1024]
+
+Time taken to run test: 6 ms
+Completed tests in pluginval / Non-releasing audio processing
+-----------------------------------------------------------------
+Starting tests in: pluginval / Plugin state...
+
+Time taken to run test: 0
+Completed tests in pluginval / Plugin state
+-----------------------------------------------------------------
+Starting tests in: pluginval / Plugin state restoration...
+
+Time taken to run test: 4 ms
+Completed tests in pluginval / Plugin state restoration
+-----------------------------------------------------------------
+Starting tests in: pluginval / Automation...
+Testing with sample rate [44100] and block size [64] and sub-block size [32]
+Testing with sample rate [44100] and block size [128] and sub-block size [32]
+Testing with sample rate [44100] and block size [256] and sub-block size [32]
+Testing with sample rate [44100] and block size [512] and sub-block size [32]
+Testing with sample rate [44100] and block size [1024] and sub-block size [32]
+Testing with sample rate [48000] and block size [64] and sub-block size [32]
+Testing with sample rate [48000] and block size [128] and sub-block size [32]
+Testing with sample rate [48000] and block size [256] and sub-block size [32]
+Testing with sample rate [48000] and block size [512] and sub-block size [32]
+Testing with sample rate [48000] and block size [1024] and sub-block size [32]
+Testing with sample rate [96000] and block size [64] and sub-block size [32]
+Testing with sample rate [96000] and block size [128] and sub-block size [32]
+Testing with sample rate [96000] and block size [256] and sub-block size [32]
+Testing with sample rate [96000] and block size [512] and sub-block size [32]
+Testing with sample rate [96000] and block size [1024] and sub-block size [32]
+
+Time taken to run test: 5 ms
+Completed tests in pluginval / Automation
+-----------------------------------------------------------------
+Starting tests in: pluginval / Editor Automation...
+
+Time taken to run test: 12 secs
+Completed tests in pluginval / Editor Automation
+-----------------------------------------------------------------
+Starting tests in: pluginval / Automatable Parameters...
+
+Testing parameter: 0 - raw
+Parameter info: index - 0, paramName - raw, defaultValue - 0, label - , numSteps - 2, isDiscrete - 1, isBoolean - 1, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - Off|On
+Testing accessors
+
+Testing parameter: 1 - cave_mix
+Parameter info: index - 1, paramName - cave_mix, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 2 - crush_hp
+Parameter info: index - 2, paramName - crush_hp, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 3 - crush_lp
+Parameter info: index - 3, paramName - crush_lp, defaultValue - 1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 4 - crush_mix
+Parameter info: index - 4, paramName - crush_mix, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 5 - sub_oct
+Parameter info: index - 5, paramName - sub_oct, defaultValue - 0, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - -1|-2
+Testing accessors
+
+Testing parameter: 6 - vel_amp
+Parameter info: index - 6, paramName - vel_amp, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 7 - cave_hp
+Parameter info: index - 7, paramName - cave_hp, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 8 - cave_lp
+Parameter info: index - 8, paramName - cave_lp, defaultValue - 1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 9 - poly_count
+Parameter info: index - 9, paramName - poly_count, defaultValue - 0.466667, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 10 - voice_mode
+Parameter info: index - 10, paramName - voice_mode, defaultValue - 0, label - , numSteps - 3, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - poly|mono|legato
+Testing accessors
+
+Testing parameter: 11 - lfo1_pwm
+Parameter info: index - 11, paramName - lfo1_pwm, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 12 - lfo2_amt
+Parameter info: index - 12, paramName - lfo2_amt, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 13 - lfo2_shape
+Parameter info: index - 13, paramName - lfo2_shape, defaultValue - 0.5, label - , numSteps - 3, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - square|tri|s&h
+Testing accessors
+
+Testing parameter: 14 - dly_fb
+Parameter info: index - 14, paramName - dly_fb, defaultValue - 0.388889, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 15 - dly_hp
+Parameter info: index - 15, paramName - dly_hp, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 16 - dly_lp
+Parameter info: index - 16, paramName - dly_lp, defaultValue - 1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 17 - env1_a
+Parameter info: index - 17, paramName - env1_a, defaultValue - 0.107183, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 18 - env1_d
+Parameter info: index - 18, paramName - env1_d, defaultValue - 0.325383, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 19 - env1_r
+Parameter info: index - 19, paramName - env1_r, defaultValue - 0.287996, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 20 - env1_s
+Parameter info: index - 20, paramName - env1_s, defaultValue - 0.8, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 21 - env2_a
+Parameter info: index - 21, paramName - env2_a, defaultValue - 0.107183, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 22 - env2_d
+Parameter info: index - 22, paramName - env2_d, defaultValue - 0.379471, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 23 - env2_r
+Parameter info: index - 23, paramName - env2_r, defaultValue - 0.308006, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 24 - env2_s
+Parameter info: index - 24, paramName - env2_s, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 25 - dly_pingpong
+Parameter info: index - 25, paramName - dly_pingpong, defaultValue - 1, label - , numSteps - 2, isDiscrete - 1, isBoolean - 1, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - Off|On
+Testing accessors
+
+Testing parameter: 26 - dly_time
+Parameter info: index - 26, paramName - dly_time, defaultValue - 0.4, label - , numSteps - 11, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 1/1|1/2D|1/2|1/4D|1/4|1/8D|1/8|1/16D|1/16|1/32D|1/32
+Testing accessors
+
+Testing parameter: 27 - lfo1_rate
+Parameter info: index - 27, paramName - lfo1_rate, defaultValue - 0.54016, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 28 - lfo1_sync
+Parameter info: index - 28, paramName - lfo1_sync, defaultValue - 1, label - , numSteps - 2, isDiscrete - 1, isBoolean - 1, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - Off|On
+Testing accessors
+
+Testing parameter: 29 - oscA_on
+Parameter info: index - 29, paramName - oscA_on, defaultValue - 1, label - , numSteps - 2, isDiscrete - 1, isBoolean - 1, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - Off|On
+Testing accessors
+
+Testing parameter: 30 - oscA_pw
+Parameter info: index - 30, paramName - oscA_pw, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 31 - oscB_on
+Parameter info: index - 31, paramName - oscB_on, defaultValue - 0, label - , numSteps - 2, isDiscrete - 1, isBoolean - 1, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - Off|On
+Testing accessors
+
+Testing parameter: 32 - oscB_pw
+Parameter info: index - 32, paramName - oscB_pw, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 33 - lfo2_dest
+Parameter info: index - 33, paramName - lfo2_dest, defaultValue - 0.333333, label - , numSteps - 4, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - pitch|cutoff|pw|vol
+Testing accessors
+
+Testing parameter: 34 - lfo2_rate
+Parameter info: index - 34, paramName - lfo2_rate, defaultValue - 0.426623, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 35 - lfo2_sync
+Parameter info: index - 35, paramName - lfo2_sync, defaultValue - 1, label - , numSteps - 2, isDiscrete - 1, isBoolean - 1, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - Off|On
+Testing accessors
+
+Testing parameter: 36 - uni_count
+Parameter info: index - 36, paramName - uni_count, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 37 - cave_damp
+Parameter info: index - 37, paramName - cave_damp, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 38 - cave_size
+Parameter info: index - 38, paramName - cave_size, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 39 - uni_detune
+Parameter info: index - 39, paramName - uni_detune, defaultValue - 0.15, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 40 - master_gain
+Parameter info: index - 40, paramName - master_gain, defaultValue - 0.909091, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 41 - oscA_level
+Parameter info: index - 41, paramName - oscA_level, defaultValue - 0.8, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 42 - sub_on
+Parameter info: index - 42, paramName - sub_on, defaultValue - 0, label - , numSteps - 2, isDiscrete - 1, isBoolean - 1, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - Off|On
+Testing accessors
+
+Testing parameter: 43 - filt_type
+Parameter info: index - 43, paramName - filt_type, defaultValue - 0, label - , numSteps - 4, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - LP24|LP12|BP|HP
+Testing accessors
+
+Testing parameter: 44 - noise_on
+Parameter info: index - 44, paramName - noise_on, defaultValue - 0, label - , numSteps - 2, isDiscrete - 1, isBoolean - 1, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - Off|On
+Testing accessors
+
+Testing parameter: 45 - glide_mode
+Parameter info: index - 45, paramName - glide_mode, defaultValue - 1, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - always|legato
+Testing accessors
+
+Testing parameter: 46 - glide_time
+Parameter info: index - 46, paramName - glide_time, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 47 - noise_mode
+Parameter info: index - 47, paramName - noise_mode, defaultValue - 0, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - long|short
+Testing accessors
+
+Testing parameter: 48 - filt_env
+Parameter info: index - 48, paramName - filt_env, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 49 - filt_res
+Parameter info: index - 49, paramName - filt_res, defaultValue - 0.1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 50 - filt_keytrack
+Parameter info: index - 50, paramName - filt_keytrack, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 51 - oscA_fine
+Parameter info: index - 51, paramName - oscA_fine, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 52 - oscA_semi
+Parameter info: index - 52, paramName - oscA_semi, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 53 - oscB_fine
+Parameter info: index - 53, paramName - oscB_fine, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 54 - oscB_semi
+Parameter info: index - 54, paramName - oscB_semi, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 55 - oscB_sync
+Parameter info: index - 55, paramName - oscB_sync, defaultValue - 0, label - , numSteps - 2, isDiscrete - 1, isBoolean - 1, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - Off|On
+Testing accessors
+
+Testing parameter: 56 - uni_spread
+Parameter info: index - 56, paramName - uni_spread, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 57 - noise_level
+Parameter info: index - 57, paramName - noise_level, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 58 - dly_mix
+Parameter info: index - 58, paramName - dly_mix, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 59 - crush_bits
+Parameter info: index - 59, paramName - crush_bits, defaultValue - 1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 60 - crush_down
+Parameter info: index - 60, paramName - crush_down, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 61 - filt_cutoff
+Parameter info: index - 61, paramName - filt_cutoff, defaultValue - 1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 62 - env2_pitch
+Parameter info: index - 62, paramName - env2_pitch, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 63 - oscA_oct
+Parameter info: index - 63, paramName - oscA_oct, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 64 - oscB_oct
+Parameter info: index - 64, paramName - oscB_oct, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 65 - sub_level
+Parameter info: index - 65, paramName - sub_level, defaultValue - 0.7, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 66 - oscB_level
+Parameter info: index - 66, paramName - oscB_level, defaultValue - 0.8, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Time taken to run test: 1 ms
+Completed tests in pluginval / Automatable Parameters
+-----------------------------------------------------------------
+Starting tests in: pluginval / Parameters...
+
+Testing parameter: 0 - raw
+Parameter info: index - 0, paramName - raw, defaultValue - 0, label - , numSteps - 2, isDiscrete - 1, isBoolean - 1, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - Off|On
+Testing accessors
+
+Testing parameter: 1 - cave_mix
+Parameter info: index - 1, paramName - cave_mix, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 2 - crush_hp
+Parameter info: index - 2, paramName - crush_hp, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 3 - crush_lp
+Parameter info: index - 3, paramName - crush_lp, defaultValue - 1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 4 - crush_mix
+Parameter info: index - 4, paramName - crush_mix, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 5 - sub_oct
+Parameter info: index - 5, paramName - sub_oct, defaultValue - 0, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - -1|-2
+Testing accessors
+
+Testing parameter: 6 - vel_amp
+Parameter info: index - 6, paramName - vel_amp, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 7 - cave_hp
+Parameter info: index - 7, paramName - cave_hp, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 8 - cave_lp
+Parameter info: index - 8, paramName - cave_lp, defaultValue - 1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 9 - poly_count
+Parameter info: index - 9, paramName - poly_count, defaultValue - 0.466667, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 10 - voice_mode
+Parameter info: index - 10, paramName - voice_mode, defaultValue - 0, label - , numSteps - 3, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - poly|mono|legato
+Testing accessors
+
+Testing parameter: 11 - lfo1_pwm
+Parameter info: index - 11, paramName - lfo1_pwm, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 12 - lfo2_amt
+Parameter info: index - 12, paramName - lfo2_amt, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 13 - lfo2_shape
+Parameter info: index - 13, paramName - lfo2_shape, defaultValue - 0.5, label - , numSteps - 3, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - square|tri|s&h
+Testing accessors
+
+Testing parameter: 14 - dly_fb
+Parameter info: index - 14, paramName - dly_fb, defaultValue - 0.388889, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 15 - dly_hp
+Parameter info: index - 15, paramName - dly_hp, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 16 - dly_lp
+Parameter info: index - 16, paramName - dly_lp, defaultValue - 1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 17 - env1_a
+Parameter info: index - 17, paramName - env1_a, defaultValue - 0.107183, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 18 - env1_d
+Parameter info: index - 18, paramName - env1_d, defaultValue - 0.325383, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 19 - env1_r
+Parameter info: index - 19, paramName - env1_r, defaultValue - 0.287996, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 20 - env1_s
+Parameter info: index - 20, paramName - env1_s, defaultValue - 0.8, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 21 - env2_a
+Parameter info: index - 21, paramName - env2_a, defaultValue - 0.107183, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 22 - env2_d
+Parameter info: index - 22, paramName - env2_d, defaultValue - 0.379471, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 23 - env2_r
+Parameter info: index - 23, paramName - env2_r, defaultValue - 0.308006, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 24 - env2_s
+Parameter info: index - 24, paramName - env2_s, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 25 - dly_pingpong
+Parameter info: index - 25, paramName - dly_pingpong, defaultValue - 1, label - , numSteps - 2, isDiscrete - 1, isBoolean - 1, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - Off|On
+Testing accessors
+
+Testing parameter: 26 - dly_time
+Parameter info: index - 26, paramName - dly_time, defaultValue - 0.4, label - , numSteps - 11, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 1/1|1/2D|1/2|1/4D|1/4|1/8D|1/8|1/16D|1/16|1/32D|1/32
+Testing accessors
+
+Testing parameter: 27 - lfo1_rate
+Parameter info: index - 27, paramName - lfo1_rate, defaultValue - 0.54016, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 28 - lfo1_sync
+Parameter info: index - 28, paramName - lfo1_sync, defaultValue - 1, label - , numSteps - 2, isDiscrete - 1, isBoolean - 1, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - Off|On
+Testing accessors
+
+Testing parameter: 29 - oscA_on
+Parameter info: index - 29, paramName - oscA_on, defaultValue - 1, label - , numSteps - 2, isDiscrete - 1, isBoolean - 1, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - Off|On
+Testing accessors
+
+Testing parameter: 30 - oscA_pw
+Parameter info: index - 30, paramName - oscA_pw, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 31 - oscB_on
+Parameter info: index - 31, paramName - oscB_on, defaultValue - 0, label - , numSteps - 2, isDiscrete - 1, isBoolean - 1, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - Off|On
+Testing accessors
+
+Testing parameter: 32 - oscB_pw
+Parameter info: index - 32, paramName - oscB_pw, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 33 - lfo2_dest
+Parameter info: index - 33, paramName - lfo2_dest, defaultValue - 0.333333, label - , numSteps - 4, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - pitch|cutoff|pw|vol
+Testing accessors
+
+Testing parameter: 34 - lfo2_rate
+Parameter info: index - 34, paramName - lfo2_rate, defaultValue - 0.426623, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 35 - lfo2_sync
+Parameter info: index - 35, paramName - lfo2_sync, defaultValue - 1, label - , numSteps - 2, isDiscrete - 1, isBoolean - 1, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - Off|On
+Testing accessors
+
+Testing parameter: 36 - uni_count
+Parameter info: index - 36, paramName - uni_count, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 37 - cave_damp
+Parameter info: index - 37, paramName - cave_damp, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 38 - cave_size
+Parameter info: index - 38, paramName - cave_size, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 39 - uni_detune
+Parameter info: index - 39, paramName - uni_detune, defaultValue - 0.15, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 40 - master_gain
+Parameter info: index - 40, paramName - master_gain, defaultValue - 0.909091, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 41 - oscA_level
+Parameter info: index - 41, paramName - oscA_level, defaultValue - 0.8, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 42 - sub_on
+Parameter info: index - 42, paramName - sub_on, defaultValue - 0, label - , numSteps - 2, isDiscrete - 1, isBoolean - 1, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - Off|On
+Testing accessors
+
+Testing parameter: 43 - filt_type
+Parameter info: index - 43, paramName - filt_type, defaultValue - 0, label - , numSteps - 4, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - LP24|LP12|BP|HP
+Testing accessors
+
+Testing parameter: 44 - noise_on
+Parameter info: index - 44, paramName - noise_on, defaultValue - 0, label - , numSteps - 2, isDiscrete - 1, isBoolean - 1, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - Off|On
+Testing accessors
+
+Testing parameter: 45 - glide_mode
+Parameter info: index - 45, paramName - glide_mode, defaultValue - 1, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - always|legato
+Testing accessors
+
+Testing parameter: 46 - glide_time
+Parameter info: index - 46, paramName - glide_time, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 47 - noise_mode
+Parameter info: index - 47, paramName - noise_mode, defaultValue - 0, label - , numSteps - 2, isDiscrete - 1, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - long|short
+Testing accessors
+
+Testing parameter: 48 - filt_env
+Parameter info: index - 48, paramName - filt_env, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 49 - filt_res
+Parameter info: index - 49, paramName - filt_res, defaultValue - 0.1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 50 - filt_keytrack
+Parameter info: index - 50, paramName - filt_keytrack, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 51 - oscA_fine
+Parameter info: index - 51, paramName - oscA_fine, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 52 - oscA_semi
+Parameter info: index - 52, paramName - oscA_semi, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 53 - oscB_fine
+Parameter info: index - 53, paramName - oscB_fine, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 54 - oscB_semi
+Parameter info: index - 54, paramName - oscB_semi, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 55 - oscB_sync
+Parameter info: index - 55, paramName - oscB_sync, defaultValue - 0, label - , numSteps - 2, isDiscrete - 1, isBoolean - 1, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - Off|On
+Testing accessors
+
+Testing parameter: 56 - uni_spread
+Parameter info: index - 56, paramName - uni_spread, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 57 - noise_level
+Parameter info: index - 57, paramName - noise_level, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 58 - dly_mix
+Parameter info: index - 58, paramName - dly_mix, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 59 - crush_bits
+Parameter info: index - 59, paramName - crush_bits, defaultValue - 1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 60 - crush_down
+Parameter info: index - 60, paramName - crush_down, defaultValue - 0, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 61 - filt_cutoff
+Parameter info: index - 61, paramName - filt_cutoff, defaultValue - 1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 62 - env2_pitch
+Parameter info: index - 62, paramName - env2_pitch, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 63 - oscA_oct
+Parameter info: index - 63, paramName - oscA_oct, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 64 - oscB_oct
+Parameter info: index - 64, paramName - oscB_oct, defaultValue - 0.5, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 65 - sub_level
+Parameter info: index - 65, paramName - sub_level, defaultValue - 0.7, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Testing parameter: 66 - oscB_level
+Parameter info: index - 66, paramName - oscB_level, defaultValue - 0.8, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
+Testing accessors
+
+Time taken to run test: 0
+Completed tests in pluginval / Parameters
+-----------------------------------------------------------------
+Starting tests in: pluginval / Background thread state...
+
+Time taken to run test: 2 secs
+Completed tests in pluginval / Background thread state
+-----------------------------------------------------------------
+Starting tests in: pluginval / Parameter thread safety...
+
+Time taken to run test: 40 ms
+Completed tests in pluginval / Parameter thread safety
+-----------------------------------------------------------------
+Starting tests in: pluginval / auval...
+
+    AU Validation Tool
+    Version: 1.10.0 
+    Copyright 2003-2019, Apple Inc. All Rights Reserved.
+    Specify -h (-help) for command options
+
+--------------------------------------------------
+VALIDATING AUDIO UNIT: 'aumu' - 'Blkw' - 'Krbk'
+--------------------------------------------------
+Manufacturer String: Kirill Boyko
+AudioUnit Name: BLOCKWAVE
+Component Version: 1.0.0 (0x10000)
+
+* * PASS
+--------------------------------------------------
+TESTING OPEN TIMES:
+COLD:
+Time to open AudioUnit:         13.700 ms
+WARM:
+Time to open AudioUnit:         8.970  ms
+This AudioUnit is a version 2 implementation.
+FIRST TIME:
+Time for initialization:        0.090 ms
+
+* * PASS
+--------------------------------------------------
+VERIFYING DEFAULT SCOPE FORMATS:
+Input Scope Bus Configuration:
+ Default Bus Count:0
+
+Output Scope Bus Configuration:
+ Default Bus Count:1
+    Bus Name: Output
+    Default Format: AudioStreamBasicDescription:  2 ch,  44100 Hz, Float32, deinterleaved
+    Has Channel Layouts: 0x640001 0x650002 0x660002 0x670002 0x6A0002 
+    Default Layout:
+	Tag=0x650002, Num Chan Descs=0
+
+* * PASS
+--------------------------------------------------
+VERIFYING REQUIRED PROPERTIES:
+
+* * PASS
+--------------------------------------------------
+VERIFYING RECOMMENDED PROPERTIES:
+  VERIFYING PROPERTY: Latency
+    PASS
+
+* * PASS
+--------------------------------------------------
+VERIFYING OPTIONAL PROPERTIES:
+  VERIFYING PROPERTY: Tail Time
+    PASS
+  VERIFYING PROPERTY: Bypass Effect
+    PASS
+
+* * PASS
+--------------------------------------------------
+VERIFYING SPECIAL PROPERTIES:
+
+VERIFYING CUSTOM UI
+Cocoa Views Available: 1
+  JUCE_AUCocoaViewClass_df887614c6bc775a
+    PASS
+
+HAS FACTORY PRESETS
+    ID:   0    Name: Untitled
+
+VERIFYING CLASS INFO
+    PASS
+
+TESTING HOST CALLBACKS
+    PASS
+
+* * PASS
+--------------------------------------------------
+PUBLISHED PARAMETER INFO:
+
+# # # 67 Global Scope Parameters:
+Parameter ID:112680
+Name: raw
+Parameter Type: Boolean
+Values: Minimum = Off, Default = Off, Maximum = On
+Flags: Values 
+Have Strings, High Resolution, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:107528874
+Name: cave_mix
+Parameter Type: Generic
+Values: Minimum = 0.0000000, Default = 0.0000000, Maximum = 1.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:147260684
+Name: crush_hp
+Parameter Type: Generic
+Values: Minimum = 20.0000000, Default = 20.0000000, Maximum = 2000.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:147260808
+Name: crush_lp
+Parameter Type: Generic
+Values: Minimum = 200.0000000, Default = 20000.0000000, Maximum = 20000.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:270118616
+Name: crush_mix
+Parameter Type: Generic
+Values: Minimum = 0.0000000, Default = 0.0000000, Maximum = 1.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:279280289
+Name: sub_oct
+Parameter Type: Indexed
+Values: Minimum = -1, Default = -1, Maximum = -2
+Flags: Values Have Strings, High Resolution, Readable, Writable 
+Parameter has Value Strings
+Num Strings = 2
+Value: 0,  String: -1
+Value: 1,  String: -2
+  -parameter PASS
+
+Parameter ID:345463330
+Name: vel_amp
+Parameter Type: Generic
+Values: Minimum = 0.0000000, Default = 0.5000000, Maximum = 1.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:557657850
+Name: cave_hp
+Parameter Type: Generic
+Values: Minimum = 20.0000000, Default = 20.0000000, Maximum = 2000.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:557657974
+Name: cave_lp
+Parameter Type: Generic
+Values: Minimum = 200.0000000, Default = 20000.0000000, Maximum = 20000.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:627196636
+Name: poly_count
+Parameter Type: Generic
+Values: Minimum = 1, D
+efault = 8, Maximum = 16
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:632422544
+Name: voice_mode
+Parameter Type: Indexed
+Values: Minimum = poly, Default = poly, Maximum = legato
+Flags: Values Have Strings, High Resolution, Readable, Writable 
+Parameter has Value Strings
+Num Strings = 3
+Value: 0,  String: poly
+Value: 1,  String: mono
+Value: 2,  String: legato
+  -parameter PASS
+
+Parameter ID:654563619
+Name: lfo1_pwm
+Parameter Type: Generic
+Values: Minimum = 0.0000000, Default = 0.0000000, Maximum = 1.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:655472422
+Name: lfo2_amt
+Parameter Type: Generic
+Values: Minimum = -1.0000000, Default = 0.0000000, Maximum = 1.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:712748415
+Name: lfo2_shape
+Parameter Type: Indexed
+Values: Minimum = square, Default = tri, Maximum = s&h
+Flags: Values Have Strings, High Resolution, Readable, Writable 
+Parameter has Value Strings
+Num Strings = 3
+Value: 0,  String: square
+Value: 1,  String: tri
+Value: 2,  String: s&h
+  -parameter PASS
+
+Parameter ID:818870986
+Name: dly_fb
+Parameter Type: Generic
+Values: Minimum = 0.0000000, Default = 0.3500000, Maximum = 0.9000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:818871062
+Name: dly_hp
+Parameter Type: Generic
+Values: Minimum = 20.0000000, Default = 20.0000000, Maximum = 2000.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:818871186
+Name: dly_lp
+Parameter Type: Generic
+Values: Minimum = 200.0000000, Default = 20000.0000000, Maximum = 20000.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:849213382
+Name: env1_a
+Parameter Type: Generic
+Values: Minimum = 0.0000000, Default = 0.0030000, Maximum = 5.0000000
+Flags: Values Hav
+e Strings, High Resolution, Can Ramp, Readable, Writable 
+WARNING: retrievedValue = 0.107183 (was 0.107183), Parameter did not retain default value when set
+  -parameter PASS
+
+Parameter ID:849213385
+Name: env1_d
+Parameter Type: Generic
+Values: Minimum = 0.0000000, Default = 0.1200000, Maximum = 5.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:849213399
+Name: env1_r
+Parameter Type: Generic
+Values: Minimum = 0.0000000, Default = 0.0800000, Maximum = 5.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:849213400
+Name: env1_s
+Parameter Type: Generic
+Values: Minimum = 0.0000000, Default = 0.8000000, Maximum = 1.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:849214343
+Name: env2_a
+Parameter Type: Generic
+Values: Minimum = 0.0000000, Default = 0.0030000, Maximum = 5.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+WARNING: retrievedValue = 0.107183 (was 0.107183), Parameter did not retain default value when set
+  -parameter PASS
+
+Parameter ID:849214346
+Name: env2_d
+Parameter Type: Generic
+Values: Minimum = 0.0000000, Default = 0.2000000, Maximum = 5.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:849214360
+Name: env2_r
+Parameter Type: Generic
+Values: Minimum = 0.0000000, Default = 0.1000000, Maximum = 5.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+WARNING: retrievedValue = 0.308006 (was 0.308006), Parameter did not retain default value when set
+  -parameter PASS
+
+Parameter ID:849214361
+Name: env2_s
+Parameter Type: Generic
+Values: Minimum = 0.0000000, Default = 0.0000000, Maximum = 1.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:880983032
+Name: dly_pingpong
+Parameter Type: Boolean
+Values: Minimum = Off, Default = On, Max
+imum = On
+Flags: Values Have Strings, High Resolution, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:956429659
+Name: dly_time
+Parameter Type: Indexed
+Values: Minimum = 1/1, Default = 1/4, Maximum = 1/32
+Flags: Values Have Strings, High Resolution, Readable, Writable 
+Parameter has Value Strings
+Num Strings = 11
+Value: 0,  String: 1/1
+Value: 1,  String: 1/2D
+Value: 2,  String: 1/2
+Value: 3,  String: 1/4D
+Value: 4,  String: 1/4
+Value: 5,  String: 1/8D
+Value: 6,  String: 1/8
+Value: 7,  String: 1/16D
+Value: 8,  String: 1/16
+Value: 9,  String: 1/32D
+Value: 10,  String: 1/32
+  -parameter PASS
+
+Parameter ID:964158115
+Name: lfo1_rate
+Parameter Type: Generic
+Values: Minimum = 0.0100000, Default = 1.0000001, Maximum = 40.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:964210782
+Name: lfo1_sync
+Parameter Type: Boolean
+Values: Minimum = Off, Default = On, Maximum = On
+Flags: Values Have Strings, High Resolution, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:966989340
+Name: oscA_on
+Parameter Type: Boolean
+Values: Minimum = Off, Default = On, Maximum = On
+Flags: Values Have Strings, High Resolution, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:966989380
+Name: oscA_pw
+Parameter Type: Generic
+Values: Minimum = 1.0000000, Default = 50.0000000, Maximum = 99.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:967019131
+Name: oscB_on
+Parameter Type: Boolean
+Values: Minimum = Off, Default = Off, Maximum = On
+Flags: Values Have Strings, High Resolution, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:967019171
+Name: oscB_pw
+Parameter Type: Generic
+Values: Minimum = 1.0000000, Default = 50.0000000, Maximum = 99.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:992374020
+Name: lfo2_dest
+Parameter Type: Indexed
+Values: Minimum = pitch, Default = cutoff, Maximum = vol
+Flags: Values Have Strings, High Resolution, Readable, Wr
+itable 
+Parameter has Value Strings
+Num Strings = 4
+Value: 0,  String: pitch
+Value: 1,  String: cutoff
+Value: 2,  String: pw
+Value: 3,  String: vol
+  -parameter PASS
+
+Parameter ID:992787266
+Name: lfo2_rate
+Parameter Type: Generic
+Values: Minimum = 0.0100000, Default = 0.2500000, Maximum = 40.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:992839933
+Name: lfo2_sync
+Parameter Type: Boolean
+Values: Minimum = Off, Default = On, Maximum = On
+Flags: Values Have Strings, High Resolution, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:1077544192
+Name: uni_count
+Parameter Type: Generic
+Values: Minimum = 1, Default = 1, Maximum = 8
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:1185635410
+Name: cave_damp
+Parameter Type: Generic
+Values: Minimum = 0.0000000, Default = 0.5000000, Maximum = 1.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:1186090355
+Name: cave_size
+Parameter Type: Generic
+Values: Minimum = 0.0000000, Default = 0.5000000, Maximum = 1.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:1210986024
+Name: uni_detune
+Parameter Type: Generic
+Values: Minimum = 0.0000000, Default = 15.0000010, Maximum = 100.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:1220740924
+Name: master_gain
+Parameter Type: Generic
+Values: Minimum = -60.0000000, Default = 0.0000018, Maximum = 6.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:1230851623
+Name: oscA_level
+Parameter Type: Generic
+Values: Minimum = 0.0000000, Default = 0.8000000, Maximum = 1.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:1255935038
+Name: sub_on
+Parameter Type: Boolean
+Values: Minimum = Off, Default = Off, Maxi
+mum = On
+Flags: Values Have Strings, High Resolution, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:1260654958
+Name: filt_type
+Parameter Type: Indexed
+Values: Minimum = LP24, Default = LP24, Maximum = HP
+Flags: Values Have Strings, High Resolution, Readable, Writable 
+Parameter has Value Strings
+Num Strings = 4
+Value: 0,  String: LP24
+Value: 1,  String: LP12
+Value: 2,  String: BP
+Value: 3,  String: HP
+  -parameter PASS
+
+Parameter ID:1279638820
+Name: noise_on
+Parameter Type: Boolean
+Values: Minimum = Off, Default = Off, Maximum = On
+Flags: Values Have Strings, High Resolution, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:1300057597
+Name: glide_mode
+Parameter Type: Indexed
+Values: Minimum = always, Default = legato, Maximum = legato
+Flags: Values Have Strings, High Resolution, Readable, Writable 
+Parameter has Value Strings
+Num Strings = 2
+Value: 0,  String: always
+Value: 1,  String: legato
+  -parameter PASS
+
+Parameter ID:1300260647
+Name: glide_time
+Parameter Type: Generic
+Values: Minimum = 0.0000000, Default = 0.0000000, Maximum = 2.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:1372203944
+Name: noise_mode
+Parameter Type: Indexed
+Values: Minimum = long, Default = long, Maximum = short
+Flags: Values Have Strings, High Resolution, Readable, Writable 
+Parameter has Value Strings
+Num Strings = 2
+Value: 0,  String: long
+Value: 1,  String: short
+  -parameter PASS
+
+Parameter ID:1426124857
+Name: filt_env
+Parameter Type: Generic
+Values: Minimum = -1.0000000, Default = 0.0000000, Maximum = 1.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:1426137068
+Name: filt_res
+Parameter Type: Generic
+Values: Minimum = 0.0000000, Default = 0.1000000, Maximum = 1.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:1446952576
+Name: filt_keytrack
+Parameter Type: Generic
+Values: Minimum = 0.0000000, Default = 0.0000000, Maximum = 1.00
+00000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:1563550391
+Name: oscA_fine
+Parameter Type: Generic
+Values: Minimum = -100.0000000, Default = 0.0000000, Maximum = 100.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:1563933803
+Name: oscA_semi
+Parameter Type: Generic
+Values: Minimum = -12, Default = 0, Maximum = 12
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:1592179542
+Name: oscB_fine
+Parameter Type: Generic
+Values: Minimum = -100.0000000, Default = 0.0000000, Maximum = 100.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:1592562954
+Name: oscB_semi
+Parameter Type: Generic
+Values: Minimum = -12, Default = 0, Maximum = 12
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:1592582199
+Name: oscB_sync
+Parameter Type: Boolean
+Values: Minimum = Off, Default = Off, Maximum = On
+Flags: Values Have Strings, High Resolution, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:1650506658
+Name: uni_spread
+Parameter Type: Generic
+Values: Minimum = 0.0000000, Default = 0.5000000, Maximum = 1.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:1734928927
+Name: noise_level
+Parameter Type: Generic
+Values: Minimum = 0.0000000, Default = 0.5000000, Maximum = 1.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:1762687502
+Name: dly_mix
+Parameter Type: Generic
+Values: Minimum = 0.0000000, Default = 0.0000000, Maximum = 1.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:1930898442
+Name: crush_bits
+Parameter Type: Generic
+Values: Minimum = 1, Default = 16, Maximum = 16
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writab
+le 
+  -parameter PASS
+
+Parameter ID:1930963878
+Name: crush_down
+Parameter Type: Generic
+Values: Minimum = 1, Default = 1, Maximum = 64
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:1965863201
+Name: filt_cutoff
+Parameter Type: Generic
+Values: Minimum = 20.0000000, Default = 20000.0000000, Maximum = 20000.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:1973140326
+Name: env2_pitch
+Parameter Type: Generic
+Values: Minimum = -48.0000000, Default = 0.0000000, Maximum = 48.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:2059381891
+Name: oscA_oct
+Parameter Type: Generic
+Values: Minimum = -2, Default = 0, Maximum = 2
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:2060305412
+Name: oscB_oct
+Parameter Type: Generic
+Values: Minimum = -2, Default = 0, Maximum = 2
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:2097679557
+Name: sub_level
+Parameter Type: Generic
+Values: Minimum = 0.0000000, Default = 0.7000000, Maximum = 1.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Parameter ID:2118355304
+Name: oscB_level
+Parameter Type: Generic
+Values: Minimum = 0.0000000, Default = 0.8000000, Maximum = 1.0000000
+Flags: Values Have Strings, High Resolution, Can Ramp, Readable, Writable 
+  -parameter PASS
+
+Testing that parameters retain value across reset and initialization
+  PASS
+
+* * PASS
+--------------------------------------------------
+FORMAT TESTS:
+
+Reported Channel Capabilities (explicit):
+      [0, 1]  [0, 2]  
+
+No Input, Output Chans:
+0-1   0-2   0-4   0-5   0-6   0-7   0-8
+X     X                                   
+
+# # AudioChannelLayouts (5), Output Scope:
+ChannelLayout is Writable: T
+The Unit publishes the following Channel Layouts:
+  0x640001, 0x650002, 0x660002, 0x6
+70002, 0x6A0002, 
+
+Is Audio Channel Layout Available:
+Mono    Stereo  Binau.  AU_4    Ambi.   AU_5    AU_5_0  AU_6    AU_6_0  AU_7_0  AU_7_0F AU_8    AU_5_1  AU_6_1  AU_7_1  AU_7_1F 
+X       X       X                                                                                                               
+
+Current Format:AudioStreamBasicDescription:  2 ch,  44100 Hz, Float32, deinterleaved
+Current Format Tag = 0x650002, New Format Tag = 0x640001, Success - did not reset format with mis-matched layout
+
+Current Format:AudioStreamBasicDescription:  2 ch,  44100 Hz, Float32, deinterleaved
+Current Format Tag = 0x650002, New Format Tag = 0x650002, Successsful
+
+Current Format:AudioStreamBasicDescription:  2 ch,  44100 Hz, Float32, deinterleaved
+Current Format Tag = 0x650002, New Format Tag = 0x6A0002, Successsful
+
+* * PASS
+--------------------------------------------------
+RENDER TESTS:
+
+Output Format: AudioStreamBasicDescription:  2 ch,  44100 Hz, Float32, deinterleaved
+Render Test at 512 frames
+Slicing Render Test at 64 frames
+  PASS
+
+
+Render Test at 64 frames, sample rate: 22050 Hz
+Render Test at 137 frames, sample rate: 96000 Hz
+Render Test at 4096 frames, sample rate: 48000 Hz
+Render Test at 4096 frames, sample rate: 192000 Hz
+Render Test at 4096 frames, sample rate: 11025 Hz
+Render Test at 512 frames, sample rate: 44100 Hz
+  PASS
+
+1 Channel Test:
+Render Test at 512 frames
+  PASS
+
+Bad Max Frames - Render should fail
+  PASS
+
+Checking parameter setting
+Using AudioUnitSetParameter
+Using AudioUnitScheduleParameter
+  PASS
+
+Checking ramped parameter scheduling
+  PASS
+
+Test MIDI
+  PASS
+
+Stress Test
+Render for 20 seconds of audio at frame size: 512, sample rate: 44100 Hz
+  PASS
+
+* * PASS
+--------------------------------------------------
+AU VALIDATION SUCCEEDED.
+--------------------------------------------------
+
+auval exited with code: 0
+
+Time taken to run test: 376 ms
+Completed tests in pluginval / auval
+-----------------------------------------------------------------
+Starting tests in: pluginval / vst3 validator...
+
+Time taken to run test: 0
+Completed tests in pluginval / vst3 validator
+-----------------------------------------------------------------
+Starting tests in: pluginval / Basic bus...
+Completed tests in pluginval / Basic bus
+-----------------------------------------------------------------
+Starting tests in: pluginval / Listing available buses...
+Inputs:
+	Named layouts: None
+	Discrete layouts: None
+Outputs:
+	Named layouts: Mono, Stereo
+	Discrete layouts: None
+Main bus num input channels: 0
+Main bus num output channels: 2
+Completed tests in pluginval / Listing available buses
+-----------------------------------------------------------------
+Starting tests in: pluginval / Enabling all buses...
+Completed tests in pluginval / Enabling all buses
+-----------------------------------------------------------------
+Starting tests in: pluginval / Disabling non-main busses...
+Completed tests in pluginval / Disabling non-main busses
+-----------------------------------------------------------------
+Starting tests in: pluginval / Restoring default layout...
+Main bus num input channels: 0
+Main bus num output channels: 2
+
+Time taken to run test: 1 ms
+Completed tests in pluginval / Restoring default layout
+-----------------------------------------------------------------
+Starting tests in: pluginval / Fuzz parameters...
+Fuzz testing parameter: 0 - raw
+Fuzz testing parameter: 1 - cave_mix
+Fuzz testing parameter: 2 - crush_hp
+Fuzz testing parameter: 3 - crush_lp
+Fuzz testing parameter: 4 - crush_mix
+Fuzz testing parameter: 5 - sub_oct
+Fuzz testing parameter: 6 - vel_amp
+Fuzz testing parameter: 7 - cave_hp
+Fuzz testing parameter: 8 - cave_lp
+Fuzz testing parameter: 9 - poly_count
+Fuzz testing parameter: 10 - voice_mode
+Fuzz testing parameter: 11 - lfo1_pwm
+Fuzz testing parameter: 12 - lfo2_amt
+Fuzz testing parameter: 13 - lfo2_shape
+Fuzz testing parameter: 14 - dly_fb
+Fuzz testing parameter: 15 - dly_hp
+Fuzz testing parameter: 16 - dly_lp
+Fuzz testing parameter: 17 - env1_a
+Fuzz testing parameter: 18 - env1_d
+Fuzz testing parameter: 19 - env1_r
+Fuzz testing parameter: 20 - env1_s
+Fuzz testing parameter: 21 - env2_a
+Fuzz testing parameter: 22 - env2_d
+Fuzz testing parameter: 23 - env2_r
+Fuzz testing parameter: 24 - env2_s
+Fuzz testing parameter: 25 - dly_pingpong
+Fuzz testing parameter: 26 - dly_time
+Fuzz testing parameter: 27 - lfo1_rate
+Fuzz testing parameter: 28 - lfo1_sync
+Fuzz testing parameter: 29 - oscA_on
+Fuzz testing parameter: 30 - oscA_pw
+Fuzz testing parameter: 31 - oscB_on
+Fuzz testing parameter: 32 - oscB_pw
+Fuzz testing parameter: 33 - lfo2_dest
+Fuzz testing parameter: 34 - lfo2_rate
+Fuzz testing parameter: 35 - lfo2_sync
+Fuzz testing parameter: 36 - uni_count
+Fuzz testing parameter: 37 - cave_damp
+Fuzz testing parameter: 38 - cave_size
+Fuzz testing parameter: 39 - uni_detune
+Fuzz testing parameter: 40 - master_gain
+Fuzz testing parameter: 41 - oscA_level
+Fuzz testing parameter: 42 - sub_on
+Fuzz testing parameter: 43 - filt_type
+Fuzz testing parameter: 44 - noise_on
+Fuzz testing parameter: 45 - glide_mode
+Fuzz testing parameter: 46 - glide_time
+Fuzz testing parameter: 47 - noise_mode
+Fuzz testing parameter: 48 - filt_env
+Fuzz testing parameter: 49 - filt_res
+Fuzz testing parameter: 50 - filt_keytrack
+Fuzz testing parameter: 51 - oscA_fine
+Fuzz testing parameter: 52 - oscA_semi
+Fuzz testing parameter: 53 - oscB_fine
+Fuzz testing parameter: 54 - oscB_semi
+Fuzz testing parameter: 55 - oscB_sync
+Fuzz testing parameter: 56 - uni_spread
+Fuzz testing parameter: 57 - noise_level
+Fuzz testing parameter: 58 - dly_mix
+Fuzz testing parameter: 59 - crush_bits
+Fuzz testing parameter: 60 - crush_down
+Fuzz testing parameter: 61 - filt_cutoff
+Fuzz testing parameter: 62 - env2_pitch
+Fuzz testing parameter: 63 - oscA_oct
+Fuzz testing parameter: 64 - oscB_oct
+Fuzz testing parameter: 65 - sub_level
+Fuzz testing parameter: 66 - oscB_level
+
+Time taken to run test: 0
+
+Time taken to run all tests: 16 secs
+Completed tests in pluginval / Fuzz parameters
+SUCCESS

@@ -604,12 +604,25 @@ int weightDimLevel (float weight01) noexcept
     // clearly visible without being alarming, and 0 % is obviously "off" while
     // the material is still recognisable (you must be able to see WHAT you
     // muted). Thresholds, not a formula: they line up with the round 5 %
-    // values the mix rail snaps to.
+    // values the mix control snaps to.
     if (weight01 >= 0.90f) return 0;
     if (weight01 >= 0.70f) return 1;
     if (weight01 >= 0.50f) return 2;
     if (weight01 >= 0.25f) return 3;
     return 4;
+}
+
+// How far each dim level pushes the sprite palette toward night. One table,
+// shared by the sprite renderer and materialKeyColour(), so the MIX label can
+// never disagree with the block it is drawn on.
+static constexpr float kWeightDimBlend[kWeightDimLevels] =
+    { 0.0f, 0.20f, 0.40f, 0.58f, 0.74f };
+
+juce::Colour materialKeyColour (Material m, int dimLevel) noexcept
+{
+    const int lv = juce::jlimit (0, kWeightDimLevels - 1, dimLevel);
+    return materialKeyColour (m).interpolatedWith (colours::night,
+                                                   kWeightDimBlend[lv]);
 }
 
 juce::Image makeMaterialImage (Material m, int scale, int dimLevel)
@@ -620,8 +633,7 @@ juce::Image makeMaterialImage (Material m, int scale, int dimLevel)
     if (lv == 0)
         return makeMaterialImage (m, scale);
 
-    static constexpr float kBlend[kWeightDimLevels] =
-        { 0.0f, 0.20f, 0.40f, 0.58f, 0.74f };
+    const auto& kBlend = kWeightDimBlend;
 
     const int i = materialIndex (m);
     juce::uint32 dimmed[5] = {};
@@ -694,7 +706,7 @@ const juce::Image& BlockImageCache::material (Material m, int scale)
 const juce::Image& BlockImageCache::material (Material m, int scale, int dimLevel)
 {
     // Key: material | scale | dim level. Dimmed variants are cached like every
-    // other sprite, so dragging a mix rail never re-rasterises 256 fillRects
+    // other sprite, so dragging a mix knob never re-rasterises 256 fillRects
     // per frame — it just picks a different pre-built image.
     const int lv = juce::jlimit (0, kWeightDimLevels - 1, dimLevel);
     const int key = 0x10000 + static_cast<int> (m) * 512 + scale * 8 + lv;

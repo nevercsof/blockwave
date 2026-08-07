@@ -42,6 +42,31 @@ namespace
         g.fillRect (x + 1, y + 2, 8, 1);             // lid highlight
     }
 
+    // 7x7 magnifier, original pixel art: 5x5 ring plus a 2x2 handle. Marks
+    // the search field without a word of chrome.
+    void drawMagnifier (juce::Graphics& g, int x, int y, juce::Colour c)
+    {
+        g.setColour (c);
+        g.fillRect (x + 1, y,     3, 1);
+        g.fillRect (x,     y + 1, 1, 3);
+        g.fillRect (x + 4, y + 1, 1, 3);
+        g.fillRect (x + 1, y + 4, 3, 1);
+        g.fillRect (x + 4, y + 4, 2, 2);
+        g.fillRect (x + 5, y + 5, 2, 2);
+    }
+
+    // 6x6 X glyph for the clear button.
+    void drawClearGlyph (juce::Graphics& g, int x, int y, juce::Colour c)
+    {
+        g.setColour (c);
+        for (int i = 0; i < 6; ++i)
+        {
+            g.fillRect (x + i, y + i, 1, 1);
+            g.fillRect (x + 5 - i, y + i, 1, 1);
+        }
+    }
+
+    const juce::String kQueryChars ("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -_");
 }
 
 PresetBrowser::PresetBrowser (BlockwaveAudioProcessor& processor)
@@ -59,17 +84,32 @@ juce::Rectangle<int> PresetBrowser::panelRect() const
     return { (getWidth() - 640) / 2, 8, 640, getHeight() - 16 };
 }
 
+// The search field takes a 24 px band off the top of both panes: the list
+// drops from 23 visible rows to 21 on the fixed 832x456 canvas, which is the
+// whole cost of the feature (flagged in the checkpoint, not squeezed).
+juce::Rectangle<int> PresetBrowser::searchRect() const
+{
+    auto r = panelRect();
+    return { r.getX() + 8, r.getY() + 24, r.getWidth() - 16, 20 };
+}
+
+juce::Rectangle<int> PresetBrowser::searchClearRect() const
+{
+    const auto s = searchRect();
+    return { s.getRight() - 18, s.getY() + 2, 16, 16 };
+}
+
 juce::Rectangle<int> PresetBrowser::folderRect() const
 {
     auto r = panelRect();
-    return { r.getX() + 8, r.getY() + 24, 160, r.getHeight() - 32 };
+    return { r.getX() + 8, r.getY() + 48, 160, r.getHeight() - 56 };
 }
 
 juce::Rectangle<int> PresetBrowser::listRect() const
 {
     auto r = panelRect();
-    return { r.getX() + 176, r.getY() + 24, r.getWidth() - 184,
-             r.getHeight() - 32 };
+    return { r.getX() + 176, r.getY() + 48, r.getWidth() - 184,
+             r.getHeight() - 56 };
 }
 
 const PresetBrowser::Folder& PresetBrowser::selectedFolder() const
@@ -120,20 +160,30 @@ void PresetBrowser::rebuildRows()
     presetsListed = 0;
     const auto& lib = proc.getPresetLibrary();
     const auto& f = selectedFolder();
-    const bool grouped = f.catRank < 0;              // ALL / bank keep headers
+    const bool searching = isSearching();
+    // A search is bank-wide by definition, so it keeps the category headers
+    // whatever folder happens to be selected underneath it.
+    const bool grouped = searching || f.catRank < 0;
 
     juce::String lastCat ("\x01");
     for (int i = 0; i < lib.getNumPresets(); ++i)
     {
         const auto& e = lib.getPreset (i);
-        if (f.bank == kFavoritesBank)
+        if (searching)
+        {
+            // Name substring only, case-insensitive. The folder filter is
+            // deliberately ignored: typing searches everything you own.
+            if (! e.name.containsIgnoreCase (query))
+                continue;
+        }
+        else if (f.bank == kFavoritesBank)
         {
             if (! e.isFavorite)                      // starred, any bank
                 continue;
         }
         else if (f.bank >= 0 && e.isFactory != (f.bank == 0))
             continue;
-        if (f.catRank >= 0 && categoryRank (e.category) != f.catRank)
+        if (! searching && f.catRank >= 0 && categoryRank (e.category) != f.catRank)
             continue;
 
         if (grouped)
@@ -191,12 +241,40 @@ bool PresetBrowser::selectFolder (int bank, const juce::String& category)
     for (size_t i = 0; i < folders.size(); ++i)
         if (folders[i].bank == bank && folders[i].catRank == rank)
         {
+            query.clear();                   // touching a folder ends a search
             folderCursor = static_cast<int> (i);
-            focusList = false;
+            zone = Zone::folders;
             rebuildRows();
             return true;
         }
     return false;
+}
+
+// ---- search ------------------------------------------------------------------
+
+void PresetBrowser::setSearchQuery (const juce::String& text)
+{
+    const auto next = text.toUpperCase().substring (0, kMaxQueryLength);
+    if (next == query)
+        return;
+    query = next;
+    rebuildRows();                           // repaints; live on every keystroke
+}
+
+void PresetBrowser::clearSearch()
+{
+    if (query.isEmpty())
+        return;
+    query.clear();
+    rebuildRows();
+}
+
+void PresetBrowser::focusSearchField()
+{
+    if (zone == Zone::search)
+        return;
+    zone = Zone::search;
+    repaint();
 }
 
 void PresetBrowser::resized()
@@ -215,11 +293,74 @@ void PresetBrowser::paint (juce::Graphics& g)
     g.setColour (titleBar);
     g.fillRect (p.getX() + 3, p.getY() + 3, p.getWidth() - 6, 18);
     drawPixelText (g, "PRESETS", p.getX() + 8, p.getY() + 8, 1, label);
-    drawPixelText (g, juce::String (presetsListed)
-                          + (presetsListed == 1 ? " SOUND" : " SOUNDS"),
-                   p.getX() + p.getWidth() - 104, p.getY() + 8, 1, dimText);
+    {
+        // While a search is running the title-bar readout says WHAT is being
+        // filtered instead of repeating the hit count shown in the field.
+        const juce::String head = isSearching()
+            ? "SEARCH: " + query
+            : juce::String (presetsListed)
+                  + (presetsListed == 1 ? " SOUND" : " SOUNDS");
+        drawPixelText (g, head,
+                       p.getRight() - 28 - pixelTextWidth (head, 1),
+                       p.getY() + 8, 1, isSearching() ? lava : dimText);
+    }
+
+    // ---- search field ------------------------------------------------------
+    {
+        const auto s = searchRect();
+        const bool active = zone == Zone::search;
+        drawBevelBox (g, s, chip, panelDark, panelLight, outline, true);
+        if (isSearching() || active)
+        {
+            g.setColour (isSearching() ? lava : ice);   // live filter marker
+            g.fillRect (s.getX() + 1, s.getY() + 1, 2, s.getHeight() - 2);
+        }
+        drawMagnifier (g, s.getX() + 7, s.getY() + 6,
+                       isSearching() ? lava : dimText);
+
+        const int textX = s.getX() + 20;
+        if (query.isEmpty())
+        {
+            drawPixelText (g, active ? "TYPE TO FILTER" : "SEARCH PRESETS",
+                           textX, s.getY() + 7, 1, dimText);
+        }
+        else
+        {
+            const int tw = drawPixelText (g, query, textX, s.getY() + 7, 1, ice);
+            if (active)
+            {
+                g.setColour (lava);                      // solid block caret
+                g.fillRect (textX + tw + 1, s.getY() + 6, 4, 7);
+            }
+        }
+
+        // Hit count, then the clear button (only when there is something to
+        // clear). Both sit inside the field's right edge.
+        const bool none = isSearching() && presetsListed == 0;
+        if (isSearching())
+        {
+            const juce::String hits = none ? juce::String ("NO HITS")
+                : juce::String (presetsListed)
+                      + (presetsListed == 1 ? " HIT" : " HITS");
+            drawPixelText (g, hits,
+                           searchClearRect().getX() - 6 - pixelTextWidth (hits, 1),
+                           s.getY() + 7, 1, none ? lava : grass);
+
+            const auto x = searchClearRect();
+            drawBevelBox (g, x, buttonFace, panelLight, panelDark, outline);
+            drawClearGlyph (g, x.getCentreX() - 3, x.getCentreY() - 3, buttonText);
+        }
+        else if (! active)
+        {
+            drawPixelText (g, "CTRL+F", s.getRight() - 8 - pixelTextWidth ("CTRL+F", 1),
+                           s.getY() + 7, 1, panelLight);
+        }
+    }
 
     // ---- left pane: folder tree -------------------------------------------
+    // Greyed out while a search is running: the list is bank-wide and the
+    // folder selection is not what you are looking at.
+    const bool foldersLive = ! isSearching();
     const auto fBox = folderRect();
     drawBevelBox (g, fBox, chip, panelDark, panelLight, outline, true);
     const auto fInner = fBox.reduced (3);
@@ -236,9 +377,10 @@ void PresetBrowser::paint (juce::Graphics& g)
             const bool sel = static_cast<int> (i) == folderCursor;
             if (sel)
             {
-                g.setColour (dirt);
+                g.setColour (foldersLive ? dirt : titleBar);
                 g.fillRect (fInner.getX(), y, fInner.getWidth(), kRowH);
-                g.setColour (focusList ? stone : ice);   // active pane = ice
+                g.setColour (! foldersLive ? panelDark
+                             : zone == Zone::folders ? ice : stone);
                 g.drawRect (fInner.getX(), y, fInner.getWidth(), kRowH, 1);
             }
 
@@ -256,7 +398,8 @@ void PresetBrowser::paint (juce::Graphics& g)
                 drawFolderIcon (g, ix, y + 4, body);
             }
 
-            const auto textCol = sel ? label
+            const auto textCol = ! foldersLive ? panelFace
+                               : sel ? label
                                : isFavFolder ? colours::starGold
                                : f.indent == 0 ? grass : dimText;
             drawPixelText (g, f.label, ix + 14, y + 5, 1, textCol);
@@ -299,7 +442,7 @@ void PresetBrowser::paint (juce::Graphics& g)
         }
         if (static_cast<int> (r) == cursor)
         {
-            g.setColour (focusList ? ice : stone);       // active pane = ice
+            g.setColour (zone == Zone::list ? ice : stone);   // active zone = ice
             g.drawRect (list.getX(), y, list.getWidth(), kRowH, 1);
         }
 
@@ -322,8 +465,15 @@ void PresetBrowser::paint (juce::Graphics& g)
                        row.isFactory ? stone : lava);
     }
 
-    // Empty FAVORITES: the folder still exists, so say what it is for.
-    if (presetsListed == 0 && selectedFolder().bank == kFavoritesBank)
+    // Empty states: the pane never just sits there blank.
+    if (presetsListed == 0 && isSearching())
+    {
+        drawMagnifier (g, list.getCentreX() - 3, list.getY() + 40, panelFace);
+        const juce::String hint ("NO SOUND BY THAT NAME");
+        drawPixelText (g, hint, list.getCentreX() - pixelTextWidth (hint, 1) / 2,
+                       list.getY() + 56, 1, dimText);
+    }
+    else if (presetsListed == 0 && selectedFolder().bank == kFavoritesBank)
     {
         drawPixelStar (g, list.getCentreX() - 4, list.getY() + 40, false,
                   colours::starGold, panelFace);
@@ -397,6 +547,10 @@ int PresetBrowser::folderAt (juce::Point<int> pos) const
 
 void PresetBrowser::setFolderCursor (int index)
 {
+    // Touching a folder in ANY way ends the search — click, arrow key or
+    // tool call. Typing overrides the folder, a folder overrides typing;
+    // there is never a third state where both are half applied.
+    query.clear();
     folderCursor = juce::jlimit (0, juce::jmax (0, static_cast<int> (folders.size()) - 1),
                                  index);
 
@@ -420,18 +574,27 @@ void PresetBrowser::mouseDown (const juce::MouseEvent& e)
         return;
     }
 
+    if (searchRect().contains (e.getPosition()))
+    {
+        if (isSearching() && searchClearRect().contains (e.getPosition()))
+            clearSearch();
+        focusSearchField();
+        repaint();
+        return;
+    }
+
     const int f = folderAt (e.getPosition());
     if (f >= 0)
     {
-        focusList = false;
-        setFolderCursor (f);
+        zone = Zone::folders;
+        setFolderCursor (f);                     // also clears the search
         return;
     }
 
     const int r = rowAt (e.getPosition());
     if (r >= 0 && ! rows[static_cast<size_t> (r)].header)
     {
-        focusList = true;
+        zone = Zone::list;
         cursor = r;
         // Star first: clicking the star ONLY toggles, it never loads.
         if (starRectForRow (r).contains (e.getPosition()))
@@ -506,29 +669,79 @@ void PresetBrowser::loadRow (int rowIndex)
         onLoad (row.presetIndex);
 }
 
+// SEARCH zone only: plain letters type here and nowhere else, which is what
+// leaves F free to star a row in the list.
+bool PresetBrowser::typeIntoSearch (const juce::KeyPress& k)
+{
+    if (k.isKeyCode (juce::KeyPress::backspaceKey)
+        || k.isKeyCode (juce::KeyPress::deleteKey))
+    {
+        setSearchQuery (query.dropLastCharacters (1));
+        return true;
+    }
+    if (k.isKeyCode (juce::KeyPress::downKey) || k.isKeyCode (juce::KeyPress::upKey)
+        || k.isKeyCode (juce::KeyPress::returnKey))
+    {
+        zone = Zone::list;                           // type, then arrow in
+        repaint();
+        return true;
+    }
+    const auto c = static_cast<juce::juce_wchar> (
+        juce::CharacterFunctions::toUpperCase (k.getTextCharacter()));
+    if (kQueryChars.containsChar (c) && query.length() < kMaxQueryLength)
+    {
+        setSearchQuery (query + juce::String::charToString (c));
+        return true;
+    }
+    return false;
+}
+
 bool PresetBrowser::keyPressed (const juce::KeyPress& k)
 {
+    const auto mods = k.getModifiers();
+
     if (k.isKeyCode (juce::KeyPress::escapeKey))
     {
+        // ESC clears a live search; on an empty field it closes the browser,
+        // exactly as it did before the field existed.
+        if (isSearching())
+        {
+            clearSearch();
+            return true;
+        }
         if (onClose)
             onClose();
         return true;
     }
+    // CTRL/CMD+F: jump to the field from any zone. Not a bare letter, so it
+    // can never be swallowed by typing (and F still stars in the list).
+    if ((mods.isCommandDown() || mods.isCtrlDown()) && k.getKeyCode() == 'F')
+    {
+        focusSearchField();
+        return true;
+    }
     if (k.isKeyCode (juce::KeyPress::tabKey))
     {
-        focusList = ! focusList;                     // hop between the panes
+        // SEARCH -> FOLDERS -> LIST -> SEARCH (shift reverses).
+        static constexpr Zone fwd[3] = { Zone::folders, Zone::list, Zone::search };
+        static constexpr Zone back[3] = { Zone::list, Zone::search, Zone::folders };
+        const int i = static_cast<int> (zone);
+        zone = mods.isShiftDown() ? back[i] : fwd[i];
         repaint();
         return true;
     }
 
-    if (! focusList)                                 // ---- folder pane ------
+    if (zone == Zone::search)                        // ---- search field -----
+        return typeIntoSearch (k);
+
+    if (zone == Zone::folders)                       // ---- folder pane ------
     {
         if (k.isKeyCode (juce::KeyPress::upKey))   { moveFolderCursor (-1); return true; }
         if (k.isKeyCode (juce::KeyPress::downKey)) { moveFolderCursor (1);  return true; }
         if (k.isKeyCode (juce::KeyPress::rightKey)
             || k.isKeyCode (juce::KeyPress::returnKey))
         {
-            focusList = true;
+            zone = Zone::list;
             repaint();
             return true;
         }
@@ -538,7 +751,7 @@ bool PresetBrowser::keyPressed (const juce::KeyPress& k)
     // ---- list pane --------------------------------------------------------
     if (k.isKeyCode (juce::KeyPress::leftKey))
     {
-        focusList = false;
+        zone = Zone::folders;
         repaint();
         return true;
     }
@@ -561,7 +774,8 @@ void PresetBrowser::visibilityChanged()
 {
     if (isVisible())
     {
-        focusList = false;                           // open on the folder pane
+        zone = Zone::folders;                        // open on the folder pane
+        query.clear();                               // ...with a clean field
         refresh();
         if (isShowing())
             grabKeyboardFocus();

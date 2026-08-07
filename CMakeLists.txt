@@ -176,6 +176,12 @@ target_include_directories(blockwave_state_tests PRIVATE src plugin tools/render
 target_compile_definitions(blockwave_state_tests PRIVATE
     JUCE_WEB_BROWSER=0
     JUCE_USE_CURL=0
+    # The UI component tests have to let REAL time pass with the message loop
+    # running (tests/UiComponentTests.h): the scale settle guard is keyed on
+    # pointer movement rather than on a clock, and the only honest way to prove
+    # that is to run the clock — with juce::Timer actually dispatching — and
+    # show nothing expires. Test binary only; the plugin never runs a modal loop.
+    JUCE_MODAL_LOOPS_PERMITTED=1
     JucePlugin_Name="BLOCKWAVE"
     BLOCKWAVE_VERSION_STRING="${BLOCKWAVE_VERSION_STRING}"
     BLOCKWAVE_TEST_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests")

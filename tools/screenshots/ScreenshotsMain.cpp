@@ -68,6 +68,20 @@ bool shoot (juce::Component& comp, juce::Rectangle<int> area,
     return ok;
 }
 
+// True 1x pixels blown up nearest-neighbour, for details that are only a few
+// pixels tall (the 3x5 MIX label). No resampling, no invented pixels.
+juce::Image zoomed (const juce::Image& src, int factor)
+{
+    juce::Image out (juce::Image::ARGB, src.getWidth() * factor,
+                     src.getHeight() * factor, true);
+    juce::Graphics g (out);
+    g.setImageResamplingQuality (juce::Graphics::lowResamplingQuality);
+    g.drawImage (src, juce::Rectangle<float> (0.0f, 0.0f,
+                                              static_cast<float> (out.getWidth()),
+                                              static_cast<float> (out.getHeight())));
+    return out;
+}
+
 blockwave::Material mat (const char* name)
 {
     blockwave::Material m {};
@@ -181,7 +195,7 @@ int main (int argc, char* argv[])
 
         // 2b) PER-BLOCK MIX (producer's headline request): the same bench with
         //     its blocks at different weights, driven through the real
-        //     processor API so the darkening, the rail handles and the
+        //     processor API so the darkening, the tags and the
         //     percent tags all come from live state.
         {
             const float weights[blockwave::kNumCells] =
@@ -195,7 +209,7 @@ int main (int argc, char* argv[])
                         outDir.getChildFile ("craft_weights_bench_1x.png")) && ok;
 
             // Drag readout: the arrow-key path shows the same big % badge the
-            // rail drag holds up, so this is the real state, not a mock.
+            // knob drag holds up, so this is the real state, not a mock.
             editor->getCraftTab().nudgeCellWeight (2, -1);      // 50% -> 45%
             pump (60);
             ok = shoot (*editor, editor->getLocalBounds(),
@@ -208,6 +222,96 @@ int main (int argc, char* argv[])
                 { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
             proc.setCraftCellWeights (full, blockwave::kNumCells);
             editor->getCraftTab().refreshFromProcessor();
+            pump (60);
+        }
+
+        // 2c) HIDDEN MIX (producer spec) — the three states he asked for, all
+        //     driven through the real code paths (the hover seam sets exactly
+        //     the flags mouseEnter/mouseMove set; the knob is opened through
+        //     the same call the MIX label click and the M key make).
+        //
+        //     Bench geometry in EDITOR pixels: the 3x3 sits at (16, 120),
+        //     64 px cells with an 8 px gap, so slot 1 (top middle) is at
+        //     (88, 120) and slot 4 (middle right) at (160, 192).
+        {
+            auto& craft = editor->getCraftTab();
+            const juce::Rectangle<int> bench (8, 112, 232, 232);
+            const juce::Rectangle<int> cell1 (88, 120, 64, 64);   // slot 1: GOLD
+            const int slot = 1;
+
+            auto cellShot = [&] { return editor->createComponentSnapshot (cell1, true, 1.0f); };
+
+            // REST: nothing on the block at all.
+            craft.setCellHoverForDisplay (slot, false, false);
+            craft.setMixKnobOpen (slot, false);
+            pump (60);
+            const auto restImg = cellShot();
+            ok = shoot (*editor, bench,
+                        outDir.getChildFile ("craft_mix_rest_bench_1x.png")) && ok;
+
+            // HOVER: the MIX label appears, muted, top-right corner.
+            craft.setCellHoverForDisplay (slot, true, false);
+            pump (60);
+            const auto hoverImg = cellShot();
+            ok = shoot (*editor, bench,
+                        outDir.getChildFile ("craft_mix_hover_bench_1x.png")) && ok;
+
+            // LABEL HOT: the pointer is on the letters themselves.
+            craft.setCellHoverForDisplay (slot, true, true);
+            pump (60);
+            const auto hotImg = cellShot();
+
+            // EXPANDED: the knob is open on the block, weight dialled down so
+            // the pointer, the tag and the darkening are all reviewable.
+            craft.setMixKnobOpen (slot, true);
+            craft.nudgeCellWeight (slot, -7);              // 100 % -> 65 %
+            craft.setCellHoverForDisplay (slot, true, false);
+            pump (900);          // let the transient % badge time out first
+            const auto openImg = cellShot();
+            ok = shoot (*editor, bench,
+                        outDir.getChildFile ("craft_mix_open_bench_1x.png")) && ok;
+            ok = shoot (*editor, editor->getLocalBounds(),
+                        outDir.getChildFile ("craft_mix_open_1x.png")) && ok;
+
+            // ...and the same hover on the DARKEST block on the bench (slot 7,
+            // TNT), because the label has no plate: the muted tone has to
+            // read on a near-black sprite as well as on gold.
+            craft.setCellHoverForDisplay (7, true, false);
+            pump (60);
+            const auto darkImg = editor->createComponentSnapshot ({ 160, 264, 64, 64 },
+                                                                  true, 1.0f);
+            craft.setCellHoverForDisplay (7, false, false);
+
+            // Proof sheet: the states side by side at true pixels x4, so the
+            // 3x5 label is legible without a magnifier.
+            {
+                const int z = 4, cw = 64 * z, pad = 8, n = 5;
+                const juce::Image* frames[n] = { &restImg, &hoverImg, &hotImg,
+                                                 &openImg, &darkImg };
+                const char* caps[n] = { "REST", "HOVER", "LABEL HOT",
+                                        "KNOB OPEN", "HOVER DARK" };
+                juce::Image sheet (juce::Image::ARGB,
+                                   pad + n * (cw + pad), cw + pad * 2 + 16, true);
+                {
+                    juce::Graphics g (sheet);
+                    g.fillAll (blockwave::ui::colours::night);
+                    for (int i = 0; i < n; ++i)
+                    {
+                        const int x = pad + i * (cw + pad);
+                        g.drawImageAt (zoomed (*frames[i], z), x, pad);
+                        blockwave::ui::drawPixelText (g, caps[i], x, cw + pad + 6, 2,
+                                                      blockwave::ui::colours::ice);
+                    }
+                }
+                ok = savePng (sheet, outDir.getChildFile ("craft_mix_states_4x.png")) && ok;
+                std::cout << "wrote craft_mix_states_4x.png ("
+                          << sheet.getWidth() << "x" << sheet.getHeight() << ")\n";
+            }
+
+            // Clean slate for everything after this.
+            craft.setCellHoverForDisplay (slot, false, false);
+            craft.setMixKnobOpen (slot, false);
+            craft.nudgeCellWeight (slot, 7);
             pump (60);
         }
 
@@ -310,6 +414,41 @@ int main (int argc, char* argv[])
         pump();
         ok = shoot (*editor, { 96, 48, 640, 240 },
                     outDir.getChildFile ("preset_browser_icons_1x.png")) && ok;
+
+        // 7a) SEARCH (producer request). A real query typed through the real
+        //     API: bank-wide, grouped by category, hit count in the field,
+        //     folder tree greyed out because the search overrides it. "ST"
+        //     also proves the match is a substring, not a prefix (DUST
+        //     CURTAIN, BONUS STAGE).
+        {
+            auto& br = editor->getBrowser();
+            br.focusSearchField();
+            br.setSearchQuery ("ST");
+            pump (60);
+            ok = shoot (*editor, editor->getLocalBounds(),
+                        outDir.getChildFile ("preset_browser_search_1x.png")) && ok;
+            // Field detail: magnifier, query, caret, hit count, clear button.
+            ok = shoot (*editor, { 96, 48, 640, 48 },
+                        outDir.getChildFile ("preset_browser_search_field_1x.png")) && ok;
+            {
+                // Field only: the panel starts at editor y=48, the field 24 px
+                // below that, 20 px tall.
+                const auto strip = editor->createComponentSnapshot ({ 96, 68, 640, 28 },
+                                                                    true, 1.0f);
+                ok = savePng (zoomed (strip, 2),
+                              outDir.getChildFile ("preset_browser_search_field_2x.png")) && ok;
+                std::cout << "wrote preset_browser_search_field_2x.png\n";
+            }
+            std::cout << "  search \"ST\" -> " << br.getSearchMatchCount() << " hits\n";
+
+            // Empty result state.
+            br.setSearchQuery ("ZQX");
+            pump (60);
+            ok = shoot (*editor, editor->getLocalBounds(),
+                        outDir.getChildFile ("preset_browser_search_empty_1x.png")) && ok;
+            br.clearSearch();
+            pump (60);
+        }
 
         // 7b) FAVORITES (producer request). Empty state first — the folder
         //     exists at (0) and the list explains itself — then a handful of

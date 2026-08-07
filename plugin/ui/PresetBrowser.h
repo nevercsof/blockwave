@@ -34,6 +34,41 @@
 // F stars/unstars the focused row, escape closes. Wheel scrolls the pane
 // under the mouse.
 //
+// SEARCH (producer request: "кнопочку с поиском пресетов добавь") — a field
+// across the top of the panel, above both panes:
+//
+//   - filters live on every keystroke, case-insensitive substring of the
+//     preset NAME (not the category, not the author);
+//   - searches the WHOLE bank, both banks, ignoring the selected folder, and
+//     groups the hits under the usual category headers;
+//   - shows the match count in the field ("12 HITS" / "NO HITS");
+//   - clears from the X in the field, or with ESC. ESC on an EMPTY field
+//     still closes the browser, exactly as it did before the field existed.
+//
+// SEARCH vs FOLDER — last one touched wins, in both directions and with no
+// third state to reason about: typing overrides the folder (the list goes
+// bank-wide and the folder tree greys out), and touching a folder at all —
+// clicking one, arrowing through the tree, or selectFolder() from a tool —
+// clears the query and hands the list straight back to that folder.
+//
+// FOCUS — the browser owns the keyboard itself; there is no child text
+// editor, so "focus" is a zone (Zone below), and only ONE zone at a time
+// consumes plain letters. That is what keeps the field from eating the
+// existing bindings — F still stars the highlighted row, because F only
+// types while the SEARCH zone is active.
+//
+//   TAB / SHIFT+TAB   cycle SEARCH -> FOLDERS -> LIST -> SEARCH.
+//   CTRL/CMD+F        jump straight to SEARCH from anywhere (not a bare
+//                     letter, so it can never collide with typing).
+//   click             the field, a folder or a row moves the zone there.
+//   in SEARCH         letters/digits/space/-/_ type, BACKSPACE deletes,
+//                     ESC clears (then closes), UP/DOWN/RETURN drop into the
+//                     result list so you can type-then-arrow without TAB.
+//   in FOLDERS/LIST   every key does exactly what it did before the field
+//                     existed, F included.
+//
+// The browser always opens on the FOLDERS zone with an empty query.
+//
 // FAVORITES (producer request): every row carries an 8x8 star toggle at its
 // right edge — clicking the star area toggles and does NOT load the preset
 // (the star is hit-tested before the row). The FAVORITES folder sits at the
@@ -67,9 +102,25 @@ public:
 
     // Select a folder programmatically (also used by tools/screenshots).
     // bank: -1 = ALL, 0 = FACTORY, 1 = USER, kFavoritesBank = FAVORITES;
-    // category empty = whole bank.
+    // category empty = whole bank. Clears any active search, like every other
+    // way of touching a folder.
     // Returns false when no such folder exists (e.g. empty category).
     bool selectFolder (int bank, const juce::String& category);
+
+    // ---- search (also the tools/screenshots + component-test seam) --------
+    static constexpr int kMaxQueryLength = 24;
+    void setSearchQuery (const juce::String& text);   // uppercased, clamped
+    void clearSearch();
+    const juce::String& getSearchQuery() const noexcept { return query; }
+    bool isSearching() const noexcept { return query.isNotEmpty(); }
+    int getSearchMatchCount() const noexcept { return presetsListed; }
+    void focusSearchField();                          // CTRL/CMD+F, field click
+
+    // Scroll offset of the preset pane, in pixels. Read-only, and read by the
+    // component tests: it is the observable that proves a wheel notch aimed at
+    // the list actually REACHED the list, which is the property the editor's
+    // settle shield must not break while it is armed over the top bar.
+    int getListScrollY() const noexcept { return scrollY; }
 
     void paint (juce::Graphics&) override;
     void resized() override;
@@ -80,6 +131,10 @@ public:
     void visibilityChanged() override;
 
 private:
+    // Which zone of the browser the keyboard is talking to. Only the SEARCH
+    // zone consumes plain letters, which is what keeps F (star) alive.
+    enum class Zone { search, folders, list };
+
     struct Folder
     {
         juce::String label;                           // "ALL", "FACTORY", "PAD"...
@@ -100,9 +155,12 @@ private:
     };
 
     juce::Rectangle<int> panelRect() const;
+    juce::Rectangle<int> searchRect() const;          // field, above the panes
+    juce::Rectangle<int> searchClearRect() const;     // X inside the field
     juce::Rectangle<int> folderRect() const;          // outer bevel box, left
     juce::Rectangle<int> listRect() const;            // outer bevel box, right
     const Folder& selectedFolder() const;
+    bool typeIntoSearch (const juce::KeyPress&);      // SEARCH-zone key path
     void rebuildFolders();
     void rebuildRows();                               // from the selected folder
     int rowAt (juce::Point<int> pos) const;
@@ -121,7 +179,8 @@ private:
     std::vector<Row> rows;
     int folderCursor = 0;                             // selected folder
     int cursor = 0;                                   // keyboard cursor (row)
-    bool focusList = false;                           // key focus zone
+    Zone zone = Zone::folders;                        // key focus zone
+    juce::String query;                               // search, "" = inactive
     int scrollY = 0, folderScrollY = 0;
     int presetsListed = 0;                            // non-header rows
 

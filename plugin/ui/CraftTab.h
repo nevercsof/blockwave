@@ -32,10 +32,10 @@
 // poll and every animation (well under the 30 Hz house limit; pixel
 // animations are 2-4 discrete frames with no easing curves).
 //
-// Per-block MIX edits (the rail on each filled block, see CraftBlocks.h) take
-// the separate setCraftCellWeight() path instead: same atomic APVTS write,
-// but no discovery registration and no name change, because weights are not
-// part of a recipe's identity.
+// Per-block MIX edits (the hover-revealed MIX label and its knob, see
+// CraftBlocks.h) take the separate setCraftCellWeight() path instead: same
+// atomic APVTS write, but no discovery registration and no name change,
+// because weights are not part of a recipe's identity.
 
 #include "../PluginProcessor.h"
 #include "CraftBlocks.h"
@@ -151,10 +151,21 @@ public:
     void showDiscoveries (bool shouldShow);
     bool isShowingDiscoveries() const;
 
-    // Tool hook (tools/screenshots): drives the SAME code path as the arrow
-    // keys on a focused block, so a rendered mix state is the real one rather
-    // than a mock-up. steps are 5 % each.
+    // Tool hooks (tools/screenshots, component tests): each drives the SAME
+    // code path the mouse and keyboard drive, so a rendered MIX state is the
+    // real one rather than a mock-up. nudge steps are 5 % each.
     void nudgeCellWeight (int slot, int steps) { gridComp.nudgeCellWeight (slot, steps); }
+    void setMixKnobOpen (int slot, bool open)  { gridComp.setMixKnobOpen (slot, open); }
+    // Read-back for the same hooks: what the BENCH shows, which is not always
+    // what the processor holds (that gap was defect 5 — a preset carrying no
+    // craft used to leave the previous blocks and their open knobs on screen).
+    bool isMixKnobOpen (int slot) const        { return gridComp.isMixKnobOpen (slot); }
+    const CraftGrid& getShownGrid() const noexcept { return gridComp.getGrid(); }
+    bool isShowingCraftGrid() const noexcept   { return hasGrid; }
+    void setCellHoverForDisplay (int slot, bool overCell, bool overLabel)
+    {
+        gridComp.setHoverForDisplay (slot, overCell, overLabel);
+    }
 
     void paint (juce::Graphics&) override;
     void resized() override;

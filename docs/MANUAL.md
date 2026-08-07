@@ -125,26 +125,42 @@ Fourteen, in the palette down the right side. Hover one for a three-word summary
 - Every change re-crafts the sound instantly. Values glide over about 30 ms, so you
   can rearrange the bench while a note is held and never hear a click.
 
-### The MIX rail (per-block weight)
+### MIX (per-block weight)
 
-Every **filled** cell carries a thin vertical slider down its right edge. That is the
-block's **weight** — how much of that material actually gets applied, from 0 % to
-100 %, in 5 % steps. Default is 100 %.
+Every **filled** cell has a **weight** — how much of that material actually gets
+applied, from 0 % to 100 %, in 5 % steps. Default is 100 %.
 
 Use it when a material is right but too much. Half an OBSIDIAN is a sound you cannot
 get any other way.
 
-- **Drag the rail** to set the weight. A big percentage badge shows while you drag.
-- **Mouse wheel** over the block nudges it by 5 %.
+The control is hidden until you go looking for it, so the bench stays clean:
+
+- **Hover a block.** A small **MIX** appears in its top-right corner.
+- **Click MIX.** A knob opens on the block, bottom-right. Drag it up and down to set
+  the weight; the percentage shows in the corner while it is open, and a big badge
+  flashes up as you move it. **Click MIX again** to put the knob away.
+- **Mouse wheel** over a block with its knob open nudges the weight by 5 %.
+- **Keyboard: `M`** opens and closes the knob on the block you have focused, and
+  **↑ / ↓** then move the weight (**Shift** for 25 % jumps).
+
+Opening the knob costs you nothing else: **the rest of the block still drags** exactly
+as before, so you can move a block around the bench with its knob open. Even the MIX
+label itself will drag the block if you pull on it instead of clicking it. Right-click
+still clears the cell wherever you click.
+
+Whether the knob is open or not:
+
 - The block **art darkens in five visible steps** as you turn it down, and anything
   below 100 % keeps a small `nn%` tag in the corner — so you can read a turned-down
-  bench at a glance.
+  bench at a glance without touching anything.
 - At **0 %** the material contributes nothing at all: sonically identical to an empty
   cell. The block stays placed, which matters, because —
 - **Weights never affect recipes or the auto-generated name.** A pattern at 20 % is
   still that pattern. This is deliberate and permanent.
 
-Empty cells have no rail.
+Empty cells have no MIX label and no knob. The knob is a view, not part of the sound:
+it is never saved into a preset, and it closes when you clear the cell, drop a new
+block on it, or load a preset.
 
 ### The buttons
 
@@ -396,10 +412,31 @@ Open it from the preset name or the **PRESETS** button in the top bar.
 
 ### Layout
 
-A folder tree on the left, the preset list on the right. Every preset row shows its
-name and a **mini 3×3 bench icon** — the actual blocks that made it. That icon is the
-best teaching tool in the plug-in: find a sound you like, look at its bench, and you
-have learned something you can reuse.
+A search field across the top, a folder tree on the left, the preset list on the
+right. Every preset row shows its name and a **mini 3×3 bench icon** — the actual
+blocks that made it. That icon is the best teaching tool in the plug-in: find a sound
+you like, look at its bench, and you have learned something you can reuse.
+
+### Search
+
+Click the field at the top of the browser (or press **Ctrl/Cmd + F**) and start
+typing. The list filters as you type.
+
+- It matches **any part of the name**, not just the beginning — `ST` finds
+  `STARLESS POND` and `DUST CURTAIN` alike — and it ignores capitals.
+- It searches **everything you own**, both banks, whatever folder happens to be
+  selected. The hits are still grouped under their category headings, and the folder
+  tree greys out to show it is not doing anything right now.
+- The field shows how many presets matched. Nothing matched reads
+  `NO SOUND BY THAT NAME`.
+- **Clear it** with the **X** in the field or with **Esc**. Esc on an empty field
+  closes the browser, as it always did.
+- **Clicking a folder clears the search** and hands the list back to that folder.
+  Typing overrides the folder, touching a folder overrides the typing — whichever you
+  did last is what you are looking at.
+
+Only the search field takes plain letters, and only while it is the active area — so
+**F** still stars the highlighted preset when you are in the list.
 
 ### Folders
 
@@ -422,8 +459,11 @@ have learned something you can reuse.
 ### Navigating
 
 - **↑ / ↓** move through the list; **Enter** loads.
-- **Tab** or **←** jumps to the folder tree; **→** or **Enter** goes back to the list.
-- **Esc** closes the browser.
+- **Tab** cycles the three areas: search field → folder tree → list → search field
+  (**Shift + Tab** goes the other way). **←** also jumps from the list to the tree,
+  **→** or **Enter** goes back to the list.
+- In the search field, **↑ / ↓ / Enter** drop you straight into the results.
+- **Esc** clears the search; on an empty field it closes the browser.
 - Outside the browser, the top-bar **◀ ▶** step through the whole bank.
 
 ### Saving your own
@@ -440,6 +480,35 @@ parameters. It appears in USER immediately, and you can star it like any other.
 
 The **SCALE** slider in the top bar has five stops: **100 / 125 / 150 / 175 / 200 %**.
 It snaps, and the current value is shown in the chip next to it.
+
+**The window resizes when you let go, not while you drag.** As you drag, the handle
+and the readout follow your cursor and the readout turns orange to say "not applied
+yet"; a small blue pip stays on the stop you are currently at, so you can see where
+you are and where you are heading. Release, and the window changes size once. A spin
+of the mouse wheel is likewise applied once, when the spin stops. The arrow keys move
+one stop per press and apply straight away — except while you are holding the slider,
+where they wait for you to let go, so two hands cannot fight over one control.
+
+**After a resize, the spot under your cursor stays inert until you move the mouse.**
+Everything just moved under the pointer, so anything that arrives at the place the
+pointer was already sitting is aimed at a panel that is no longer there. Until you
+move, that one spot cannot be clicked or scrolled by accident: the second click of a
+double-click, and a follow-up wheel notch, can never land on the master knob, RAW,
+SAVE, the star or the preset arrows. **This is not a timer.** However slowly you
+double-click — including the slow settings under macOS Accessibility — and however
+long you leave between wheel notches, the second one is still covered. A wheel notch
+in that moment still counts as a scale step, so a slow spin keeps stepping the size,
+one stop at a time, at any speed.
+
+The moment you move the mouse you have aimed at the new layout, so everything is live
+again immediately — there is nothing to wait out. And only that one spot is ever
+inert: the preset list still scrolls, the tabs still work, and the keyboard is never
+blocked.
+
+**A wheel spin never resizes the window while you are holding another control.** If a
+notch is still settling when you press and hold something else — a knob, a block, a
+fader — the resize waits until you let go, rather than moving the panel out from under
+a live drag.
 
 BLOCKWAVE is pixel art, so it scales with nearest-neighbour rendering: pixels get
 bigger, never blurry. 100 % and 200 % are pixel-perfect; the three stops in between
@@ -482,21 +551,28 @@ or rescale something. Uninstalling BLOCKWAVE never touches this folder.
 | Click cell, then click material | Place it (no dragging) |
 | Click material, then click cell | Place it (armed material) |
 | Right-click cell | Clear it |
-| Drag the side rail | Set that block's mix, 0–100 % in 5 % steps |
-| Mouse wheel over a block | Nudge its mix by 5 % |
-| ↑ / ↓ | Adjust the focused block's mix (**Shift** = 25 % jumps) |
+| Hover a block | Reveal its **MIX** label, top-right |
+| Click **MIX** | Open / hide that block's mix knob |
+| Drag the knob | Set that block's mix, 0–100 % in 5 % steps |
+| Drag anywhere else on the block | Move the block (works with the knob open) |
+| Mouse wheel over a block with its knob open | Nudge its mix by 5 % |
+| M | Open / hide the mix knob on the focused block |
+| ↑ / ↓ | Adjust the mix when that block's knob is open (**Shift** = 25 % jumps), otherwise move a row |
 | ← / → | Walk the whole bench in reading order, wrapping around |
 
 **Preset browser**
 
 | Input | Action |
 |---|---|
+| Type (in the search field) | Filter the whole bank by name, live |
+| Ctrl/Cmd + F | Jump to the search field |
 | ↑ / ↓ | Move through the list |
 | Enter | Load the highlighted preset |
-| F | Star / unstar the highlighted preset |
-| Tab or ← | Jump to the folder tree |
+| F | Star / unstar the highlighted preset (in the list) |
+| Tab | Cycle search field → folder tree → list |
+| ← | Jump from the list to the folder tree |
 | → or Enter (in the tree) | Back to the preset list |
-| Esc | Close |
+| Esc | Clear the search; on an empty field, close |
 
 **Everywhere**
 

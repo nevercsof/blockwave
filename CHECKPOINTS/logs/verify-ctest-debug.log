@@ -1,0 +1,9 @@
+Test project /Users/kirillboyko/Downloads/blockwave-kickoff/build/debug
+    Start 1: blockwave_render_tests
+1/2 Test #1: blockwave_render_tests ...........   Passed  131.94 sec
+    Start 2: blockwave_state_tests
+2/2 Test #2: blockwave_state_tests ............   Passed   63.81 sec
+
+100% tests passed out of 2
+
+Total Test time (real) = 195.75 sec

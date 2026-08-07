@@ -27,43 +27,55 @@
 //     Keyboard path: cells are focusable, arrows walk the grid, RETURN
 //     places the armed material / selects the cell, DELETE clears.
 //
-// ---- PER-BLOCK MIX RAIL (producer request; docs/CRAFT_GRID.md §WEIGHT) -----
-// Every FILLED cell carries a vertical mix slider ON the block itself: a
-// 12-px rail down its right edge with a chunky handle and a filled track.
-// Dragging the handle up/down sets that cell's weight (0..100 %, snapped to
-// 5 %) and the block art DARKENS in 5 discrete steps as the weight drops.
+// ---- HIDDEN PER-BLOCK MIX (producer spec; docs/CRAFT_GRID.md §WEIGHT) ------
+// The mix control is INVISIBLE until you go looking for it. Specified by the
+// producer, verbatim, and implemented literally:
 //
-// WHY A RAIL AND NOT A BARE VERTICAL DRAG ON THE BLOCK FACE:
-//  - a bare vertical drag would have to be told apart from the existing
-//    drag-and-drop by direction, and on a 3x3 grid "drag this block one row
-//    up" is a NORMAL move — direction sensing would silently eat it, and
-//    positions are load-bearing (recipes are position-sensitive). The rail
-//    costs the move gesture nothing: it owns 12 px of a 64 px cell, and the
-//    other 52 px still start a drag-and-drop in any direction;
-//  - it is VISIBLE. A hidden gesture is undiscoverable for the beginner this
-//    tab exists for; the rail shows the current mix on every block without
-//    being touched, so "some of my blocks are turned down" is readable at a
-//    glance and the control that did it is right there;
-//  - no modifier key: modifiers are the least beginner-friendly option of
-//    the three, and unreachable on a trackpad-only laptop workflow.
-// It is still literally "a slider up and down on the block itself", which is
-// what the producer asked for, and it darkens the block exactly as asked.
+//   at rest      nothing at all on the block — just the block art;
+//   on hover     a 3x5 bitmap "MIX" appears in the block's TOP-RIGHT corner:
+//                bare letters in a muted tone, no outline, no bevel, no
+//                backing plate;
+//   label hover  the letters light up to full contrast;
+//   label click  the mix KNOB opens on the block; clicking again hides it.
 //
-// Interaction contract (all of this is tested by eye in the checkpoints):
-//   - plain click (rail or face) still SELECTS the cell; the weight only
-//     moves once the pointer actually travels;
-//   - right-click still CLEARS, rail included;
-//   - while a material is ARMED, the whole cell (rail included) places it —
-//     the guided click-cell-then-click-material flow is never dead anywhere;
-//   - mouse wheel over a filled cell nudges the mix by 5 %;
-//   - keyboard: UP/DOWN adjust the focused filled cell's mix (SHIFT = 25 %
-//     jumps); LEFT/RIGHT walk the whole grid in reading order and wrap, so
-//     every cell stays reachable without the vertical arrows. On an EMPTY
-//     cell (nothing to mix) and on the BASE cell, UP/DOWN move a row as
-//     before;
-//   - empty cells have no rail, no tag, no readout.
-// Weights never affect recipe detection or the auto-name (engine guarantee) —
-// nothing in this UI implies otherwise.
+// The expanded state is pure UI state, per cell: it is never written into a
+// preset or the session, and it resets when the cell is cleared (or the bench
+// is replaced by a preset load).
+//
+// HIT-TESTING — the knob must never eat the block's drag gesture. Positions
+// are load-bearing on a 3x3 bench (recipes are position-sensitive), so
+// "drag this block one row up" has to keep working while the knob is open:
+//
+//   MIX label   16x12 at the top-right corner. Owns the CLICK only: the press
+//               is armed on mouseDown and toggles on mouseUp, so as soon as
+//               the pointer travels 4 px the press becomes a normal block
+//               drag-and-drop instead. You can drag a block by its label.
+//   MIX knob    28x28 at the bottom-right corner, and ONLY while open. Owns
+//               press-and-drag (vertical drag sets the weight).
+//   everything  ~80 % of the cell: unchanged — click selects, drag moves the
+//   else        block, right-click clears, an ARMED material places.
+//
+// Right-click and an armed material are checked FIRST and apply to every
+// pixel of the cell, label and knob included: the guided
+// click-cell-then-click-material flow is never dead anywhere.
+//
+// Keyboard: M toggles the knob on the focused cell (the label is drawn while
+// a cell has keyboard focus, so the shortcut advertises itself). UP/DOWN
+// adjust the mix while that cell's knob is open (SHIFT = 25 % jumps) and
+// otherwise walk the bench by rows as usual; LEFT/RIGHT always walk the whole
+// grid in reading order with wrap. The wheel nudges 5 % only over an OPEN
+// knob's cell — with no control on screen there are no invisible edits.
+//
+// What stays: the block art DARKENS in 5 discrete steps as the weight drops
+// and anything below 100 % keeps its small nn% tag, so a turned-down bench is
+// still readable at a glance without touching anything. Weights never affect
+// recipe detection or the auto-name (engine guarantee) — nothing in this UI
+// implies otherwise.
+//
+// (This replaces the earlier always-visible mix rail down the block's right
+// edge. The rail worked, but it was permanent chrome on every filled block
+// and it owned 12 px of the drag zone; the producer asked for the control to
+// be hidden until hovered.)
 //
 //   MaterialPalette — 7x2 tiles of the 14 materials. Drag a tile onto a
 //     cell, or click a tile to ARM it and then click a cell (the accessible
@@ -87,12 +99,14 @@ constexpr int kCraftGridW   = kCraftCell * 3 + kCraftGap * 2;   // 208
 constexpr int kPaletteTileW = 48;
 constexpr int kPaletteTileH = 48;
 
-// Mix rail geometry (sub-cell detail: 4-px grid, per PixelTheme's rule).
-constexpr int kMixRailW      = 12;                // hit area on the right edge
-constexpr int kMixTrackY     = 8;                 // track top inside the cell
-constexpr int kMixTrackH     = 48;                // track height
-constexpr int kMixHandleH    = 6;
-constexpr float kMixStep     = 0.05f;             // rail/keyboard snap: 5 %
+// Hidden-MIX geometry (sub-cell detail: 4-px grid, per PixelTheme's rule).
+constexpr int kMixLabelW     = 16;                // "MIX" hit box, top-right
+constexpr int kMixLabelH     = 12;
+constexpr int kMixKnobArt    = 24;                // knob sprite, 16 frames
+constexpr int kMixKnobFrames = 16;
+constexpr int kMixKnobBox    = 28;                // knob hit box, bottom-right
+constexpr int kMixDragTravel = 48;                // px of drag = full 0..100 %
+constexpr float kMixStep     = 0.05f;             // knob/keyboard snap: 5 %
 constexpr int kMixReadoutTicks = 8;               // ~0.5 s at the 15 Hz timer
 
 // Drag payloads: "M:<material index>" from the palette, "C:<cell>" from a
@@ -131,16 +145,26 @@ public:
     int getSlot() const noexcept { return slot; }
     bool isBase() const noexcept { return baseSlot; }
 
+    // Display-only seam for tools/screenshots and the component tests: sets
+    // exactly the two flags the real mouseEnter/mouseMove handlers set, so a
+    // rendered hover state is the genuine one and not a mock-up.
+    void setHoverForDisplay (bool overCell, bool overLabel);
+
 private:
-    juce::Rectangle<int> railBounds() const;       // mix-rail hit area
-    bool hasMixRail() const;                       // filled outer cell?
-    void paintMixRail (juce::Graphics&, float weight01);
+    juce::Rectangle<int> mixLabelBounds() const;   // "MIX" hit box, top-right
+    juce::Rectangle<int> mixKnobBounds() const;    // knob hit box, bottom-right
+    bool hasMixControl() const;                    // filled outer cell?
+    bool isMixOpen() const;
+    void paintMixLabel (juce::Graphics&, Material, float weight01);
+    void paintMixKnob (juce::Graphics&, float weight01);
+    void paintMixTag (juce::Graphics&, float weight01);
     void paintMixReadout (juce::Graphics&, float weight01);
 
     CraftGridComponent& grid;
     const int slot;                                // 0..7, or -1 for the base
     const bool baseSlot;
-    bool hovering = false, dragOver = false, railHot = false;
+    bool hovering = false, dragOver = false, labelHot = false;
+    bool labelArmed = false;                       // press landed on the label
     bool mixDragging = false;
     int mixDragStartY = 0;
     float mixDragStartWeight = 1.0f;
@@ -157,7 +181,7 @@ public:
     std::function<void (const CraftGrid&)> onGridEdited;
     // Fired when the selected cell changes (CraftTab disarms the palette).
     std::function<void (int)> onSelectionChanged;
-    // Fired on every mix-rail / keyboard weight change (slot, 0..1). Kept
+    // Fired on every knob / keyboard / wheel weight change (slot, 0..1). Kept
     // SEPARATE from onGridEdited on purpose: a weight edit must go through
     // the processor's setCraftCellWeight() path, which re-crafts WITHOUT
     // registering a discovery and without touching the recipe/auto name.
@@ -186,7 +210,7 @@ public:
 
     // ---- per-cell WEIGHT / MIX --------------------------------------------
     float cellWeight (int slot) const;
-    // Rail drag: snaps to kMixStep and HOLDS the big readout up until
+    // Knob drag: snaps to kMixStep and HOLDS the big readout up until
     // endMixDrag(). No-op on an empty cell.
     void setCellWeightFromDrag (int slot, float weight01);
     void endMixDrag();
@@ -194,6 +218,20 @@ public:
     void nudgeCellWeight (int slot, int steps);
     // Which cell shows the big % readout right now (-1 = none).
     int mixReadoutSlot() const noexcept { return readoutSlot; }
+
+    // Is this cell's mix knob expanded? PURE UI STATE: never serialised into
+    // a preset or the session, cleared when the cell is emptied, when a new
+    // block is placed on it, and whenever the whole bench is replaced.
+    bool isMixKnobOpen (int slot) const noexcept;
+    void setMixKnobOpen (int slot, bool shouldBeOpen);
+    void toggleMixKnob (int slot);            // the MIX label click + the M key
+
+    // Display-only seam (tools/screenshots, component tests).
+    void setHoverForDisplay (int slot, bool overCell, bool overLabel);
+
+    // 16-frame stepped knob strip, rendered once and blitted per cell (house
+    // rule: static art is cached into Images, never redrawn per repaint).
+    const juce::Image& mixKnobStrip();
 
     // DICE: 3 scramble frames, then the real result — 4 frames total, no
     // easing curves (pixel art rules). Driven by CraftTab's 15 Hz timer.
@@ -224,6 +262,8 @@ private:
     int readoutSlot = -1;                           // big % badge owner
     int readoutTicks = 0;                           // 0 while a drag holds it
     bool readoutHeld = false;
+    bool mixOpen[kNumCells] = {};                   // expanded knobs (UI only)
+    juce::Image knobStrip;                          // built on first use
 
     void notifyEdit();
     void applyCellWeight (int slot, float weight01, bool hold);

@@ -1,0 +1,341 @@
+[frozen_parameter_ids]
+  67 parameter IDs verified against the frozen list
+[defaults_match_engine]
+  defaults + range spot checks OK
+[render_plugin_agreement]
+  129 presets agree; worst relative deviation 1.79e-06
+[preset_save_round_trip]
+  save -> reload identical; default patch saves 0 overrides
+[factory_bank]
+  128 factory presets: category quotas met, ordered, all load
+[factory_bank_weight_migration]
+  128 factory craft grids all read as 100% (no JSON rewrite needed)
+[tail_length_report]
+  dry 0 s, delay 3.29 s, delay+cave 6.59 s
+[craft_recipe_book]
+  16 recipes parsed; 8 spec patterns in sync with CraftEngine
+[craft_first_then_params]
+  craft-then-params verified on both paths
+[recipe_book_coverage]
+  16 recipes x 4 weight sets: all still detected (64 checks)
+  16 recipes: disk == BinaryData (17256 bytes), 0 duplicate patterns,
+  all reachable via match(), 128 single-cell near-misses rejected,
+  every override changes the craft result
+[craft_transition_click_free]
+  material added (PAD -> PAD+ICE)            step 0.0652 bound 0.0569  ratio  1.15 (t=0.70 s)
+  material removed (PAD+ICE -> PAD)          step 0.0347 bound 0.0442  ratio  0.78 (t=1.28 s)
+  RAW on (PAD -> PAD+STONE)                  step 0.0613 bound 0.0653  ratio  0.94 (t=0.70 s)
+  RAW off (PAD+STONE -> PAD)                 step 0.0584 bound 0.0611  ratio  0.96 (t=0.70 s)
+  noise on (PAD -> PAD+SAND)                 step 0.0766 bound 0.1060  ratio  0.72 (t=1.57 s)
+  sync on (PAD -> PAD+CRYSTAL)               step 0.1843 bound 0.1817  ratio  1.01 (t=0.42 s)
+  crush on (PAD -> PAD+LAVA)                 step 0.0603 bound 0.0891  ratio  0.68 (t=1.86 s)
+  crush off (PAD+LAVA -> PAD)                step 0.0577 bound 0.0927  ratio  0.62 (t=0.42 s)
+  +/-2 oct (PAD -> PAD+OBSIDIANx8)           step 0.0546 bound 0.0495  ratio  1.10 (t=0.99 s)
+  base swap PAD -> KEYS                      step 0.0467 bound 0.0423  ratio  1.10 (t=0.99 s)
+  base swap LEAD -> BASS                     step 0.1079 bound 0.1065  ratio  1.01 (t=1.86 s)
+  base swap PAD -> DRONE                     step 0.0606 bound 0.0466  ratio  1.30 (t=1.28 s)
+  base swap PAD -> BASS+LAVA                 step 0.0656 bound 0.0444  ratio  1.48 (t=1.57 s)
+  REGRESSION PAD+OBSIDIANx8 -> BASS          step 0.0142 bound 0.0087  ratio  1.64 (t=1.57 s)
+  REGRESSION PAD+OBSIDIANx8 -> BASS+LAVA     step 0.0393 bound 0.0210  ratio  1.87 (t=0.99 s)
+  weight 100% -> 0% (PAD+ICE)                step 0.0347 bound 0.0442  ratio  0.78 (t=1.28 s)
+  weight 0% -> 100% (PAD+ICE)                step 0.0652 bound 0.0569  ratio  1.15 (t=0.70 s)
+  weight 100% -> 50% (PAD+ICE)               step 0.0320 bound 0.0442  ratio  0.72 (t=1.28 s)
+  weight 25% -> 75% (PAD+ICEx4)              step 0.0342 bound 0.0846  ratio  0.40 (t=0.42 s)
+  weight RAW off via 100% -> 0% (STONE)      step 0.0584 bound 0.0611  ratio  0.96 (t=0.70 s)
+  weight crush off via 100% -> 0% (LAVA)     step 0.0577 bound 0.0927  ratio  0.62 (t=0.42 s)
+  weight sync on via 0% -> 100% (CRYSTAL)    step 0.1843 bound 0.1817  ratio  1.01 (t=0.42 s)
+  weight noise on via 0% -> 100% (SAND)      step 0.0766 bound 0.1060  ratio  0.72 (t=1.57 s)
+  weight 100% -> 0% (BASS+OBSIDIANx8)        step 0.0063 bound 0.0094  ratio  0.67 (t=0.99 s)
+  REGRESSION PAD+OBSIDIANx8 -> BASS          ratio  1.72  @ 44100 Hz / 64
+  REGRESSION PAD+OBSIDIANx8 -> BASS          ratio  1.72  @ 44100 Hz / 512
+  REGRESSION PAD+OBSIDIANx8 -> BASS          ratio  1.64  @ 48000 Hz / 64
+  REGRESSION PAD+OBSIDIANx8 -> BASS+LAVA     ratio  1.88  @ 44100 Hz / 64
+  REGRESSION PAD+OBSIDIANx8 -> BASS+LAVA     ratio  1.88  @ 44100 Hz / 512
+  REGRESSION PAD+OBSIDIANx8 -> BASS+LAVA     ratio  1.87  @ 48000 Hz / 64
+  negative control (hard splice)             step 0.7628 bound 0.0206  ratio 36.96
+  24 transitions clean (gate 2.5x); worst non-regression 1.48, worst overall 1.87
+[ui_scale_slider_deferral]
+  no callback during drag, exactly one on mouse-up; keys inert mid-drag
+[ui_scale_settle_shield]
+  wheel / double-click / drag+arrow: 0 parameter actuations
+[ui_craft_hidden_mix]
+  label toggles, knob owns 28x28, block drag intact
+[ui_craft_no_craft_resync]
+  no-craft preset empties the bench and closes every knob
+[ui_preset_search]
+  19/128 hits for "ST", folder override both ways
+[preset_library_model]
+  ordering, wrap, lazy folder, save/rescan OK
+[favorites]
+  lazy file, persistence, rescan, both banks, deletion OK
+[session_state_round_trip]
+  67 params + preset meta + craft survive the round trip
+[processor_pitch_bend_and_params]
+  no bend 220.000 Hz, full wheel 246.938 Hz (target 246.942)
+  open-filter energy 1730.1516 vs cutoff-150Hz energy 17.0578
+[factory_presets_render_clean]
+  8BIT SUNSET        peak 0.2272, non-finite 0
+  ABYSS PILLAR       peak 0.2293, non-finite 0
+  ANVIL ANTHEM       peak 0.6520, non-finite 0
+  ASH HAULER         peak 0.3486, non-finite 0
+  ATTIC UPRIGHT      peak 0.2987, non-finite 0
+  AUREOLE            peak 0.4947, non-finite 0
+  AURORA VEIL        peak 0.8081, non-finite 0
+  BLIP BROOK         peak 0.5504, non-finite 0
+  BOG WHISTLE        peak 0.3913, non-finite 0
+  BOG WOBBLE         peak 0.2598, non-finite 0
+  BONUS STAGE        peak 0.5131, non-finite 0
+  BOULDER ROLL       peak 0.3666, non-finite 0
+  BOW SNAP           peak 0.3435, non-finite 0
+  BRICK BUMP         peak 0.4108, non-finite 0
+  BRIGHT RIM         peak 0.4387, non-finite 0
+  CANYON CLAP        peak 0.6218, non-finite 0
+  CANYON CRIER       peak 0.6325, non-finite 0
+  CAVE MOUTH         peak 0.0567, non-finite 0
+  CELLAR HOP         peak 0.4909, non-finite 0
+  CHAPEL BELLS       peak 0.4648, non-finite 0
+  CLOUD PIPER        peak 0.3986, non-finite 0
+  COBALT CRY         peak 0.4418, non-finite 0
+  COBBLE BASS        peak 0.2395, non-finite 0
+  COBBLE THUMP       peak 0.5194, non-finite 0
+  COIN CHUTE         peak 0.6780, non-finite 0
+  COPPER BELL        peak 0.6704, non-finite 0
+  CRATER BOOM        peak 0.2593, non-finite 0
+  CRT SUNRISE        peak 0.3903, non-finite 0
+  CRUST BREAKER      peak 0.2713, non-finite 0
+  DEEP SHAFT         peak 0.2275, non-finite 0
+  DIESEL MOSS        peak 0.2712, non-finite 0
+  DOT MATRIX         peak 0.1391, non-finite 0
+  DRIFTWOOD          peak 0.7368, non-finite 0
+  DRIP GROTTO        peak 0.3865, non-finite 0
+  DRIZZLE CHIME      peak 0.8701, non-finite 0
+  DUSK BEACON        peak 0.3293, non-finite 0
+  DUST CURTAIN       peak 0.7672, non-finite 0
+  ECHO TOM           peak 0.4754, non-finite 0
+  EMBER BED          peak 0.4106, non-finite 0
+  EMBER CROWN        peak 0.3599, non-finite 0
+  FANFARE FALLS      peak 0.2617, non-finite 0
+  FAR THUNDER        peak 0.4467, non-finite 0
+  FELT MALLET        peak 0.4860, non-finite 0
+  FERN CANOPY        peak 0.8856, non-finite 0
+  FLINT HAT          peak 0.7654, non-finite 0
+  FLINT WHISTLE      peak 0.3570, non-finite 0
+  FOREST LULLABY     peak 0.3733, non-finite 0
+  FORGE HOWL         peak 0.3341, non-finite 0
+  FROSTBYTE          peak 0.5048, non-finite 0
+  FROST CHIME        peak 0.9999, non-finite 0
+  GEODE VOICE        peak 0.2773, non-finite 0
+  GILDED ORGAN       peak 0.2596, non-finite 0
+  GLASS RAIN         peak 0.4714, non-finite 0
+  GLINT CELESTA      peak 0.9999, non-finite 0
+  GRIT SNARE         peak 0.4702, non-finite 0
+  HAIL BULLETS       peak 0.6338, non-finite 0
+  HAIL PECK          peak 0.5888, non-finite 0
+  HALF GATE          peak 0.1027, non-finite 0
+  HARVEST LUTE       peak 0.6307, non-finite 0
+  HOLLOW GEODE       peak 0.4982, non-finite 0
+  HOLLOW HALL        peak 0.3025, non-finite 0
+  ICICLE HARP        peak 0.7097, non-finite 0
+  JINGLE SPRING      peak 0.3653, non-finite 0
+  KALIMBA COVE       peak 0.4047, non-finite 0
+  KILN FIFE          peak 0.4089, non-finite 0
+  LAGOON KEYS        peak 0.6694, non-finite 0
+  LANTERN OIL        peak 0.3849, non-finite 0
+  LICHEN HARMONIUM   peak 0.2128, non-finite 0
+  LOAM FLOOR         peak 0.2055, non-finite 0
+  MAGMA FLOOR        peak 0.3338, non-finite 0
+  MAGMA WHIP         peak 0.3061, non-finite 0
+  MALLET FALLS       peak 0.5274, non-finite 0
+  MAMMOTH STEP       peak 0.3930, non-finite 0
+  MARIMBA MESA       peak 0.4353, non-finite 0
+  MEADOW SUNDAY      peak 0.6217, non-finite 0
+  MIDAS MODE         peak 0.5512, non-finite 0
+  MIRROR LAKE        peak 0.4952, non-finite 0
+  MOSS BOY           peak 0.2369, non-finite 0
+  MOTH DUST          peak 0.7138, non-finite 0
+  MUTE WIRE          peak 0.3880, non-finite 0
+  NARROW GATE        peak 0.4135, non-finite 0
+  NEEDLE SPIRE       peak 0.5626, non-finite 0
+  NIGHT LAKE         peak 0.1659, non-finite 0
+  NORTH SPUR         peak 0.3859, non-finite 0
+  OBOE MESA          peak 0.2010, non-finite 0
+  OWL COURIER        peak 0.1491, non-finite 0
+  PERMAFROST         peak 0.6517, non-finite 0
+  PIXEL ANCHOR       peak 0.3944, non-finite 0
+  POLAR DAWN         peak 0.5158, non-finite 0
+  POWER CUT          peak 0.1170, non-finite 0
+  POWER PELLET       peak 0.5367, non-finite 0
+  PUDDLE PING        peak 0.7096, non-finite 0
+  QUARRY KICK        peak 0.2322, non-finite 0
+  RESONANT LODE      peak 0.2764, non-finite 0
+  RUMBLE SHEET       peak 0.3919, non-finite 0
+  SCANLINE SOLO      peak 0.3933, non-finite 0
+  SHARDSTORM         peak 0.4259, non-finite 0
+  SILVER BIRCH       peak 0.9947, non-finite 0
+  SINKHOLE           peak 0.3184, non-finite 0
+  SMOKE SIGNAL       peak 0.6579, non-finite 0
+  SNOW BERRY         peak 0.7245, non-finite 0
+  SNOW GLOCKEN       peak 0.9994, non-finite 0
+  SONAR SHAFT        peak 0.2474, non-finite 0
+  SPARK JUMP         peak 0.3884, non-finite 0
+  SPARK VEIN         peak 0.9999, non-finite 0
+  STARLESS POND      peak 0.3197, non-finite 0
+  STATIC FIELD       peak 0.3431, non-finite 0
+  STEEL CATHEDRAL    peak 0.2131, non-finite 0
+  STONE SKIP         peak 0.3393, non-finite 0
+  STRATOSPHERE       peak 0.2914, non-finite 0
+  SUBGLACIAL         peak 0.2062, non-finite 0
+  SUNSPIKE           peak 0.5675, non-finite 0
+  SWELL VAULT        peak 0.6762, non-finite 0
+  TALKING TAR        peak 0.2233, non-finite 0
+  TAPE SNARE         peak 0.4711, non-finite 0
+  TAPE SUNRISE       peak 0.7132, non-finite 0
+  TARPIT             peak 0.2331, non-finite 0
+  TAUT WIRE          peak 0.3839, non-finite 0
+  THERMAL DRIFT      peak 0.3426, non-finite 0
+  THORN FLICK        peak 0.9324, non-finite 0
+  TINE POND          peak 0.6590, non-finite 0
+  TUNDRA CALL        peak 0.4039, non-finite 0
+  TWIN RAIL          peak 0.3536, non-finite 0
+  UNDERTOW           peak 0.3831, non-finite 0
+  VELVET GLACIER     peak 0.9936, non-finite 0
+  VHS CLIFF          peak 0.4712, non-finite 0
+  WINTER WELL        peak 0.5318, non-finite 0
+  ZAP TRENCH         peak 0.6005, non-finite 0
+[processor_craft_api]
+  grid apply, recipe discovery, dice, mutate all OK
+[craft_save_and_session]
+  minimal-diff save, preset + session round trips OK
+[craft_cell_weight_state]
+  migration, clamping, JSON shape, processor API, preset + session round trips OK
+[ui_keyboard_path]
+  UI note C4: 261.626 Hz, sustain RMS 0.20238
+  after uiAllNotesOff: RMS 0.00000000 (held was 0.20238)
+  host-only tail RMS 0.20061 vs host+UI-after-panic 0.20061
+  UI note on/off, panic, and host coexistence OK
+[ui_keyboard_buffer_sizes]
+  block sizes 1..4096 mixed: 261.626 Hz, RMS 0.20239, 0 non-finite
+  mixed block sizes and a mid-session re-prepare OK
+[ui_keyboard_fifo_overflow]
+  600 events into a 128-slot ring: peak 0.0000, tail RMS 0.00000000
+  overflow degrades to a released burst, queue recovers
+[discovery_jingle_in_processor]
+  null test: 0 diffs before, 0 after; jingle peak 0.1259
+  hot patch peak: dry 1.000000000, with jingle 1.000000000
+  triggers, decays to silence, <= 0 dBFS, bit-transparent when idle
+[ui_audio_path_no_allocation]
+  0 allocations across 200 processBlock calls
+[preset_sample_rate_sweep]
+  SHARDSTORM      48k f0   219.18 Hz (conf 0.99, tonal)
+     44100.0 Hz peak 0.4177 rms 0.1019 dc +0.00011 f0   219.40 (conf 0.99)   +1.8 cents
+     48000.0 Hz peak 0.4144 rms 0.1019 dc +0.00011 f0   219.18 (conf 0.99)   +0.0 cents
+     88200.0 Hz peak 0.4086 rms 0.1019 dc +0.00011 f0   219.40 (conf 0.99)   +1.8 cents
+     96000.0 Hz peak 0.4085 rms 0.1019 dc +0.00011 f0   219.68 (conf 0.99)   +4.0 cents
+    176400.0 Hz peak 0.4084 rms 0.1019 dc +0.00011 f0   219.40 (conf 0.99)   +1.8 cents
+    192000.0 Hz peak 0.4084 rms 0.1019 dc +0.00011 f0   219.43 (conf 0.99)   +2.0 cents
+  MAGMA FLOOR     48k f0   109.34 Hz (conf 0.97, tonal)
+     44100.0 Hz peak 0.3338 rms 0.0672 dc -0.00004 f0   109.43 (conf 0.97)   +1.4 cents
+     48000.0 Hz peak 0.3338 rms 0.0673 dc +0.00001 f0   109.34 (conf 0.97)   +0.0 cents
+     88200.0 Hz peak 0.3340 rms 0.0673 dc +0.00001 f0   109.43 (conf 0.97)   +1.4 cents
+     96000.0 Hz peak 0.3340 rms 0.0673 dc +0.00001 f0   109.34 (conf 0.97)   +0.0 cents
+    176400.0 Hz peak 0.3340 rms 0.0673 dc +0.00001 f0   109.36 (conf 0.97)   +0.3 cents
+    192000.0 Hz peak 0.3340 rms 0.0673 dc +0.00000 f0   109.40 (conf 0.97)   +1.0 cents
+  QUARRY KICK     48k f0  2000.00 Hz (conf 0.64, non-tonal)
+     44100.0 Hz peak 0.2226 rms 0.0168 dc +0.00080 f0  2004.55 (conf 0.65)   +0.0 cents
+     48000.0 Hz peak 0.2322 rms 0.0167 dc +0.00080 f0  2000.00 (conf 0.64)   +0.0 cents
+     88200.0 Hz peak 0.2138 rms 0.0167 dc +0.00079 f0  2004.55 (conf 0.65)   +0.0 cents
+     96000.0 Hz peak 0.2133 rms 0.0167 dc +0.00080 f0  2000.00 (conf 0.64)   +0.0 cents
+    176400.0 Hz peak 0.1983 rms 0.0167 dc +0.00079 f0  2004.55 (conf 0.65)   +0.0 cents
+    192000.0 Hz peak 0.1988 rms 0.0167 dc +0.00079 f0  2000.00 (conf 0.64)   +0.0 cents
+  PERMAFROST      48k f0   219.18 Hz (conf 0.99, tonal)
+     44100.0 Hz peak 0.4348 rms 0.1119 dc -0.00000 f0   219.40 (conf 0.99)   +1.8 cents
+     48000.0 Hz peak 0.4343 rms 0.1119 dc -0.00000 f0   219.18 (conf 0.99)   +0.0 cents
+     88200.0 Hz peak 0.4305 rms 0.1119 dc -0.00000 f0   219.40 (conf 0.99)   +1.8 cents
+     96000.0 Hz peak 0.4291 rms 0.1118 dc -0.00000 f0   219.18 (conf 0.99)   +0.0 cents
+    176400.0 Hz peak 0.4283 rms 0.1117 dc -0.00000 f0   219.40 (conf 0.99)   +1.8 cents
+    192000.0 Hz peak 0.4284 rms 0.1117 dc -0.00001 f0   219.43 (conf 0.99)   +2.0 cents
+  FOREST LULLABY  48k f0   220.18 Hz (conf 0.99, tonal)
+     44100.0 Hz peak 0.3734 rms 0.1092 dc +0.00000 f0   219.40 (conf 0.99)   -6.1 cents
+     48000.0 Hz peak 0.3733 rms 0.1092 dc +0.00000 f0   220.18 (conf 0.99)   +0.0 cents
+     88200.0 Hz peak 0.3734 rms 0.1093 dc +0.00000 f0   219.40 (conf 0.99)   -6.1 cents
+     96000.0 Hz peak 0.3734 rms 0.1092 dc +0.00000 f0   219.68 (conf 0.99)   -4.0 cents
+    176400.0 Hz peak 0.3734 rms 0.1093 dc +0.00000 f0   219.68 (conf 0.99)   -4.0 cents
+    192000.0 Hz peak 0.3734 rms 0.1093 dc +0.00000 f0   219.68 (conf 0.99)   -4.0 cents
+  COIN CHUTE      48k f0   188.24 Hz (conf 0.50, non-tonal)
+     44100.0 Hz peak 0.6790 rms 0.0248 dc -0.00000 f0   188.46 (conf 0.50)   +0.0 cents
+     48000.0 Hz peak 0.6780 rms 0.0247 dc -0.00000 f0   188.24 (conf 0.50)   +0.0 cents
+     88200.0 Hz peak 0.6771 rms 0.0247 dc -0.00001 f0   188.06 (conf 0.49)   +0.0 cents
+     96000.0 Hz peak 0.6768 rms 0.0247 dc -0.00001 f0   188.24 (conf 0.49)   +0.0 cents
+    176400.0 Hz peak 0.6767 rms 0.0247 dc -0.00001 f0   188.26 (conf 0.49)   +0.0 cents
+    192000.0 Hz peak 0.6767 rms 0.0247 dc -0.00001 f0   188.42 (conf 0.49)   +0.0 cents
+  KALIMBA COVE    48k f0   240.00 Hz (conf 0.70, non-tonal)
+     44100.0 Hz peak 0.4047 rms 0.0477 dc +0.00001 f0   239.67 (conf 0.70)   +0.0 cents
+     48000.0 Hz peak 0.4047 rms 0.0477 dc +0.00001 f0   240.00 (conf 0.70)   +0.0 cents
+     88200.0 Hz peak 0.4048 rms 0.0476 dc +0.00001 f0   240.33 (conf 0.70)   +0.0 cents
+     96000.0 Hz peak 0.4048 rms 0.0476 dc +0.00001 f0   240.00 (conf 0.70)   +0.0 cents
+    176400.0 Hz peak 0.4049 rms 0.0476 dc +0.00001 f0   240.00 (conf 0.71)   +0.0 cents
+    192000.0 Hz peak 0.4049 rms 0.0476 dc +0.00001 f0   240.00 (conf 0.71)   +0.0 cents
+  STATIC FIELD    48k f0   109.84 Hz (conf 0.84, tonal)
+     44100.0 Hz peak 0.3086 rms 0.0830 dc -0.00008 f0   109.98 (conf 0.83)   +2.1 cents
+     48000.0 Hz peak 0.3174 rms 0.0830 dc -0.00008 f0   109.84 (conf 0.84)   +0.0 cents
+     88200.0 Hz peak 0.3018 rms 0.0825 dc -0.00009 f0   109.98 (conf 0.84)   +2.1 cents
+     96000.0 Hz peak 0.3042 rms 0.0825 dc -0.00009 f0   109.97 (conf 0.84)   +2.0 cents
+    176400.0 Hz peak 0.3072 rms 0.0823 dc -0.00008 f0   109.98 (conf 0.84)   +2.1 cents
+    192000.0 Hz peak 0.3060 rms 0.0822 dc -0.00009 f0   109.97 (conf 0.84)   +2.0 cents
+[offline_vs_plugin_path]
+  SHARDSTORM      host block   64: offline(plugin params) delta 0, offline(render mapping) delta 0 (-240.0 dBFS)
+  SHARDSTORM      host block  128: offline(plugin params) delta 0, offline(render mapping) delta 0 (-240.0 dBFS)
+  SHARDSTORM      host block  512: offline(plugin params) delta 0, offline(render mapping) delta 0 (-240.0 dBFS)
+  SHARDSTORM      host block 1024: offline(plugin params) delta 0, offline(render mapping) delta 0 (-240.0 dBFS)
+  PERMAFROST      host block   64: offline(plugin params) delta 0, offline(render mapping) delta 0 (-240.0 dBFS)
+  PERMAFROST      host block  128: offline(plugin params) delta 0, offline(render mapping) delta 0 (-240.0 dBFS)
+  PERMAFROST      host block  512: offline(plugin params) delta 0, offline(render mapping) delta 0 (-240.0 dBFS)
+  PERMAFROST      host block 1024: offline(plugin params) delta 0, offline(render mapping) delta 0 (-240.0 dBFS)
+  QUARRY KICK     host block   64: offline(plugin params) delta 0, offline(render mapping) delta 0 (-240.0 dBFS)
+  QUARRY KICK     host block  128: offline(plugin params) delta 0, offline(render mapping) delta 0 (-240.0 dBFS)
+  QUARRY KICK     host block  512: offline(plugin params) delta 0, offline(render mapping) delta 0 (-240.0 dBFS)
+  QUARRY KICK     host block 1024: offline(plugin params) delta 0, offline(render mapping) delta 0 (-240.0 dBFS)
+  STATIC FIELD    host block   64: offline(plugin params) delta 0, offline(render mapping) delta 0.00197 (-54.1 dBFS)
+  STATIC FIELD    host block  128: offline(plugin params) delta 0, offline(render mapping) delta 0.00197 (-54.1 dBFS)
+  STATIC FIELD    host block  512: offline(plugin params) delta 0, offline(render mapping) delta 0.00197 (-54.1 dBFS)
+  STATIC FIELD    host block 1024: offline(plugin params) delta 0, offline(render mapping) delta 0.00197 (-54.1 dBFS)
+  4 presets x 4 host block sizes: identical-parameter deviation 0, preset-mapping deviation 0.00197 (-54.1 dBFS)
+[rapid_preset_switch_held_notes]
+  128 presets, 3 blocks each @ 48k/128: peak 0.9995, mean |x| 0.1252,
+  non-finite 0, audio-thread allocations 0, worst sample step 0.4201,
+  still sounding after the run (tail peak 0.1969)
+   44100.0 Hz /   16: 128 switches, non-finite 0, peak 1.0000
+  192000.0 Hz / 4096: 128 switches, non-finite 0, peak 0.9919
+[preset_switch_click_matrix]
+  PERMAFROST      -> MAGMA FLOOR     step 0.0470 bound 0.0278 strict  1.69 widened  0.44
+  MAGMA FLOOR     -> PERMAFROST      step 0.0170 bound 0.0362 strict  0.47 widened  0.16
+  SHARDSTORM      -> QUARRY KICK     step 0.0807 bound 0.1125 strict  0.72 widened  0.47
+  QUARRY KICK     -> SHARDSTORM      step 0.0113 bound 0.1160 strict  0.10 widened  0.07
+  COIN CHUTE      -> STATIC FIELD    step 0.0001 bound 0.0001 strict  1.21 widened  0.00  [destination silences the held note]
+  STATIC FIELD    -> COIN CHUTE      step 0.0296 bound 0.0093 strict  3.18 widened  0.12  [destination silences the held note]
+  FOREST LULLABY  -> KALIMBA COVE    step 0.0120 bound 0.0201 strict  0.60 widened  0.16
+  KALIMBA COVE    -> FOREST LULLABY  step 0.0002 bound 0.0002 strict  0.93 widened  0.00  [destination silences the held note]
+  negative control (hard splice, 5 pairs with a sounding source): ratio 1.74..9.47
+  8 cross-category switches, worst ratio 1.69 (gate 2.5)
+[multiple_instances]
+  #0 SHARDSTORM       44100.0 Hz /   16: peak 0.3368, max |alone - concurrent| = 0
+  #1 MAGMA FLOOR      48000.0 Hz /  128: peak 0.2979, max |alone - concurrent| = 0
+  #2 QUARRY KICK      88200.0 Hz /  512: peak 0.4003, max |alone - concurrent| = 0
+  #3 PERMAFROST       96000.0 Hz /   64: peak 0.1664, max |alone - concurrent| = 0
+  #4 FOREST LULLABY  176400.0 Hz / 1024: peak 0.3096, max |alone - concurrent| = 0
+  #5 COIN CHUTE      192000.0 Hz / 4096: peak 0.7267, max |alone - concurrent| = 0
+  #6 KALIMBA COVE     44100.0 Hz /  256: peak 0.3322, max |alone - concurrent| = 0
+  #7 STATIC FIELD     48000.0 Hz / 2048: peak 0.1749, max |alone - concurrent| = 0
+  8 instances, 6 sample rates, 8 block sizes: fully independent
+[extreme_parameter_rails]
+    silent rail: oscA_on at min
+    silent rail: oscA_level at min
+    silent rail: master_gain at min
+  134 rails (67 params x 2): peak max 0.5854, 3 silent, 0 above 0.98,
+  render time median 2.36 ms, worst 3.23 ms (uni_count)
+[parameter_fuzz]
+  300 random full-parameter states (seed 0xB10C0000C0DE): worst peak 0.3127 (state 54),
+  0 hit the 0.98 ceiling, 94 silent, worst |DC| 0.0356,
+  render time median 1.79 ms, worst 3.95 ms
+
+3994 checks, 0 failures

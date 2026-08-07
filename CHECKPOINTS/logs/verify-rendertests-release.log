@@ -1,0 +1,365 @@
+[pitch_accuracy]
+  sr= 44100 note= 45 f0= 110.0001 Hz ref= 110.0000 Hz err=+0.001 cents
+  sr= 44100 note= 57 f0= 220.0049 Hz ref= 220.0000 Hz err=+0.038 cents
+  sr= 44100 note= 69 f0= 440.0093 Hz ref= 440.0000 Hz err=+0.037 cents
+  sr= 44100 note= 81 f0= 880.0186 Hz ref= 880.0000 Hz err=+0.037 cents
+  sr= 48000 note= 45 f0= 110.0000 Hz ref= 110.0000 Hz err=-0.001 cents
+  sr= 48000 note= 57 f0= 219.9999 Hz ref= 220.0000 Hz err=-0.001 cents
+  sr= 48000 note= 69 f0= 440.0086 Hz ref= 440.0000 Hz err=+0.034 cents
+  sr= 48000 note= 81 f0= 880.0167 Hz ref= 880.0000 Hz err=+0.033 cents
+  sr= 96000 note= 45 f0= 110.0011 Hz ref= 110.0000 Hz err=+0.017 cents
+  sr= 96000 note= 57 f0= 220.0000 Hz ref= 220.0000 Hz err=-0.000 cents
+  sr= 96000 note= 69 f0= 440.0000 Hz ref= 440.0000 Hz err=-0.000 cents
+  sr= 96000 note= 81 f0= 880.0088 Hz ref= 880.0000 Hz err=+0.017 cents
+[aliasing_report]
+  RAW alias -24.19 dBc, polyBLEP alias -50.17 dBc, improvement 25.98 dB
+[hard_sync_golden]
+  hard_sync_A2_48k: max |diff| vs golden = 0
+[lfsr]
+  long-mode period = 32767
+  short-mode period = 93
+  long-mode mean: raw sequence -0.0000 -> DC-blocked output +0.001069
+  short-mode mean: raw sequence +0.6559 -> DC-blocked output +0.006510
+  lfsr_long_48k: max |diff| vs golden = 0
+  lfsr_short_48k: max |diff| vs golden = 0
+[adsr_shape]
+  attack peak 1.0000 at 100.0 ms
+  release: -60 dB at 310.7 ms, hard zero at 541.0 ms
+[block_size_invariance]
+  block   16 vs 512: max |diff| = 0
+  block   61 vs 512: max |diff| = 0
+  block  128 vs 512: max |diff| = 0
+  block 1024 vs 512: max |diff| = 0
+  block 4096 vs 512: max |diff| = 0
+[no_allocation]
+  0 allocations across 201 blocks with notes + stealing
+[lfo2_pitch_taper]
+  amt=+1.00 -> f0= 440.009 Hz, expected  440.000 Hz (+12.0 st), err +0.04 cents
+  amt=+0.50 -> f0= 261.625 Hz, expected  261.626 Hz (+3.0 st), err -0.00 cents
+  amt=-0.50 -> f0= 184.997 Hz, expected  184.997 Hz (-3.0 st), err -0.00 cents
+[pitch_bend]
+  pre-bend 220.000 Hz, post-bend 246.942 Hz (target 246.942)
+  worst period-to-period step through bend: 1.74% (84 periods)
+  bend request +10 st -> clamped f0 246.942 Hz
+[unison_cap_128]
+  mean |8-way - 4-way| with 16 voices = 0.5418
+[master_softclip]
+  hot patch peak = 1.000000 (threshold 0.96605)
+  quiet patch peak = 0.3033, resamples changed by clip = 0
+[poly_chord_headroom]
+  single-note peak 0.3897 (want ~-6 dBFS: 0.2..0.9)
+  4-note chord nonlinearity residual 0.51% (gate 2%)
+  negative control (+12 dB master) residual 47.22%
+[lfsr_voice_seeds]
+  long mode: 0 mismatches vs live stepping, 0 duplicate seeds
+  short mode: 0 mismatches vs live stepping, 0 duplicate seeds
+[noise_poly_loudness]
+  simultaneous noise RMS: 1 voice -13.00 dB, 4: -13.00 dB (-0.01), 8: -13.01 dB (-0.01)
+  staggered 8-voice noise RMS -12.02 dB (+0.98 vs 1 voice)
+  tonal RMS: 1 note -18.00 dB, 4-note chord -11.99 dB (+6.01)
+  4-voice noise render bit-identical at block 16/61/1024
+[param_smoothing_click_free]
+  slew: steady(before)=0.0070 steady(after)=0.0212 transition=0.0210 bound=0.0265
+  negative control (hard splice) slew = 0.3677
+[fx_bypass_null]
+  crush at mix 0: max |diff| = 0
+  delay at mix 0: max |diff| = 0
+  cave  at mix 0: max |diff| = 0
+  all   at mix 0: max |diff| = 0
+  hp    at mix 0: max |diff| = 0
+  lp    at mix 0: max |diff| = 0
+  hp+lp at mix 0: max |diff| = 0
+[crush_quantize_and_hold]
+  bits=1: 0/3200 samples off the quantization grid
+  bits=2: 0/3200 samples off the quantization grid
+  bits=3: 0/3200 samples off the quantization grid
+  bits=5: 0/3200 samples off the quantization grid
+  bits=8: 0/3200 samples off the quantization grid
+  down=8: 199 changes on the 8-sample grid, 0 off it
+[delay_tempo_lock]
+  echo 1 lag = 24000 samples (expect 24000 = 0.5 s @ 120 BPM)
+  echo 3 lag = 79925 samples (expect ~79900 after 90 BPM change)
+  echo 4 spacing = 32000 samples (expect 32000 = 2/3 s @ 90 BPM)
+[delay_tempo_click_free]
+  slew: steady 0.0152 / 0.0201, transition 0.0207, bound 0.0261
+  negative control (hard splice) slew = 0.4323
+[delay_pingpong]
+  echo1 L/R rms = 0.05646 / 0.00000, echo2 L/R rms = 0.00000 / 0.03952
+[cave_tail]
+  tail windows: first 0.04629, last 0.000042, growth violations 1/25
+  RT60-ish: size 0.9 -> 10.01 s, size 0.2 -> 0.78 s
+[cave_damp_spectral]
+  damp 0.85: HF drop 144.9 dB vs mid drop 25.0 dB (2.0 s apart)
+  damp 0.10: HF drop 39.6 dB vs mid drop 16.4 dB
+[fx_hp_default_transparent]
+  wet FX @ default HP vs golden: max |diff| = 0
+[fx_hp_wet_rumble_cut]
+  cave  hp: sub(20-100 Hz) drop  11.4 dB (need >= 8), mid(300-1200) drop  0.6 dB (allow <= 3.0)
+  delay hp: sub(20-100 Hz) drop  13.4 dB (need >= 8), mid(300-1200) drop  0.9 dB (allow <= 3.5)
+  crush hp: sub(20-100 Hz) drop  17.3 dB (need >= 12), mid(300-1200) drop  1.9 dB (allow <= 3.0)
+[fx_lp_ceiling_is_bypass]
+  wet FX, LP explicitly at the 20 kHz ceiling: max |diff| = 0
+[fx_lp_wet_hf_cut]
+  cave  lp@2kHz: HF(5-15 kHz) drop  11.0 dB (need >= 8), low(100-500) drop  0.1 dB (allow <= 3.0)
+  delay lp@2kHz: HF(5-15 kHz) drop  11.3 dB (need >= 8), low(100-500) drop  0.1 dB (allow <= 3.0)
+  crush lp@2kHz: HF(5-15 kHz) drop  11.3 dB (need >= 8), low(100-500) drop  0.1 dB (allow <= 3.0)
+[fx_lp_engage_click_free]
+  engage @    20000 Hz   added step: shipped 0.00e+00   naive 1.18e-01 ( -14.8 dBFS)
+  engage @    13750 Hz   added step: shipped 0.00e+00   naive 2.47e-01 (  -8.4 dBFS)
+  engage @     2000 Hz   added step: shipped 0.00e+00   naive 4.94e-01 (  -2.4 dBFS)
+  disengage @  19999 Hz gate added step: shipped 3.30e-05 ( -85.9 dBFS)  naive 1.32e-01 ( -13.8 dBFS)
+  engage  (20 kHz -> 2 kHz)    worst step 0.27438 (t=0.42 s)
+  disengage (2 kHz -> 20 kHz)  worst step 0.24988 (t=0.42 s)
+  1.0 s after disengage vs never-engaged: max |diff| = 0
+[craft_shapeless_and_stacking]
+[craft_soft_knee_stacking]
+  ICE->PAD env1_r (railed 5s at x3)          n=1..8: 2.7500 4.4606 4.7335 4.8023 4.8285 4.8402 4.8456 4.8483
+  OBSIDIAN->BASS sub_level (railed 1)        n=1..8: 0.9875 0.9929 0.9941 0.9946 0.9948 0.9949 0.9950 0.9950
+  TNT->PERC env2_pitch (railed +48st)        n=1..8: 46.6500 47.2500 47.3864 47.4375 47.4600 47.4706 47.4757 47.4783
+  SAND->KEYS noise_level (railed 1 at x2)    n=1..8: 0.8500 0.9432 0.9569 0.9615 0.9635 0.9644 0.9649 0.9651
+  CLOUD->DRONE cave_size (railed 1 at x2)    n=1..8: 0.9777 0.9880 0.9902 0.9911 0.9914 0.9916 0.9917 0.9917
+  CLOUD->DRONE cave_mix (0.95 near-rail)     n=1..8: 0.6000 0.7750 0.8520 0.8750 0.8840 0.8881 0.8900 0.8909
+[craft_cell_weights]
+  default 1.0 is a no-op on every unweighted golden grid
+  70 base/material pairs: weight 0 == empty cell, bit-identical
+  8 spec recipes match at weights 0 / 0.3 / 0.65 / 1.0
+  PAD+ICE cave_mix         0%/25%/50%/75%/100%: 0.1800 0.2175 0.2550 0.2925 0.3300
+  PAD+ICE uni_detune       0%/25%/50%/75%/100%: 14.0000 17.0000 20.0000 23.0000 26.0000
+  BASS+OBSIDIAN cutoff     0%/25%/50%/75%/100%: 650.0000 560.6250 471.2500 381.8750 292.5000
+  KEYS+CLOUD env1_a        0%/25%/50%/75%/100%: 0.0020 0.0770 0.1520 0.2270 0.3020
+  LEAD+LAVA filt_res       0%/25%/50%/75%/100%: 0.1000 0.1500 0.2000 0.2500 0.3000
+  CHIP+MOSS crush_mix      0%/25%/50%/75%/100%: 0.0000 0.0625 0.1250 0.1875 0.2500
+[craft_weight_audible_monotonic]
+  PAD   + ICE       0/25/50/75/100%
+      tail rms  0.03634 0.04460 0.03314 0.03083 0.06121
+      early rms 0.04962 0.03051 0.02804 0.01948 0.01639
+      centroid  1648 1646 1706 1802 2223 Hz  <- asserting on early rms
+  BASS  + OBSIDIAN  0/25/50/75/100%
+      tail rms  0.00160 0.00252 0.00445 0.00599 0.00757
+      early rms 0.28266 0.29506 0.41538 0.41935 0.41580
+      centroid  165 148 117 101 84 Hz  <- asserting on centroid
+  KEYS  + CLOUD     0/25/50/75/100%
+      tail rms  0.00672 0.00623 0.01006 0.02748 0.03007
+      early rms 0.21928 0.18653 0.13346 0.08848 0.06069
+      centroid  547 537 525 508 535 Hz  <- asserting on early rms
+  LEAD  + GLASS     0/25/50/75/100%
+      tail rms  0.00516 0.00520 0.00703 0.00933 0.01156
+      early rms 0.17503 0.15576 0.13798 0.12169 0.10683
+      centroid  1663 1775 1874 1977 2088 Hz  <- asserting on centroid
+[craft_determinism_golden]
+  25 golden grids verified
+[craft_recipe_matching]
+  8 patterns: exact hit, wrong-base / moved / extra all miss
+[craft_autoname]
+[craft_dice_mutate]
+  dice(12345): 6/8 cells filled
+[craft_material_distinctness]
+  LEAD_ICE       rms= 0.100 cent= 0.391 spec= 0.360 tail= 0.703  margin=  9.00
+  LEAD_LAVA      rms= 0.489 cent= 0.077 spec= 0.283 tail= 0.407  margin=  8.16
+  LEAD_STONE     rms= 0.193 cent= 0.107 spec= 0.311 tail= 0.954  margin=  7.77
+  LEAD_WOOD      rms= 0.195 cent= 0.383 spec= 0.080 tail= 0.324  margin=  6.38
+  LEAD_GLASS     rms= 0.344 cent= 0.328 spec= 0.082 tail= 0.554  margin=  5.74
+  LEAD_GOLD      rms= 0.363 cent= 0.571 spec= 0.376 tail= 0.196  margin=  9.51
+  LEAD_CRYSTAL   rms= 0.512 cent= 0.492 spec= 0.112 tail= 0.384  margin=  8.53
+  LEAD_VOLT      rms= 0.081 cent= 0.254 spec= 0.458 tail= 0.180  margin= 11.45
+  LEAD_SLIME     rms= 0.165 cent= 0.160 spec= 0.384 tail= 0.312  margin=  9.60
+  LEAD_TNT       rms= 0.635 cent= 1.204 spec= 0.610 tail= 1.000  margin= 20.07
+  LEAD_MOSS      rms= 0.017 cent= 0.826 spec= 0.184 tail= 0.011  margin= 13.77
+  LEAD_SAND      rms= 0.274 cent= 1.324 spec= 0.591 tail= 0.241  margin= 22.07
+  LEAD_OBSIDIAN  rms= 0.531 cent= 0.941 spec= 0.528 tail= 0.748  margin= 15.68
+  LEAD_CLOUD     rms= 0.492 cent= 0.039 spec= 0.016 tail= 0.788  margin=  8.19
+  BASS_ICE       rms= 0.185 cent= 0.524 spec= 0.096 tail= 0.876  margin=  8.73
+  BASS_LAVA      rms= 0.120 cent= 0.721 spec= 0.006 tail= 0.125  margin= 12.02
+  BASS_STONE     rms= 0.011 cent= 0.220 spec= 0.102 tail= 0.996  margin=  3.66
+  BASS_WOOD      rms= 0.008 cent= 0.430 spec= 0.040 tail= 0.044  margin=  7.16
+  BASS_GLASS     rms= 0.326 cent= 0.497 spec= 0.056 tail= 0.901  margin=  8.29
+  BASS_GOLD      rms= 0.180 cent= 0.166 spec= 0.041 tail= 0.513  margin=  3.01
+  BASS_CRYSTAL   rms= 0.169 cent= 0.489 spec= 0.074 tail= 0.119  margin=  8.15
+  BASS_VOLT      rms= 0.049 cent= 0.334 spec= 0.219 tail= 0.125  margin=  5.57
+  BASS_SLIME     rms= 0.000 cent= 0.247 spec= 0.170 tail= 0.014  margin=  4.25
+  BASS_TNT       rms= 0.689 cent= 0.572 spec= 0.306 tail= 1.000  margin= 11.49
+  BASS_MOSS      rms= 0.017 cent= 1.437 spec= 0.021 tail= 0.027  margin= 23.96
+  BASS_SAND      rms= 0.030 cent= 0.720 spec= 0.138 tail= 0.001  margin= 12.00
+  BASS_OBSIDIAN  rms= 0.317 cent= 0.972 spec= 0.087 tail= 0.789  margin= 16.20
+  BASS_CLOUD     rms= 0.391 cent= 0.103 spec= 0.033 tail= 0.950  margin=  6.51
+  PAD_ICE        rms= 0.339 cent= 0.431 spec= 0.227 tail= 0.406  margin=  7.19
+  PAD_LAVA       rms= 0.580 cent= 0.360 spec= 0.287 tail= 0.630  margin=  9.66
+  PAD_STONE      rms= 0.140 cent= 0.081 spec= 0.030 tail= 0.515  margin=  2.34
+  PAD_WOOD       rms= 0.056 cent= 0.449 spec= 0.053 tail= 0.078  margin=  7.48
+  PAD_GLASS      rms= 0.474 cent= 0.827 spec= 0.133 tail= 0.155  margin= 13.79
+  PAD_GOLD       rms= 0.400 cent= 0.153 spec= 0.227 tail= 0.208  margin=  6.67
+  PAD_CRYSTAL    rms= 0.633 cent= 0.355 spec= 0.097 tail= 0.461  margin= 10.56
+  PAD_VOLT       rms= 0.124 cent= 0.124 spec= 0.352 tail= 0.095  margin=  8.79
+  PAD_SLIME      rms= 0.081 cent= 0.091 spec= 0.323 tail= 0.053  margin=  8.06
+  PAD_TNT        rms= 0.493 cent= 0.426 spec= 0.443 tail= 0.943  margin= 11.07
+  PAD_MOSS       rms= 0.031 cent= 0.803 spec= 0.109 tail= 0.031  margin= 13.39
+  PAD_SAND       rms= 0.243 cent= 0.560 spec= 0.439 tail= 0.346  margin= 10.98
+  PAD_OBSIDIAN   rms= 0.581 cent= 1.461 spec= 0.579 tail= 0.685  margin= 24.35
+  PAD_CLOUD      rms= 0.440 cent= 0.236 spec= 0.015 tail= 0.114  margin=  7.33
+  PLUCK_ICE      rms= 0.005 cent= 0.687 spec= 0.240 tail= 0.989  margin= 11.46
+  PLUCK_LAVA     rms= 0.379 cent= 1.138 spec= 0.326 tail= 0.124  margin= 18.97
+  PLUCK_STONE    rms= 0.078 cent= 0.230 spec= 0.211 tail= 0.864  margin=  5.28
+  PLUCK_WOOD     rms= 0.087 cent= 0.402 spec= 0.075 tail= 0.109  margin=  6.70
+  PLUCK_GLASS    rms= 0.473 cent= 1.484 spec= 0.235 tail= 0.990  margin= 24.74
+  PLUCK_GOLD     rms= 0.074 cent= 0.417 spec= 0.146 tail= 0.979  margin=  6.95
+  PLUCK_CRYSTAL  rms= 0.309 cent= 0.590 spec= 0.164 tail= 0.312  margin=  9.83
+  PLUCK_VOLT     rms= 0.128 cent= 0.279 spec= 0.327 tail= 0.048  margin=  8.19
+  PLUCK_SLIME    rms= 0.057 cent= 0.262 spec= 0.211 tail= 0.070  margin=  5.27
+  PLUCK_TNT      rms= 0.041 cent= 0.604 spec= 0.329 tail= 0.087  margin= 10.07
+  PLUCK_MOSS     rms= 0.019 cent= 1.389 spec= 0.056 tail= 0.043  margin= 23.15
+  PLUCK_SAND     rms= 0.164 cent= 0.815 spec= 0.321 tail= 0.035  margin= 13.58
+  PLUCK_OBSIDIAN rms= 0.526 cent= 1.162 spec= 0.582 tail= 0.726  margin= 19.37
+  PLUCK_CLOUD    rms= 0.132 cent= 0.112 spec= 0.022 tail= 0.999  margin=  3.33
+  KEYS_ICE       rms= 0.173 cent= 0.644 spec= 0.478 tail= 0.664  margin= 11.96
+  KEYS_LAVA      rms= 0.346 cent= 0.248 spec= 0.344 tail= 0.329  margin=  8.60
+  KEYS_STONE     rms= 0.012 cent= 0.025 spec= 0.033 tail= 0.919  margin=  3.06
+  KEYS_WOOD      rms= 0.015 cent= 0.295 spec= 0.125 tail= 0.020  margin=  4.91
+  KEYS_GLASS     rms= 0.522 cent= 0.607 spec= 0.316 tail= 0.061  margin= 10.12
+  KEYS_GOLD      rms= 0.238 cent= 0.620 spec= 0.216 tail= 0.704  margin= 10.33
+  KEYS_CRYSTAL   rms= 0.370 cent= 0.727 spec= 0.108 tail= 0.373  margin= 12.12
+  KEYS_VOLT      rms= 0.062 cent= 0.500 spec= 0.510 tail= 0.020  margin= 12.75
+  KEYS_SLIME     rms= 0.048 cent= 0.444 spec= 0.442 tail= 0.017  margin= 11.05
+  KEYS_TNT       rms= 0.343 cent= 1.237 spec= 0.507 tail= 0.977  margin= 20.61
+  KEYS_MOSS      rms= 0.013 cent= 1.332 spec= 0.081 tail= 0.013  margin= 22.20
+  KEYS_SAND      rms= 0.077 cent= 1.378 spec= 0.535 tail= 0.107  margin= 22.97
+  KEYS_OBSIDIAN  rms= 0.547 cent= 1.088 spec= 0.991 tail= 0.764  margin= 24.79
+  KEYS_CLOUD     rms= 0.427 cent= 0.033 spec= 0.029 tail= 0.776  margin=  7.11
+  CHIP_ICE       rms= 0.051 cent= 0.246 spec= 0.380 tail= 1.000  margin=  9.51
+  CHIP_LAVA      rms= 0.391 cent= 0.026 spec= 0.308 tail= 0.037  margin=  7.70
+  CHIP_STONE     rms= 0.134 cent= 0.704 spec= 0.295 tail= 1.000  margin= 11.73
+  CHIP_WOOD      rms= 0.129 cent= 0.441 spec= 0.138 tail= 0.080  margin=  7.35
+  CHIP_GLASS     rms= 0.442 cent= 0.114 spec= 0.156 tail= 1.000  margin=  7.36
+  CHIP_GOLD      rms= 0.403 cent= 0.592 spec= 0.489 tail= 0.999  margin= 12.22
+  CHIP_CRYSTAL   rms= 0.397 cent= 0.470 spec= 0.139 tail= 0.418  margin=  7.83
+  CHIP_VOLT      rms= 0.065 cent= 0.393 spec= 0.498 tail= 0.529  margin= 12.46
+  CHIP_SLIME     rms= 0.090 cent= 0.259 spec= 0.440 tail= 0.081  margin= 11.00
+  CHIP_TNT       rms= 0.877 cent= 1.559 spec= 0.809 tail= 1.000  margin= 25.99
+  CHIP_MOSS      rms= 0.011 cent= 0.604 spec= 0.236 tail= 0.011  margin= 10.06
+  CHIP_SAND      rms= 0.331 cent= 1.758 spec= 0.708 tail= 0.277  margin= 29.31
+  CHIP_OBSIDIAN  rms= 0.531 cent= 1.035 spec= 0.654 tail= 0.975  margin= 17.25
+  CHIP_CLOUD     rms= 0.529 cent= 0.059 spec= 0.024 tail= 1.000  margin=  8.81
+  PERC_ICE       rms= 0.207 cent= 0.906 spec= 0.346 tail= 1.000  margin= 15.10
+  PERC_LAVA      rms= 0.520 cent= 2.318 spec= 0.254 tail= 0.000  margin= 38.63
+  PERC_STONE     rms= 0.123 cent= 0.124 spec= 0.005 tail= 0.000  margin=  2.07
+  PERC_WOOD      rms= 0.292 cent= 0.230 spec= 0.018 tail= 0.000  margin=  4.87
+  PERC_GLASS     rms= 0.539 cent= 1.183 spec= 0.303 tail= 1.000  margin= 19.71
+  PERC_GOLD      rms= 0.109 cent= 0.579 spec= 0.200 tail= 1.000  margin=  9.66
+  PERC_CRYSTAL   rms= 0.159 cent= 0.556 spec= 0.059 tail= 0.000  margin=  9.27
+  PERC_VOLT      rms= 0.586 cent= 0.086 spec= 0.197 tail= 0.000  margin=  9.77
+  PERC_SLIME     rms= 0.033 cent= 0.127 spec= 0.104 tail= 0.000  margin=  2.61
+  PERC_TNT       rms= 0.151 cent= 0.266 spec= 0.064 tail= 0.000  margin=  4.43
+  PERC_MOSS      rms= 0.222 cent= 1.531 spec= 0.025 tail= 0.000  margin= 25.51
+  PERC_SAND      rms= 0.132 cent= 0.054 spec= 0.072 tail= 0.000  margin=  2.20
+  PERC_OBSIDIAN  rms= 0.440 cent= 1.102 spec= 0.805 tail= 0.000  margin= 20.13
+  PERC_CLOUD     rms= 0.382 cent= 0.205 spec= 0.105 tail= 1.000  margin=  6.36
+  DRONE_ICE      rms= 0.365 cent= 0.681 spec= 0.098 tail= 0.070  margin= 11.34
+  DRONE_LAVA     rms= 0.145 cent= 0.628 spec= 0.007 tail= 0.188  margin= 10.47
+  DRONE_STONE    rms= 0.230 cent= 0.205 spec= 0.005 tail= 0.212  margin=  3.83
+  DRONE_WOOD     rms= 0.047 cent= 0.533 spec= 0.020 tail= 0.062  margin=  8.88
+  DRONE_GLASS    rms= 0.266 cent= 0.839 spec= 0.128 tail= 0.317  margin= 13.98
+  DRONE_GOLD     rms= 0.367 cent= 0.029 spec= 0.046 tail= 0.318  margin=  6.12
+  DRONE_CRYSTAL  rms= 0.258 cent= 0.594 spec= 0.050 tail= 0.534  margin=  9.89
+  DRONE_VOLT     rms= 0.070 cent= 0.224 spec= 0.233 tail= 0.009  margin=  5.84
+  DRONE_SLIME    rms= 0.006 cent= 0.174 spec= 0.165 tail= 0.019  margin=  4.14
+  DRONE_TNT      rms= 0.479 cent= 0.414 spec= 0.269 tail= 0.907  margin=  7.99
+  DRONE_MOSS     rms= 0.017 cent= 1.318 spec= 0.025 tail= 0.027  margin= 21.96
+  DRONE_SAND     rms= 0.025 cent= 0.781 spec= 0.185 tail= 0.038  margin= 13.02
+  DRONE_OBSIDIAN rms= 0.407 cent= 1.146 spec= 0.174 tail= 0.547  margin= 19.10
+  DRONE_CLOUD    rms= 0.442 cent= 0.085 spec= 0.026 tail= 0.011  margin=  7.36
+  worst margin 2.07 (STONE)
+[ui_midi_queue]
+  order, wrap-around, capacity 128, drop-newest overflow OK
+[discovery_jingle]
+  silence when idle, zero-ended fades, -18 dBFS, C6-G6-C7 at 44.1/48/96/192k OK
+[ui_path_no_allocation]
+  0 allocations across 200 blocks with UI notes, overflow and the jingle
+[sr_pitch_sweep]
+   44100.0 Hz: worst pitch error over A1..A6 = +0.038 cents
+   48000.0 Hz: worst pitch error over A1..A6 = +0.034 cents
+   88200.0 Hz: worst pitch error over A1..A6 = +0.019 cents
+   96000.0 Hz: worst pitch error over A1..A6 = +0.018 cents
+  176400.0 Hz: worst pitch error over A1..A6 = +0.010 cents
+  192000.0 Hz: worst pitch error over A1..A6 = +0.009 cents
+[sr_stress_patch]
+   44100.0 Hz: peak 0.3022  rms 0.0500  non-finite 0
+   48000.0 Hz: peak 0.3006  rms 0.0499  non-finite 0
+   88200.0 Hz: peak 0.3023  rms 0.0498  non-finite 0
+   96000.0 Hz: peak 0.3018  rms 0.0497  non-finite 0
+  176400.0 Hz: peak 0.3021  rms 0.0497  non-finite 0
+  192000.0 Hz: peak 0.3018  rms 0.0496  non-finite 0
+[buffer_size_sweep]
+  block   16 vs 512: max |diff| = 0
+  block   32 vs 512: max |diff| = 0
+  block   64 vs 512: max |diff| = 0
+  block  128 vs 512: max |diff| = 0
+  block  256 vs 512: max |diff| = 0
+  block  512 vs 512: max |diff| = 0
+  block 1024 vs 512: max |diff| = 0
+  block 2048 vs 512: max |diff| = 0
+  block 4096 vs 512: max |diff| = 0
+   44100.0 Hz block   16 vs 512: max |diff| = 0
+   44100.0 Hz block 4096 vs 512: max |diff| = 0
+  192000.0 Hz block   16 vs 512: max |diff| = 0
+  192000.0 Hz block 4096 vs 512: max |diff| = 0
+[pathological_block_sequence]
+  seq 0 (18 sizes, first 1) vs 512: max |diff| = 0
+  seq 1 (1 sizes, first 1) vs 512: max |diff| = 0
+  seq 2 (2 sizes, first 4096) vs 512: max |diff| = 0
+  seq 3 (9 sizes, first 15) vs 512: max |diff| = 0
+  seq 4 (10 sizes, first 3) vs 512: max |diff| = 0
+[mid_session_reprepare]
+  7 re-prepares (44.1k/64 -> 192k/4096 -> 48k/512): non-finite 0, peak 0.3376
+  post-re-prepare A4 = 440.010 Hz (+0.040 cents)
+[cave_wet_level_rate_dependence]  (Phase-7 finding F4)
+   44100.0 Hz: wet rms 0.225363  +0.00 dB vs 44.1k
+   48000.0 Hz: wet rms 0.225238  -0.00 dB vs 44.1k
+   88200.0 Hz: wet rms 0.224350  -0.04 dB vs 44.1k
+   96000.0 Hz: wet rms 0.224326  -0.04 dB vs 44.1k
+  176400.0 Hz: wet rms 0.223705  -0.06 dB vs 44.1k
+  192000.0 Hz: wet rms 0.223654  -0.07 dB vs 44.1k
+  worst deviation 0.07 dB (ceiling 0.2 dB — F4 fixed)
+[tempo_bpm_lock_sweep]
+  14 BPMs 60..200: worst first-echo error 0 samples (gate 2)
+[tempo_jump_click_free]
+   120.0 ->   60.0 BPM: step 0.0217 bound 0.0286 ratio  0.76
+    60.0 ->  200.0 BPM: step 0.0643 bound 0.0230 ratio  2.80
+   200.0 ->   60.0 BPM: step 0.0374 bound 0.0296 ratio  1.26
+   120.0 ->  200.0 BPM: step 0.0294 bound 0.0231 ratio  1.27
+   120.0 ->  121.0 BPM: step 0.0151 bound 0.0190 ratio  0.79
+   174.3 ->   91.7 BPM: step 0.0108 bound 0.0244 ratio  0.44
+    90.0 ->  180.0 BPM: step 0.0418 bound 0.0208 ratio  2.01
+   180.0 ->   90.0 BPM: step 0.0160 bound 0.0256 ratio  0.62
+  negative control (hard splice)   60.0 ->  200.0 BPM: ratio 20.41
+  negative control (hard splice)  120.0 ->   60.0 BPM: ratio 20.65
+  worst smoothed ratio 2.80 (gate 4.0)
+[tempo_relock_sweep]
+  120 ->  60.0 BPM: settled echo spacing  48000 samples (expected  48000, err 0)
+  120 ->  75.0 BPM: settled echo spacing  38400 samples (expected  38400, err 0)
+  120 ->  90.0 BPM: settled echo spacing  32000 samples (expected  32000, err 0)
+  120 -> 100.0 BPM: settled echo spacing  28800 samples (expected  28800, err 0)
+  120 -> 140.0 BPM: settled echo spacing  20571 samples (expected  20571, err 0)
+  120 -> 160.0 BPM: settled echo spacing  18000 samples (expected  18000, err 0)
+  120 -> 200.0 BPM: settled echo spacing  14400 samples (expected  14400, err 0)
+  7 abrupt jumps re-lock; worst spacing error 0 samples (gate 24)
+[tempo_ladder_stability]
+  33 tempo changes (incl. 33 and 999 BPM): non-finite 0, peak 1.0000
+[cpu_stress_all_rates]
+  worst case: 16 voices x 8 unison (128 stacks), all sources + all FX
+   44100.0 Hz /  128:   3.6% of one core (0.23% per voice)
+   44100.0 Hz /  512:   3.6% of one core (0.22% per voice)
+   48000.0 Hz /  128:   3.9% of one core (0.24% per voice)
+   48000.0 Hz /  512:   3.8% of one core (0.24% per voice)
+   88200.0 Hz /  128:   7.1% of one core (0.44% per voice)
+   88200.0 Hz /  512:   6.9% of one core (0.43% per voice)
+   96000.0 Hz /  128:   7.6% of one core (0.47% per voice)
+   96000.0 Hz /  512:   7.5% of one core (0.47% per voice)
+  176400.0 Hz /  128:  13.9% of one core (0.87% per voice)
+  176400.0 Hz /  512:  13.9% of one core (0.87% per voice)
+  192000.0 Hz /  128:  15.0% of one core (0.94% per voice)
+  192000.0 Hz /  512:  14.8% of one core (0.92% per voice)
+[cpu_worst_case]
+  16 voices x full 8-way unison (128 stacks), all sources + ALL FX on:
+  3.5% of one core @ 44.1k/128 (0.22% per voice)
+  3.9% of one core @ 48k/512  (0.24% per voice)
+
+843 checks, 0 failures

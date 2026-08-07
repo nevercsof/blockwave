@@ -80,6 +80,11 @@ struct AllocGuard
 // allocation-free while presets are switched underneath it.
 #include "RobustnessProcTests.h"
 
+// Component-level UI tests (scale-slider deferral, hidden per-block MIX,
+// preset search). Real juce::Components driven through their real mouse and
+// keyboard entry points; main() owns the ScopedJuceInitialiser_GUI they need.
+#include "UiComponentTests.h"
+
 using namespace blockwave;
 using namespace testutil;
 
@@ -1746,6 +1751,8 @@ int main()
         // coverage and the grid-change click matrix.
         craftcoverage::test_recipe_book_coverage (proc);
         craftcoverage::test_craft_transition_click_free (proc);
+        // Component-level UI contracts (tests/UiComponentTests.h).
+        uicomponents::runAll (proc);
     }
     test_preset_library_model();
     test_favorites_store();

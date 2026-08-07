@@ -1,0 +1,307 @@
+-- The C compiler identification is AppleClang 17.0.0.17000603
+-- The CXX compiler identification is AppleClang 17.0.0.17000603
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- BLOCKWAVE version: 1.0.0-rc1 (numeric 1.0.0)
+-- Configuring juceaide
+-- Building juceaide
+-- Exporting juceaide
+-- Testing juceaide
+-- Finished setting up juceaide
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Configuring done (26.2s)
+-- Generating done (0.1s)
+-- Build files have been written to: /Users/kirillboyko/Downloads/blockwave-kickoff/build/debug
+[0/2] Re-checking globbed directories...
+[1/277] Copying OS X Content BLOCKWAVE_artefacts/Debug/Standalone/BLOCKWAVE.app/Contents/Resources/RecentFilesMenuTemplate.nib
+[2/277] Generating juce_binarydata_BlockwaveRecipeData/JuceLibraryCode/BinaryData1.cpp, juce_binarydata_BlockwaveRecipeData/JuceLibraryCode/RecipeData.h
+[3/277] Building CXX object CMakeFiles/render.dir/_deps/juce-src/modules/juce_core/juce_core_CompilationTime.cpp.o
+[4/277] Generating juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData1.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData2.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData3.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData4.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData5.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData6.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData7.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData8.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData9.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData10.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData11.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData12.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData13.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData14.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData15.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData16.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData17.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData18.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData19.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData20.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData21.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData22.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData23.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData24.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData25.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData26.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData27.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData28.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData29.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData30.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData31.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData32.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData33.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData34.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData35.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData36.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData37.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData38.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData39.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData40.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData41.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData42.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData43.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData44.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData45.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData46.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData47.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData48.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData49.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData50.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData51.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData52.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData53.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData54.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData55.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData56.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData57.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData58.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData59.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData60.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData61.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData62.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData63.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData64.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData65.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData66.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData67.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData68.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData69.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData70.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData71.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData72.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData73.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData74.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData75.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData76.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData77.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData78.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData79.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData80.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData81.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData82.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData83.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData84.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData85.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData86.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData87.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData88.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData89.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData90.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData91.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData92.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData93.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData94.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData95.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData96.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData97.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData98.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData99.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData100.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData101.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData102.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData103.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData104.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData105.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData106.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData107.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData108.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData109.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData110.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData111.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData112.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData113.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData114.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData115.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData116.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData117.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData118.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData119.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData120.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData121.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData122.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData123.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData124.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData125.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData126.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData127.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData128.cpp, juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData.h
+[5/277] Building CXX object CMakeFiles/BlockwaveRecipeData.dir/juce_binarydata_BlockwaveRecipeData/JuceLibraryCode/BinaryData1.cpp.o
+[6/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData4.cpp.o
+[7/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData2.cpp.o
+[8/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData6.cpp.o
+[9/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData8.cpp.o
+[10/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData7.cpp.o
+[11/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData3.cpp.o
+[12/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData9.cpp.o
+[13/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData10.cpp.o
+[14/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData5.cpp.o
+[15/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData1.cpp.o
+[16/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData11.cpp.o
+[17/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData13.cpp.o
+[18/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData12.cpp.o
+[19/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData14.cpp.o
+[20/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData16.cpp.o
+[21/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData17.cpp.o
+[22/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData15.cpp.o
+[23/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData18.cpp.o
+[24/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData19.cpp.o
+[25/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData20.cpp.o
+[26/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData21.cpp.o
+[27/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData22.cpp.o
+[28/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData24.cpp.o
+[29/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData26.cpp.o
+[30/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData23.cpp.o
+[31/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData25.cpp.o
+[32/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData27.cpp.o
+[33/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData30.cpp.o
+[34/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData29.cpp.o
+[35/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData28.cpp.o
+[36/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData32.cpp.o
+[37/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData31.cpp.o
+[38/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData33.cpp.o
+[39/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData34.cpp.o
+[40/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData35.cpp.o
+[41/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData37.cpp.o
+[42/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData36.cpp.o
+[43/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData39.cpp.o
+[44/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData40.cpp.o
+[45/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData38.cpp.o
+[46/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData41.cpp.o
+[47/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData42.cpp.o
+[48/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData43.cpp.o
+[49/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData44.cpp.o
+[50/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData45.cpp.o
+[51/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData47.cpp.o
+[52/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData49.cpp.o
+[53/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData46.cpp.o
+[54/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData48.cpp.o
+[55/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData50.cpp.o
+[56/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData51.cpp.o
+[57/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData52.cpp.o
+[58/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData53.cpp.o
+[59/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData55.cpp.o
+[60/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData54.cpp.o
+[61/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData56.cpp.o
+[62/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData57.cpp.o
+[63/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData59.cpp.o
+[64/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData58.cpp.o
+[65/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData60.cpp.o
+[66/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData61.cpp.o
+[67/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData62.cpp.o
+[68/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData64.cpp.o
+[69/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData63.cpp.o
+[70/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData66.cpp.o
+[71/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData67.cpp.o
+[72/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData65.cpp.o
+[73/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData69.cpp.o
+[74/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData68.cpp.o
+[75/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData70.cpp.o
+[76/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData72.cpp.o
+[77/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData71.cpp.o
+[78/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData73.cpp.o
+[79/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData74.cpp.o
+[80/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData75.cpp.o
+[81/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData76.cpp.o
+[82/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData77.cpp.o
+[83/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData78.cpp.o
+[84/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData79.cpp.o
+[85/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData80.cpp.o
+[86/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData84.cpp.o
+[87/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData82.cpp.o
+[88/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData81.cpp.o
+[89/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData83.cpp.o
+[90/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData85.cpp.o
+[91/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData86.cpp.o
+[92/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData87.cpp.o
+[93/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData88.cpp.o
+[94/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData89.cpp.o
+[95/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData90.cpp.o
+[96/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData92.cpp.o
+[97/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData91.cpp.o
+[98/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData93.cpp.o
+[99/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData94.cpp.o
+[100/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData95.cpp.o
+[101/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData97.cpp.o
+[102/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData98.cpp.o
+[103/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData96.cpp.o
+[104/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData99.cpp.o
+[105/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData101.cpp.o
+[106/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData103.cpp.o
+[107/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData100.cpp.o
+[108/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData102.cpp.o
+[109/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData105.cpp.o
+[110/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData106.cpp.o
+[111/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData107.cpp.o
+[112/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData104.cpp.o
+[113/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData108.cpp.o
+[114/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData109.cpp.o
+[115/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData111.cpp.o
+[116/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData113.cpp.o
+[117/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData112.cpp.o
+[118/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData110.cpp.o
+[119/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData114.cpp.o
+[120/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData115.cpp.o
+[121/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData116.cpp.o
+[122/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData118.cpp.o
+[123/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData119.cpp.o
+[124/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData117.cpp.o
+[125/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData121.cpp.o
+[126/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData120.cpp.o
+[127/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData122.cpp.o
+[128/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData123.cpp.o
+[129/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData124.cpp.o
+[130/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData126.cpp.o
+[131/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData125.cpp.o
+[132/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData127.cpp.o
+[133/277] Building CXX object CMakeFiles/BlockwaveFactoryPresets.dir/juce_binarydata_BlockwaveFactoryPresets/JuceLibraryCode/BinaryData128.cpp.o
+[134/277] Building CXX object CMakeFiles/blockwave_tests.dir/tests/TestMain.cpp.o
+[135/277] Building CXX object CMakeFiles/render.dir/tools/render/RenderMain.cpp.o
+[136/277] Building CXX object CMakeFiles/juce_vst3_helper.dir/_deps/juce-src/modules/juce_audio_plugin_client/VST3/juce_VST3ManifestHelper.mm.o
+[137/277] Building CXX object CMakeFiles/BLOCKWAVE.dir/plugin/ui/PixelLookAndFeel.cpp.o
+[138/277] Building CXX object CMakeFiles/BLOCKWAVE.dir/plugin/ui/MaterialArt.cpp.o
+[139/277] Building CXX object CMakeFiles/BLOCKWAVE.dir/plugin/ui/PixelFont.cpp.o
+[140/277] Building CXX object CMakeFiles/BLOCKWAVE.dir/_deps/juce-src/modules/juce_audio_processors/juce_audio_processors_ara.cpp.o
+[141/277] Building CXX object CMakeFiles/BLOCKWAVE.dir/_deps/juce-src/modules/juce_audio_processors/juce_audio_processors_lv2_libs.cpp.o
+[142/277] Building CXX object CMakeFiles/BLOCKWAVE.dir/plugin/ui/BlockPanel.cpp.o
+[143/277] Building CXX object CMakeFiles/BLOCKWAVE.dir/plugin/ui/CraftBlocks.cpp.o
+[144/277] Building CXX object CMakeFiles/render.dir/_deps/juce-src/modules/juce_audio_basics/juce_audio_basics.mm.o
+[145/277] Building CXX object CMakeFiles/BLOCKWAVE.dir/plugin/ui/TweakTab.cpp.o
+[146/277] Building C object CMakeFiles/BLOCKWAVE.dir/_deps/juce-src/modules/juce_graphics/juce_graphics_Sheenbidi.c.o
+[147/277] Building CXX object CMakeFiles/BLOCKWAVE.dir/plugin/ui/ParamCells.cpp.o
+[148/277] Building CXX object CMakeFiles/BLOCKWAVE.dir/_deps/juce-src/modules/juce_core/juce_core_CompilationTime.cpp.o
+[149/277] Building CXX object CMakeFiles/BLOCKWAVE.dir/plugin/ui/PresetBrowser.cpp.o
+[150/277] Building CXX object CMakeFiles/BLOCKWAVE.dir/plugin/ui/TopBar.cpp.o
+[151/277] Building CXX object CMakeFiles/BLOCKWAVE.dir/plugin/PluginProcessor.cpp.o
+[152/277] Building CXX object CMakeFiles/BLOCKWAVE.dir/plugin/PluginEditor.cpp.o
+[153/277] Building CXX object CMakeFiles/render.dir/_deps/juce-src/modules/juce_audio_formats/juce_audio_formats.mm.o
+[154/277] Building CXX object CMakeFiles/BLOCKWAVE.dir/plugin/ui/CraftTab.cpp.o
+[155/277] Building CXX object CMakeFiles/BLOCKWAVE.dir/plugin/ui/KeyStrip.cpp.o
+[156/277] Linking CXX static library libBlockwaveFactoryPresets.a
+[157/277] Linking CXX static library libBlockwaveRecipeData.a
+[158/277] Building CXX object CMakeFiles/render.dir/_deps/juce-src/modules/juce_core/juce_core.mm.o
+[159/277] Linking CXX executable juce_vst3_helper
+[160/277] Building CXX object CMakeFiles/BLOCKWAVE.dir/_deps/juce-src/modules/juce_data_structures/juce_data_structures.mm.o
+[161/277] Building CXX object CMakeFiles/BLOCKWAVE.dir/_deps/juce-src/modules/juce_events/juce_events.mm.o
+[162/277] Building CXX object CMakeFiles/blockwave_state_tests.dir/plugin/ui/PixelFont.cpp.o
+[163/277] Building CXX object CMakeFiles/BLOCKWAVE.dir/_deps/juce-src/modules/juce_audio_basics/juce_audio_basics.mm.o
+[164/277] Building CXX object CMakeFiles/blockwave_state_tests.dir/plugin/PluginEditor.cpp.o
+[165/277] Building CXX object CMakeFiles/blockwave_state_tests.dir/plugin/PluginProcessor.cpp.o
+[166/277] Building CXX object CMakeFiles/BLOCKWAVE.dir/_deps/juce-src/modules/juce_gui_extra/juce_gui_extra.mm.o
+[167/277] Building CXX object CMakeFiles/BLOCKWAVE.dir/_deps/juce-src/modules/juce_core/juce_core.mm.o
+[168/277] Building CXX object CMakeFiles/BLOCKWAVE.dir/_deps/juce-src/modules/juce_dsp/juce_dsp.mm.o
+[169/277] Building CXX object CMakeFiles/BLOCKWAVE.dir/_deps/juce-src/modules/juce_audio_devices/juce_audio_devices.mm.o
+[170/277] Building CXX object CMakeFiles/blockwave_state_tests.dir/tests/StateTests.cpp.o
+[171/277] Building CXX object CMakeFiles/blockwave_state_tests.dir/plugin/ui/PixelLookAndFeel.cpp.o
+[172/277] Building CXX object CMakeFiles/BLOCKWAVE.dir/_deps/juce-src/modules/juce_audio_formats/juce_audio_formats.mm.o
+[173/277] Building CXX object CMakeFiles/blockwave_state_tests.dir/_deps/juce-src/modules/juce_audio_processors/juce_audio_processors_ara.cpp.o
+[174/277] Building CXX object CMakeFiles/blockwave_state_tests.dir/_deps/juce-src/modules/juce_audio_processors/juce_audio_processors_lv2_libs.cpp.o
+[175/277] Building CXX object CMakeFiles/BLOCKWAVE.dir/_deps/juce-src/modules/juce_audio_utils/juce_audio_utils.mm.o
+[176/277] Building CXX object CMakeFiles/BLOCKWAVE.dir/_deps/juce-src/modules/juce_audio_processors/juce_audio_processors.mm.o
+[177/277] Building CXX object CMakeFiles/blockwave_state_tests.dir/plugin/ui/ParamCells.cpp.o
+[178/277] Building CXX object CMakeFiles/blockwave_state_tests.dir/plugin/ui/BlockPanel.cpp.o
+[179/277] Building CXX object CMakeFiles/blockwave_state_tests.dir/plugin/ui/MaterialArt.cpp.o
+[180/277] Building C object CMakeFiles/blockwave_state_tests.dir/_deps/juce-src/modules/juce_graphics/juce_graphics_Sheenbidi.c.o
+[181/277] Building CXX object CMakeFiles/blockwave_state_tests.dir/plugin/ui/TweakTab.cpp.o
+[182/277] Building CXX object CMakeFiles/blockwave_state_tests.dir/plugin/ui/CraftBlocks.cpp.o
+[183/277] Building CXX object CMakeFiles/blockwave_state_tests.dir/_deps/juce-src/modules/juce_core/juce_core_CompilationTime.cpp.o
+[184/277] Building CXX object CMakeFiles/blockwave_state_tests.dir/plugin/ui/TopBar.cpp.o
+[185/277] Building CXX object CMakeFiles/blockwave_state_tests.dir/plugin/ui/KeyStrip.cpp.o
+[186/277] Building CXX object CMakeFiles/blockwave_state_tests.dir/plugin/ui/PresetBrowser.cpp.o
+[187/277] Building CXX object CMakeFiles/blockwave_state_tests.dir/plugin/ui/CraftTab.cpp.o
+[188/277] Building CXX object CMakeFiles/BLOCKWAVE.dir/_deps/juce-src/modules/juce_graphics/juce_graphics.mm.o
+[189/277] Building CXX object CMakeFiles/BLOCKWAVE.dir/_deps/juce-src/modules/juce_graphics/juce_graphics_Harfbuzz.cpp.o
+[190/277] Building CXX object CMakeFiles/blockwave_state_tests.dir/_deps/juce-src/modules/juce_data_structures/juce_data_structures.mm.o
+[191/277] Building CXX object CMakeFiles/blockwave_state_tests.dir/_deps/juce-src/modules/juce_events/juce_events.mm.o
+[192/277] Building CXX object CMakeFiles/blockwave_state_tests.dir/_deps/juce-src/modules/juce_audio_utils/juce_audio_utils.mm.o
+[193/277] Building CXX object CMakeFiles/blockwave_state_tests.dir/_deps/juce-src/modules/juce_gui_extra/juce_gui_extra.mm.o
+[194/277] Building CXX object CMakeFiles/blockwave_screenshots.dir/tools/screenshots/ScreenshotsMain.cpp.o
+[195/277] Building CXX object CMakeFiles/blockwave_state_tests.dir/_deps/juce-src/modules/juce_audio_basics/juce_audio_basics.mm.o
+[196/277] Building CXX object CMakeFiles/blockwave_screenshots.dir/plugin/ui/PixelFont.cpp.o
+[197/277] Building CXX object CMakeFiles/blockwave_screenshots.dir/plugin/PluginProcessor.cpp.o
+[198/277] Building CXX object CMakeFiles/blockwave_screenshots.dir/plugin/ui/PixelLookAndFeel.cpp.o
+[199/277] Building CXX object CMakeFiles/blockwave_state_tests.dir/_deps/juce-src/modules/juce_audio_devices/juce_audio_devices.mm.o
+[200/277] Building CXX object CMakeFiles/blockwave_screenshots.dir/plugin/PluginEditor.cpp.o
+[201/277] Building CXX object CMakeFiles/blockwave_state_tests.dir/_deps/juce-src/modules/juce_core/juce_core.mm.o
+[202/277] Building CXX object CMakeFiles/blockwave_state_tests.dir/_deps/juce-src/modules/juce_audio_formats/juce_audio_formats.mm.o
+[203/277] Building CXX object CMakeFiles/blockwave_state_tests.dir/_deps/juce-src/modules/juce_audio_processors/juce_audio_processors.mm.o
+[204/277] Building CXX object CMakeFiles/blockwave_screenshots.dir/_deps/juce-src/modules/juce_audio_processors/juce_audio_processors_ara.cpp.o
+[205/277] Building CXX object CMakeFiles/blockwave_screenshots.dir/_deps/juce-src/modules/juce_audio_processors/juce_audio_processors_lv2_libs.cpp.o
+[206/277] Building CXX object CMakeFiles/blockwave_screenshots.dir/plugin/ui/ParamCells.cpp.o
+[207/277] Building CXX object CMakeFiles/blockwave_screenshots.dir/plugin/ui/BlockPanel.cpp.o
+[208/277] Building CXX object CMakeFiles/blockwave_screenshots.dir/plugin/ui/TweakTab.cpp.o
+[209/277] Building CXX object CMakeFiles/blockwave_screenshots.dir/plugin/ui/MaterialArt.cpp.o
+[210/277] Building C object CMakeFiles/blockwave_screenshots.dir/_deps/juce-src/modules/juce_graphics/juce_graphics_Sheenbidi.c.o
+[211/277] Building CXX object CMakeFiles/blockwave_screenshots.dir/plugin/ui/CraftBlocks.cpp.o
+[212/277] Building CXX object CMakeFiles/blockwave_screenshots.dir/_deps/juce-src/modules/juce_core/juce_core_CompilationTime.cpp.o
+[213/277] Building CXX object CMakeFiles/blockwave_screenshots.dir/plugin/ui/KeyStrip.cpp.o
+[214/277] Building CXX object CMakeFiles/blockwave_screenshots.dir/plugin/ui/TopBar.cpp.o
+[215/277] Building CXX object CMakeFiles/blockwave_screenshots.dir/plugin/ui/PresetBrowser.cpp.o
+[216/277] Building CXX object CMakeFiles/blockwave_screenshots.dir/plugin/ui/CraftTab.cpp.o
+[217/277] Building CXX object CMakeFiles/blockwave_state_tests.dir/_deps/juce-src/modules/juce_graphics/juce_graphics_Harfbuzz.cpp.o
+[218/277] Linking CXX executable render_artefacts/Debug/render
+[219/277] Building CXX object CMakeFiles/blockwave_state_tests.dir/_deps/juce-src/modules/juce_graphics/juce_graphics.mm.o
+[220/277] Linking CXX executable blockwave_tests
+[221/277] Building CXX object CMakeFiles/blockwave_screenshots.dir/_deps/juce-src/modules/juce_data_structures/juce_data_structures.mm.o
+[222/277] Building CXX object CMakeFiles/BLOCKWAVE.dir/_deps/juce-src/modules/juce_gui_basics/juce_gui_basics.mm.o
+[223/277] Building CXX object CMakeFiles/blockwave_screenshots.dir/_deps/juce-src/modules/juce_events/juce_events.mm.o
+[224/277] Building CXX object CMakeFiles/blockwave_screenshots.dir/_deps/juce-src/modules/juce_audio_utils/juce_audio_utils.mm.o
+[225/277] Building CXX object CMakeFiles/blockwave_screenshots.dir/_deps/juce-src/modules/juce_gui_extra/juce_gui_extra.mm.o
+[226/277] Linking CXX static library BLOCKWAVE_artefacts/Debug/libBLOCKWAVE_SharedCode.a
+[227/277] Building CXX object CMakeFiles/blockwave_screenshots.dir/_deps/juce-src/modules/juce_audio_basics/juce_audio_basics.mm.o
+[228/277] Generating BLOCKWAVE_artefacts/JuceLibraryCode/BLOCKWAVE_Standalone/PkgInfo
+[229/277] Generating BLOCKWAVE_artefacts/JuceLibraryCode/BLOCKWAVE_AU/PkgInfo
+[230/277] Generating BLOCKWAVE_artefacts/JuceLibraryCode/BLOCKWAVE_VST3/PkgInfo
+[231/277] Building CXX object CMakeFiles/BLOCKWAVE_Standalone.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_ARA.cpp.o
+[232/277] Building CXX object CMakeFiles/BLOCKWAVE_Standalone.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_Unity.cpp.o
+[233/277] Building CXX object CMakeFiles/BLOCKWAVE_Standalone.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_AU_2.mm.o
+[234/277] Building CXX object CMakeFiles/BLOCKWAVE_Standalone.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_AUv3.mm.o
+[235/277] Building CXX object CMakeFiles/BLOCKWAVE_Standalone.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_AAX_utils.cpp.o
+[236/277] Building CXX object CMakeFiles/BLOCKWAVE_Standalone.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_AAX.mm.o
+[237/277] Building CXX object CMakeFiles/BLOCKWAVE_Standalone.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_AU_1.mm.o
+[238/277] Building CXX object CMakeFiles/BLOCKWAVE_Standalone.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_VST2.mm.o
+[239/277] Building CXX object CMakeFiles/BLOCKWAVE_Standalone.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_LV2.mm.o
+[240/277] Building CXX object CMakeFiles/BLOCKWAVE_AU.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_AAX_utils.cpp.o
+[241/277] Building CXX object CMakeFiles/BLOCKWAVE_AU.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_ARA.cpp.o
+[242/277] Building CXX object CMakeFiles/BLOCKWAVE_AU.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_Unity.cpp.o
+[243/277] Building CXX object CMakeFiles/BLOCKWAVE_Standalone.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_VST3.mm.o
+[244/277] Building CXX object CMakeFiles/BLOCKWAVE_AU.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_Standalone.cpp.o
+[245/277] Building CXX object CMakeFiles/BLOCKWAVE_AU.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_AUv3.mm.o
+[246/277] Building CXX object CMakeFiles/BLOCKWAVE_AU.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_LV2.mm.o
+[247/277] Building CXX object CMakeFiles/BLOCKWAVE_AU.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_AAX.mm.o
+[248/277] Building CXX object CMakeFiles/BLOCKWAVE_AU.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_VST3.mm.o
+[249/277] Building CXX object CMakeFiles/BLOCKWAVE_AU.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_VST2.mm.o
+[250/277] Building CXX object CMakeFiles/BLOCKWAVE_VST3.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_AAX_utils.cpp.o
+[251/277] Building CXX object CMakeFiles/BLOCKWAVE_VST3.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_ARA.cpp.o
+[252/277] Building CXX object CMakeFiles/BLOCKWAVE_VST3.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_Standalone.cpp.o
+[253/277] Building CXX object CMakeFiles/BLOCKWAVE_VST3.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_Unity.cpp.o
+[254/277] Building CXX object CMakeFiles/BLOCKWAVE_VST3.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_AAX.mm.o
+[255/277] Building CXX object CMakeFiles/BLOCKWAVE_VST3.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_AU_2.mm.o
+[256/277] Building CXX object CMakeFiles/BLOCKWAVE_VST3.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_AU_1.mm.o
+[257/277] Building CXX object CMakeFiles/BLOCKWAVE_VST3.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_AUv3.mm.o
+[258/277] Building CXX object CMakeFiles/BLOCKWAVE_VST3.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_LV2.mm.o
+[259/277] Building CXX object CMakeFiles/BLOCKWAVE_VST3.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_VST2.mm.o
+[260/277] Building CXX object CMakeFiles/blockwave_screenshots.dir/_deps/juce-src/modules/juce_audio_processors/juce_audio_processors.mm.o
+[261/277] Building CXX object CMakeFiles/blockwave_screenshots.dir/_deps/juce-src/modules/juce_core/juce_core.mm.o
+[262/277] Building CXX object CMakeFiles/blockwave_screenshots.dir/_deps/juce-src/modules/juce_audio_formats/juce_audio_formats.mm.o
+[263/277] Building CXX object CMakeFiles/blockwave_screenshots.dir/_deps/juce-src/modules/juce_audio_devices/juce_audio_devices.mm.o
+[264/277] Building CXX object CMakeFiles/BLOCKWAVE_AU.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_AU_2.mm.o
+[265/277] Building CXX object CMakeFiles/BLOCKWAVE_Standalone.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_Standalone.cpp.o
+[266/277] Building CXX object CMakeFiles/blockwave_screenshots.dir/_deps/juce-src/modules/juce_graphics/juce_graphics_Harfbuzz.cpp.o
+[267/277] Linking CXX executable BLOCKWAVE_artefacts/Debug/Standalone/BLOCKWAVE.app/Contents/MacOS/BLOCKWAVE
+[268/277] Building CXX object CMakeFiles/blockwave_screenshots.dir/_deps/juce-src/modules/juce_graphics/juce_graphics.mm.o
+[269/277] Building CXX object CMakeFiles/BLOCKWAVE_AU.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_AU_1.mm.o
+[270/277] Building CXX object CMakeFiles/blockwave_state_tests.dir/_deps/juce-src/modules/juce_gui_basics/juce_gui_basics.mm.o
+[271/277] Linking CXX CFBundle shared module BLOCKWAVE_artefacts/Debug/AU/BLOCKWAVE.component/Contents/MacOS/BLOCKWAVE
+[272/277] Linking CXX executable blockwave_state_tests_artefacts/Debug/blockwave_state_tests
+[273/277] Building CXX object CMakeFiles/BLOCKWAVE_VST3.dir/_deps/juce-src/modules/juce_audio_plugin_client/juce_audio_plugin_client_VST3.mm.o
+[274/277] Linking CXX CFBundle shared module BLOCKWAVE_artefacts/Debug/VST3/BLOCKWAVE.vst3/Contents/MacOS/BLOCKWAVE
+/Users/kirillboyko/Downloads/blockwave-kickoff/build/debug/BLOCKWAVE_artefacts/Debug/VST3/BLOCKWAVE.vst3: code has no resources but signature indicates they must be present
+-- Replacing invalid signature with ad-hoc signature
+/Users/kirillboyko/Downloads/blockwave-kickoff/build/debug/BLOCKWAVE_artefacts/Debug/VST3/BLOCKWAVE.vst3: replacing existing signature
+removing moduleinfo.json
+creating /Users/kirillboyko/Downloads/blockwave-kickoff/build/debug/BLOCKWAVE_artefacts/Debug/VST3/BLOCKWAVE.vst3/Contents/Resources/moduleinfo.json
+JUCE v8.0.8
+[275/277] Building CXX object CMakeFiles/blockwave_screenshots.dir/_deps/juce-src/modules/juce_gui_basics/juce_gui_basics.mm.o
+[276/277] Linking CXX executable blockwave_screenshots_artefacts/Debug/blockwave_screenshots

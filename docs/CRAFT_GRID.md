@@ -38,7 +38,9 @@ Conflict rule: deltas are applied in a fixed material order (table order), multi
 
 *Producer-requested for v1.0 (the architect had deferred it to v1.1 "Crafting 2.0"; the producer overrode that and specified the semantics below). Rationale, verbatim: sometimes a material is simply too much and you want to dial it back without removing the block.*
 
-Every placed cell carries a **weight** in `0..1` (1.0 = 100%, the default), edited by a slider on the block itself. It scales that cell's contribution to its material's delta set — the cell contributes `weight` instead of a full copy.
+Every placed cell carries a **weight** in `0..1` (1.0 = 100%, the default). It scales that cell's contribution to its material's delta set — the cell contributes `weight` instead of a full copy.
+
+The control for it is **hidden until hovered** (producer spec; full interaction and hit-testing in `docs/SPEC.md` §UI and the header comment of `plugin/ui/CraftBlocks.h`): hovering a filled block reveals a plate-less 3×5 `MIX` in its top-right corner, clicking those letters opens a knob on the block, clicking again hides it, and `M` does the same for the focused cell. The expanded knob is pure per-cell UI state — never serialised, cleared when the cell is emptied or the bench is replaced. The label owns only the click (a press that travels becomes a normal block move) and the knob owns only its own 28×28 corner, so drag-to-move — which is load-bearing here, since recipes are position-sensitive — keeps the rest of the cell.
 
 | Delta class | Behaviour at weight *w* |
 |---|---|

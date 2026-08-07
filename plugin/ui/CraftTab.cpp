@@ -444,7 +444,7 @@ CraftTab::CraftTab (BlockwaveAudioProcessor& processor)
         }
         repaint();
     };
-    // Mix-rail edits take the weight-only processor path: it re-crafts through
+    // MIX-knob edits take the weight-only processor path: it re-crafts through
     // the same atomic APVTS write, but never registers a discovery and never
     // touches the recipe name or the auto-name (engine guarantee) — so there
     // is deliberately no refreshLabels() here.
@@ -550,10 +550,17 @@ bool CraftTab::isShowingDiscoveries() const { return discoveriesPanel.isVisible(
 
 void CraftTab::refreshFromProcessor()
 {
+    // A preset with NO craft data is not "leave the bench alone" — it is a
+    // genuine uncrafted patch, and the bench has to say so. Skipping setGrid
+    // in that case left the previous blocks (and any open MIX knob, which is
+    // per-block UI state that must never outlive its block) on screen
+    // misrepresenting the sound that just loaded, and the 1 s safety net below
+    // could not see it either. getCraftGrid leaves `g` default-constructed
+    // when it returns false, and a default CraftGrid IS the empty bench, so
+    // the unconditional push is also the correct one.
     CraftGrid g;
     hasGrid = proc.getCraftGrid (g);
-    if (hasGrid)
-        gridComp.setGrid (g);
+    gridComp.setGrid (g);
     refreshLabels();
 }
 
@@ -658,10 +665,17 @@ void CraftTab::timerCallback()
         syncCountdown = 15;
         CraftGrid g;
         const bool valid = proc.getCraftGrid (g);
-        // equalsWithWeights, not operator== : the mix rail can change a grid
+        // equalsWithWeights, not operator== : a mix edit can change a grid
         // without changing its recipe identity, and a preset load carrying
         // different weights must still resync the bench.
-        if (valid != hasGrid || (valid && ! g.equalsWithWeights (gridComp.getGrid()))
+        //
+        // The comparison is NOT gated on `valid`: when the processor has no
+        // craft, `g` is the empty bench, which is exactly what must be on
+        // screen — so the same one-liner catches a no-craft preset load that
+        // left stale blocks behind. It is also stable: after the resync the
+        // bench IS a default CraftGrid, so the next tick compares equal.
+        if (valid != hasGrid
+            || ! g.equalsWithWeights (gridComp.getGrid())
             || patchName != proc.getCraftAutoName().toUpperCase())
             refreshFromProcessor();
     }
@@ -678,7 +692,7 @@ juce::String CraftTab::hintText() const
         return "PLACE A BLOCK TO START CRAFTING";
     for (int i = 0; i < kNumCells; ++i)
         if (gridComp.getGrid().cells[i] != Material::none)
-            return "SIDE RAIL MIXES A BLOCK - RIGHT CLICK CLEARS";
+            return "HOVER A BLOCK FOR MIX - RIGHT CLICK CLEARS";
     return "DRAG BLOCKS IN - RIGHT CLICK CLEARS";
 }
 

@@ -1,7 +1,7 @@
 Started validating: /Users/kirillboyko/Downloads/blockwave-kickoff/build/release/BLOCKWAVE_artefacts/Release/VST3/BLOCKWAVE.vst3
-Random seed: 0x67aa4c6
+Random seed: 0x1889a18
 Validation started
-	5 Aug 2026 8:50:43pm
+	7 Aug 2026 10:11:40am
 
 Strictness level: 10
 -----------------------------------------------------------------
@@ -14,12 +14,12 @@ Completed tests in pluginval / Scan for plugins located in: /Users/kirillboyko/D
 -----------------------------------------------------------------
 Starting tests in: pluginval / Open plugin (cold)...
 
-Time taken to open plugin (cold): 169 ms
+Time taken to open plugin (cold): 170 ms
 Completed tests in pluginval / Open plugin (cold)
 -----------------------------------------------------------------
 Starting tests in: pluginval / Open plugin (warm)...
 
-Time taken to open plugin (warm): 16 ms
+Time taken to open plugin (warm): 17 ms
 Running tests 1 times
 Completed tests in pluginval / Open plugin (warm)
 -----------------------------------------------------------------
@@ -31,7 +31,7 @@ SupportsDoublePrecision: no
 Reported latency: 0
 Reported taillength: 0
 
-Time taken to run test: 0
+Time taken to run test: 1 ms
 Completed tests in pluginval / Plugin info
 -----------------------------------------------------------------
 Starting tests in: pluginval / Plugin programs...
@@ -43,15 +43,15 @@ Completed tests in pluginval / Plugin programs
 -----------------------------------------------------------------
 Starting tests in: pluginval / Editor...
 
-Time taken to open editor (cold): 242 ms
-Time taken to open editor (warm): 212 ms
+Time taken to open editor (cold): 235 ms
+Time taken to open editor (warm): 203 ms
 
-Time taken to run test: 466 ms
+Time taken to run test: 448 ms
 Completed tests in pluginval / Editor
 -----------------------------------------------------------------
 Starting tests in: pluginval / Open editor whilst processing...
 
-Time taken to run test: 210 ms
+Time taken to run test: 211 ms
 Completed tests in pluginval / Open editor whilst processing
 -----------------------------------------------------------------
 Starting tests in: pluginval / Audio processing...
@@ -91,7 +91,7 @@ Testing with sample rate [96000] and block size [256]
 Testing with sample rate [96000] and block size [512]
 Testing with sample rate [96000] and block size [1024]
 
-Time taken to run test: 4 ms
+Time taken to run test: 5 ms
 Completed tests in pluginval / Non-releasing audio processing
 -----------------------------------------------------------------
 Starting tests in: pluginval / Plugin state...
@@ -101,7 +101,7 @@ Completed tests in pluginval / Plugin state
 -----------------------------------------------------------------
 Starting tests in: pluginval / Plugin state restoration...
 
-Time taken to run test: 9 ms
+Time taken to run test: 10 ms
 Completed tests in pluginval / Plugin state restoration
 -----------------------------------------------------------------
 Starting tests in: pluginval / Automation...
@@ -121,7 +121,7 @@ Testing with sample rate [96000] and block size [256] and sub-block size [32]
 Testing with sample rate [96000] and block size [512] and sub-block size [32]
 Testing with sample rate [96000] and block size [1024] and sub-block size [32]
 
-Time taken to run test: 4 ms
+Time taken to run test: 5 ms
 Completed tests in pluginval / Automation
 -----------------------------------------------------------------
 Starting tests in: pluginval / Editor Automation...
@@ -399,7 +399,7 @@ Testing parameter: 66 - crush_lp
 Parameter info: index - 66, paramName - crush_lp, defaultValue - 1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
 Testing accessors
 
-Time taken to run test: 5 ms
+Time taken to run test: 3 ms
 Completed tests in pluginval / Automatable Parameters
 -----------------------------------------------------------------
 Starting tests in: pluginval / Parameters...
@@ -672,7 +672,7 @@ Testing parameter: 66 - crush_lp
 Parameter info: index - 66, paramName - crush_lp, defaultValue - 1, label - , numSteps - 2147483647, isDiscrete - 0, isBoolean - 0, isOrientationInverted - 0, isAutomatable - 1, isMetaParameter - 0, category - 0, all value strings - 
 Testing accessors
 
-Time taken to run test: 4 ms
+Time taken to run test: 3 ms
 Completed tests in pluginval / Parameters
 -----------------------------------------------------------------
 Starting tests in: pluginval / Background thread state...
@@ -682,7 +682,7 @@ Completed tests in pluginval / Background thread state
 -----------------------------------------------------------------
 Starting tests in: pluginval / Parameter thread safety...
 
-Time taken to run test: 23 ms
+Time taken to run test: 16 ms
 Completed tests in pluginval / Parameter thread safety
 -----------------------------------------------------------------
 Starting tests in: pluginval / auval...
@@ -720,7 +720,7 @@ Starting tests in: pluginval / Restoring default layout...
 Main bus num input channels: 0
 Main bus num output channels: 2
 
-Time taken to run test: 0
+Time taken to run test: 1 ms
 Completed tests in pluginval / Restoring default layout
 -----------------------------------------------------------------
 Starting tests in: pluginval / Fuzz parameters...
@@ -792,8 +792,8 @@ Fuzz testing parameter: 64 - cave_lp
 Fuzz testing parameter: 65 - dly_lp
 Fuzz testing parameter: 66 - crush_lp
 
-Time taken to run test: 8 ms
+Time taken to run test: 10 ms
 
-Time taken to run all tests: 16 secs
+Time taken to run all tests: 15 secs
 Completed tests in pluginval / Fuzz parameters
 SUCCESS

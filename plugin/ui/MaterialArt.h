@@ -66,6 +66,11 @@ constexpr int kWeightDimLevels = 5;                // 0 = full bright .. 4 = dar
 int weightDimLevel (float weight01) noexcept;
 juce::Image makeMaterialImage (Material, int scale, int dimLevel);
 
+// The key colour a block ACTUALLY shows at a given dim level — the same blend
+// the sprite palette gets. The bench uses it to pick a readable tone for the
+// plate-less MIX label drawn on top of the block.
+juce::Colour materialKeyColour (Material m, int dimLevel) noexcept;
+
 // 12x12 mini 3x3 recipe icon (4x4 px per cell): centre = base colour, outer
 // cells = material colours, empty cells = sunken dark. Teaches the crafting
 // system straight from the preset browser (SPEC §UI). The scaled overload

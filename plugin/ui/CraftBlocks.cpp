@@ -67,8 +67,8 @@ Material materialFromDrag (const juce::var& payload, int& fromCell)
 }
 
 // Linear walk order for LEFT/RIGHT: the 3x3 in reading order with the base
-// in the middle (-1). UP/DOWN belong to the mix rail on filled cells, so this
-// single axis has to reach every cell on its own — hence the wrap.
+// in the middle (-1). UP/DOWN are given over to the mix while a cell's knob is
+// open, so this single axis has to reach every cell on its own — hence the wrap.
 const int kWalkOrder[9] = { 0, 1, 2, 3, -1, 4, 5, 6, 7 };
 
 int walkIndexOf (int slot)
@@ -89,6 +89,72 @@ float snapMixWeight (float w)
 juce::String mixPercentText (float w)
 {
     return juce::String (juce::roundToInt (w * 100.0f)) + "%";
+}
+
+// ---- hidden MIX art ---------------------------------------------------------
+
+// The MIX label carries no plate and no outline (producer spec: "just letters
+// in a muted colour"), so its contrast has to come from the block underneath.
+// Muted is the same neutral mid grey on every material — genuinely quiet on a
+// light block and on a dark one. The HOT tone is the block's own opposite
+// extreme, so hovering the letters is a full jump in contrast either way
+// (mid grey -> near white on a dark block, mid grey -> near black on a light
+// one) instead of a shade nobody can see.
+struct MixLabelTones { juce::Colour muted, strong; };
+
+MixLabelTones mixLabelTones (Material m, float weight01)
+{
+    const auto tone = materialKeyColour (m, weightDimLevel (weight01));
+    return { colours::panelFace,
+             tone.getPerceivedBrightness() < 0.5f ? colours::label
+                                                  : colours::outline };
+}
+
+// 24x24 stepped knob, 16 frames, drawn from scratch on the pixel grid: outline
+// ring, bevelled collar, flat face, 1-px ice pointer. Round, so the block art
+// stays visible in the corners — the knob sits ON the block, it is not a plate.
+juce::Image buildMixKnobStrip()
+{
+    using namespace colours;
+    juce::Image strip (juce::Image::ARGB, kMixKnobFrames * kMixKnobArt,
+                       kMixKnobArt, true);
+    const juce::Colour collarLight { 0xffb2b2ba };
+    const juce::Colour collarDark  { 0xff565660 };
+    const juce::Colour face        { 0xff7e7e88 };
+    const float centre = static_cast<float> (kMixKnobArt) / 2.0f - 0.5f;
+
+    for (int f = 0; f < kMixKnobFrames; ++f)
+    {
+        const float pos = static_cast<float> (f)
+                        / static_cast<float> (kMixKnobFrames - 1);
+        const float ang = juce::MathConstants<float>::pi * (-0.75f + 1.5f * pos);
+        const int ox = f * kMixKnobArt;
+
+        for (int y = 0; y < kMixKnobArt; ++y)
+            for (int x = 0; x < kMixKnobArt; ++x)
+            {
+                const float dx = static_cast<float> (x) - centre;
+                const float dy = static_cast<float> (y) - centre;
+                const float r = std::sqrt (dx * dx + dy * dy);
+                if (r > 11.2f)
+                    continue;                       // transparent: block shows
+                juce::Colour c;
+                if (r > 9.4f)
+                    c = outline;                    // 2-px dark rim
+                else if (r > 6.5f)
+                    c = (dx + dy < -2.0f) ? collarLight
+                      : (dx + dy >  2.0f) ? collarDark : stone;
+                else
+                    c = face;
+                strip.setPixelAt (ox + x, y, c);
+            }
+
+        for (float rr = 2.0f; rr <= 8.6f; rr += 0.5f)
+            strip.setPixelAt (ox + static_cast<int> (std::lround (centre + std::sin (ang) * rr)),
+                              static_cast<int> (std::lround (centre - std::cos (ang) * rr)),
+                              colours::ice);
+    }
+    return strip;
 }
 
 } // namespace
@@ -141,8 +207,18 @@ void CraftCell::paint (juce::Graphics& g)
                            r.getX(), r.getY());
         }
 
-        if (hasMixRail())
-            paintMixRail (g, weight);
+        // ---- hidden MIX: knob first (it is under the label), then the
+        // letters, then the persistent nn% tag. Nothing at all at rest.
+        if (hasMixControl())
+        {
+            if (isMixOpen())
+                paintMixKnob (g, weight);
+            if (hovering || labelHot || labelArmed || isMixOpen()
+                || hasKeyboardFocus (false))
+                paintMixLabel (g, m, weight);
+            if (weight < 1.0f || isMixOpen())
+                paintMixTag (g, weight);
+        }
 
         if (const int f = grid.slotFlash (slot); f > 0)
         {
@@ -167,67 +243,90 @@ void CraftCell::paint (juce::Graphics& g)
         g.drawRect (r, 1);
     }
 
-    if (hasMixRail() && grid.mixReadoutSlot() == slot)
+    if (hasMixControl() && grid.mixReadoutSlot() == slot)
         paintMixReadout (g, grid.cellWeight (slot));
 
     if (hasKeyboardFocus (false))
         drawFocusTicks (g, r);
 }
 
-// ---- mix rail ----------------------------------------------------------------
+// ---- hidden MIX --------------------------------------------------------------
 
-bool CraftCell::hasMixRail() const
+bool CraftCell::hasMixControl() const
 {
     return ! baseSlot && slot >= 0 && slot < kNumCells
         && grid.getGrid().cells[slot] != Material::none;
 }
 
-juce::Rectangle<int> CraftCell::railBounds() const
+bool CraftCell::isMixOpen() const
 {
-    return { getWidth() - kMixRailW, 0, kMixRailW, getHeight() };
+    return hasMixControl() && grid.isMixKnobOpen (slot);
 }
 
-void CraftCell::paintMixRail (juce::Graphics& g, float w)
+// Top-right corner. Owns the click, never the drag (see mouseDrag).
+juce::Rectangle<int> CraftCell::mixLabelBounds() const
+{
+    return { getWidth() - kMixLabelW, 0, kMixLabelW, kMixLabelH };
+}
+
+// Bottom-right corner, live only while the knob is open. Everything outside
+// it still starts a block drag-and-drop.
+juce::Rectangle<int> CraftCell::mixKnobBounds() const
+{
+    return { getWidth() - kMixKnobBox, getHeight() - kMixKnobBox,
+             kMixKnobBox, kMixKnobBox };
+}
+
+void CraftCell::paintMixLabel (juce::Graphics& g, Material m, float w)
 {
     using namespace colours;
-    const auto rail = railBounds();
-    const int trackX = rail.getX() + 2;                     // 8-px wide well
-    const juce::Rectangle<int> track (trackX, kMixTrackY, 8, kMixTrackH);
+    const auto tones = mixLabelTones (m, w);
+    const bool open = isMixOpen();
+    const auto colour = open ? (labelHot ? lava.brighter (0.45f) : lava)
+                             : (labelHot ? tones.strong : tones.muted);
 
-    drawBevelBox (g, track, chip, panelDark, panelLight, outline, true, 1);
+    // Bare letters: no plate, no bevel, no outline (producer spec).
+    const auto box = mixLabelBounds();
+    drawPixelText (g, "MIX", box.getRight() - 3 - pixelTextWidth ("MIX", 1),
+                   box.getY() + 4, 1, colour);
+}
 
-    // Filled portion, quantised to 4-px chunks (never a smooth gradient).
-    const int travel = kMixTrackH - 4;
-    const int fill = juce::jlimit (0, travel,
-        static_cast<int> (std::lround (w * static_cast<float> (travel) / 4.0f)) * 4);
-    if (fill > 0)
+void CraftCell::paintMixKnob (juce::Graphics& g, float w)
+{
+    const auto box = mixKnobBounds();
+    const int frame = juce::jlimit (0, kMixKnobFrames - 1,
+        static_cast<int> (std::lround (juce::jlimit (0.0f, 1.0f, w)
+                          * static_cast<float> (kMixKnobFrames - 1))));
+    const int dx = box.getCentreX() - kMixKnobArt / 2;
+    const int dy = box.getCentreY() - kMixKnobArt / 2;
+
+    g.setImageResamplingQuality (juce::Graphics::lowResamplingQuality);
+    g.drawImage (grid.mixKnobStrip(), dx, dy, kMixKnobArt, kMixKnobArt,
+                 frame * kMixKnobArt, 0, kMixKnobArt, kMixKnobArt);
+
+    if (mixDragging)                     // grabbed: lava corner ticks, no glow
     {
-        g.setColour (grass);
-        g.fillRect (track.getX() + 2, track.getBottom() - 2 - fill, 4, fill);
+        g.setColour (colours::lava);
+        const int t = 3;
+        g.fillRect (box.getX(), box.getY(), t, 1);
+        g.fillRect (box.getX(), box.getY(), 1, t);
+        g.fillRect (box.getRight() - t, box.getBottom() - 1, t, 1);
+        g.fillRect (box.getRight() - 1, box.getBottom() - t, 1, t);
     }
+}
 
-    // Handle: chunky block spanning the whole rail so it reads as a grip.
-    const int span = kMixTrackH - kMixHandleH;
-    const int hy = kMixTrackY
-                 + juce::jlimit (0, span,
-                     static_cast<int> (std::lround ((1.0f - w)
-                         * static_cast<float> (span) / 2.0f)) * 2);
-    const juce::Rectangle<int> handle (rail.getX(), hy, kMixRailW, kMixHandleH);
-    drawBevelBox (g, handle, (railHot || mixDragging) ? panelLight : buttonFace,
-                  label, panelDark, outline, false, 1);
-    g.setColour (mixDragging ? lava : outline);
-    g.fillRect (handle.getX() + 2, handle.getCentreY() - 1, kMixRailW - 4, 1);
-
-    // Persistent "this block is turned down" tag: only below 100 %, small,
-    // bottom-left, out of the sprite's busiest area.
-    if (w < 1.0f)
-    {
-        const auto txt = mixPercentText (w);
-        const juce::Rectangle<int> tag (2, getHeight() - 11,
-                                        pixelTextWidth (txt, 1) + 5, 9);
-        drawBevelBox (g, tag, chip, panelDark, panelLight, outline, true, 1);
-        drawPixelTextCentred (g, txt, tag, 1, w > 0.0f ? ice : lava);
-    }
+// Persistent "this block is turned down" tag: bottom-left, out of the
+// sprite's busiest area. Always shown while the knob is open so you can read
+// what you are dialling, otherwise only below 100 %.
+void CraftCell::paintMixTag (juce::Graphics& g, float w)
+{
+    using namespace colours;
+    const auto txt = mixPercentText (w);
+    const juce::Rectangle<int> tag (2, getHeight() - 11,
+                                    pixelTextWidth (txt, 1) + 5, 9);
+    drawBevelBox (g, tag, chip, panelDark, panelLight, outline, true, 1);
+    drawPixelTextCentred (g, txt, tag, 1,
+                          w >= 1.0f ? grass : (w > 0.0f ? ice : lava));
 }
 
 void CraftCell::paintMixReadout (juce::Graphics& g, float w)
@@ -236,9 +335,17 @@ void CraftCell::paintMixReadout (juce::Graphics& g, float w)
     const auto txt = mixPercentText (w);
     const int tw = pixelTextWidth (txt, 2);
     juce::Rectangle<int> badge (0, 0, tw + 12, 20);
-    badge.setCentre (getWidth() / 2 - kMixRailW / 2, getHeight() / 2);
+    // Parked up-left of the knob so a drag never hides the control doing it.
+    badge.setCentre (getWidth() / 2 - 2, getHeight() / 2 - 8);
     drawBevelBox (g, badge, chip, lava, juce::Colour (0xff3a2410), outline);
     drawPixelTextCentred (g, txt, badge, 2, label);
+}
+
+void CraftCell::setHoverForDisplay (bool overCell, bool overLabel)
+{
+    hovering = overCell;
+    labelHot = overLabel && hasMixControl();
+    repaint();
 }
 
 // ---- mouse -------------------------------------------------------------------
@@ -247,27 +354,44 @@ void CraftCell::mouseDown (const juce::MouseEvent& e)
 {
     grabKeyboardFocus();
     mixDragging = false;
+    labelArmed = false;
     if (baseSlot)
     {
         grid.cycleBase (e.mods.isPopupMenu() ? -1 : 1);
         return;
     }
 
-    // The rail owns the right edge of a filled block — except while a
-    // material is ARMED, when the whole cell places it (no dead zone in the
-    // guided flow) and except on right-click, which always clears.
-    if (hasMixRail() && ! e.mods.isPopupMenu()
-        && grid.getArmedMaterial() == Material::none
-        && railBounds().contains (e.getPosition()))
+    // Right-click and an ARMED material win over everything and apply to
+    // every pixel of the cell — label and knob included, so neither the
+    // clear gesture nor the guided click-cell-then-click-material flow ever
+    // hits a dead zone.
+    if (e.mods.isPopupMenu() || grid.getArmedMaterial() != Material::none)
     {
-        mixDragging = true;
-        mixDragStartY = e.getPosition().y;
-        mixDragStartWeight = grid.cellWeight (slot);
-        grid.selectSlot (slot);                   // a plain click still selects
-        repaint();
+        grid.cellClicked (slot, e.mods.isPopupMenu());
         return;
     }
-    grid.cellClicked (slot, e.mods.isPopupMenu());
+
+    if (hasMixControl())
+    {
+        // The knob only exists while it is open, and only owns its own box.
+        if (isMixOpen() && mixKnobBounds().contains (e.getPosition()))
+        {
+            mixDragging = true;
+            mixDragStartY = e.getPosition().y;
+            mixDragStartWeight = grid.cellWeight (slot);
+            repaint();
+            return;
+        }
+        // The label ARMS here and toggles on mouseUp; travelling turns the
+        // same press into a normal block move (see mouseDrag).
+        if (mixLabelBounds().contains (e.getPosition()))
+        {
+            labelArmed = true;
+            repaint();
+            return;
+        }
+    }
+    grid.cellClicked (slot, false);
 }
 
 void CraftCell::mouseDrag (const juce::MouseEvent& e)
@@ -277,10 +401,9 @@ void CraftCell::mouseDrag (const juce::MouseEvent& e)
 
     if (mixDragging)
     {
-        // One rail height of travel = the full 0..100 % range, up = louder.
-        const int travel = juce::jmax (16, kMixTrackH - kMixHandleH);
+        // kMixDragTravel px of travel = the full 0..100 % range, up = louder.
         const float delta = static_cast<float> (mixDragStartY - e.getPosition().y)
-                          / static_cast<float> (travel);
+                          / static_cast<float> (kMixDragTravel);
         grid.setCellWeightFromDrag (slot, mixDragStartWeight + delta);
         return;
     }
@@ -288,6 +411,15 @@ void CraftCell::mouseDrag (const juce::MouseEvent& e)
     const auto m = grid.getGrid().cells[slot];
     if (m == Material::none || e.getDistanceFromDragStart() < 4)
         return;
+
+    // A press that started on the MIX label but then travelled is a block
+    // move, not a toggle: the label must never cost you the drag gesture.
+    if (labelArmed)
+    {
+        labelArmed = false;
+        repaint();
+    }
+
     if (auto* container = juce::DragAndDropContainer::findParentDragContainerFor (this))
     {
         const juce::ScaledImage img (makeMaterialImage (m, 3), 1.0);
@@ -296,29 +428,41 @@ void CraftCell::mouseDrag (const juce::MouseEvent& e)
     }
 }
 
-void CraftCell::mouseUp (const juce::MouseEvent&)
+void CraftCell::mouseUp (const juce::MouseEvent& e)
 {
-    if (! mixDragging)
+    if (mixDragging)
+    {
+        mixDragging = false;
+        grid.endMixDrag();
+        repaint();
         return;
-    mixDragging = false;
-    grid.endMixDrag();
-    repaint();
+    }
+    if (labelArmed)
+    {
+        labelArmed = false;
+        if (mixLabelBounds().contains (e.getPosition()))
+            grid.toggleMixKnob (slot);            // open on click, hide on the next
+        else
+            repaint();                            // released off the label: nothing
+    }
 }
 
 void CraftCell::mouseMove (const juce::MouseEvent& e)
 {
-    const bool hot = hasMixRail() && railBounds().contains (e.getPosition());
-    if (hot != railHot)
+    const bool hot = hasMixControl() && mixLabelBounds().contains (e.getPosition());
+    if (hot != labelHot)
     {
-        railHot = hot;
-        repaint (railBounds());
+        labelHot = hot;
+        repaint (mixLabelBounds());
     }
 }
 
 void CraftCell::mouseWheelMove (const juce::MouseEvent&,
                                 const juce::MouseWheelDetails& wheel)
 {
-    if (! hasMixRail() || wheel.deltaY == 0.0f)
+    // Only over an OPEN knob: with no control on screen there are no
+    // invisible edits.
+    if (! isMixOpen() || wheel.deltaY == 0.0f)
         return;
     grid.nudgeCellWeight (slot, wheel.deltaY > 0.0f ? 1 : -1);
 }
@@ -326,34 +470,50 @@ void CraftCell::mouseWheelMove (const juce::MouseEvent&,
 void CraftCell::mouseEnter (const juce::MouseEvent& e)
 {
     hovering = true;
-    railHot = hasMixRail() && railBounds().contains (e.getPosition());
+    labelHot = hasMixControl() && mixLabelBounds().contains (e.getPosition());
     repaint();
 }
 
 void CraftCell::mouseExit (const juce::MouseEvent&)
 {
     hovering = false;
-    railHot = false;
+    labelHot = false;
+    labelArmed = false;
     repaint();
 }
 
 bool CraftCell::keyPressed (const juce::KeyPress& k)
 {
     const int code = k.getKeyCode();
-    // LEFT/RIGHT walk the WHOLE grid in reading order and wrap, so every cell
-    // is still reachable with the vertical arrows given over to the mix rail.
+
+    // M is the keyboard twin of the MIX label: it toggles the knob on the
+    // focused block. The label is drawn whenever a cell has keyboard focus,
+    // so the shortcut has something to point at.
+    if (juce::CharacterFunctions::toUpperCase (k.getTextCharacter()) == 'M'
+        && ! k.getModifiers().isCommandDown())
+    {
+        if (! hasMixControl())
+            return true;                           // empty cell: nothing to mix
+        grid.toggleMixKnob (slot);
+        return true;
+    }
+
+    // LEFT/RIGHT walk the WHOLE grid in reading order and wrap.
     if (code == juce::KeyPress::leftKey)  { grid.focusStep (slot, -1); return true; }
     if (code == juce::KeyPress::rightKey) { grid.focusStep (slot,  1); return true; }
 
     if (code == juce::KeyPress::upKey || code == juce::KeyPress::downKey)
     {
         const int dir = code == juce::KeyPress::upKey ? 1 : -1;
-        if (hasMixRail())
+        // The arrows belong to the mix ONLY while this cell's knob is open;
+        // the rest of the time they walk the bench by rows, as they always
+        // did on empty and base cells.
+        if (isMixOpen())
         {
             grid.nudgeCellWeight (slot, dir * (k.getModifiers().isShiftDown() ? 5 : 1));
             return true;
         }
-        grid.focusNeighbour (slot, 0, -dir);       // nothing to mix: walk rows
+        grid.focusNeighbour (slot, 0, -dir);
         return true;
     }
 
@@ -419,11 +579,50 @@ CraftGridComponent::CraftGridComponent (BlockImageCache& imageCache)
 
 void CraftGridComponent::refreshCellTooltips()
 {
-    // 3 words max, product voice: a filled block advertises its mix rail, an
-    // empty one advertises the drop.
+    // 3 words max, product voice: a filled block advertises both of its
+    // gestures, an empty one advertises the drop.
     for (int s = 0; s < kNumCells; ++s)
         cells[static_cast<size_t> (s)]->setTooltip (
-            grid.cells[s] == Material::none ? "drop a block" : "drag to mix");
+            grid.cells[s] == Material::none ? "drop a block" : "drag or mix");
+}
+
+// ---- expanded mix knobs (pure UI state) --------------------------------------
+
+bool CraftGridComponent::isMixKnobOpen (int slot) const noexcept
+{
+    return slot >= 0 && slot < kNumCells && mixOpen[slot];
+}
+
+void CraftGridComponent::setMixKnobOpen (int slot, bool shouldBeOpen)
+{
+    if (slot < 0 || slot >= kNumCells)
+        return;
+    if (shouldBeOpen && grid.cells[slot] == Material::none)
+        return;                                   // empty cell: nothing to mix
+    if (mixOpen[slot] == shouldBeOpen)
+        return;
+    mixOpen[slot] = shouldBeOpen;
+    cells[static_cast<size_t> (slot)]->repaint();
+}
+
+void CraftGridComponent::toggleMixKnob (int slot)
+{
+    setMixKnobOpen (slot, ! isMixKnobOpen (slot));
+}
+
+void CraftGridComponent::setHoverForDisplay (int slot, bool overCell,
+                                             bool overLabel)
+{
+    if (slot < 0 || slot >= kNumCells)
+        return;
+    cells[static_cast<size_t> (slot)]->setHoverForDisplay (overCell, overLabel);
+}
+
+const juce::Image& CraftGridComponent::mixKnobStrip()
+{
+    if (! knobStrip.isValid())
+        knobStrip = buildMixKnobStrip();
+    return knobStrip;
 }
 
 void CraftGridComponent::resized()
@@ -457,6 +656,11 @@ void CraftGridComponent::setGrid (const CraftGrid& g)
     readoutSlot = -1;                            // no stale % badge on reload
     readoutTicks = 0;
     readoutHeld = false;
+    // The whole bench was replaced: every expanded knob belonged to a block
+    // that is no longer necessarily there. Expanded state is per-cell UI
+    // state and is never restored from a preset.
+    for (int s = 0; s < kNumCells; ++s)
+        mixOpen[s] = false;
     for (auto& c : cells)
         c->repaint();
 }
@@ -487,9 +691,11 @@ void CraftGridComponent::placeMaterial (int slot, Material m)
         return;
     }
     grid.cells[slot] = m;
-    // A NEW block always arrives at 100 %: the mix belongs to the block you
+    // A NEW block always arrives at 100 % with its knob closed: the mix (and
+    // the fact that you were fiddling with it) belongs to the block you
     // placed, never to the slot it landed in.
     grid.setCellWeight (slot, kCellWeightDefault);
+    mixOpen[slot] = false;
     flashSlot (slot);
     refreshCellTooltips();
     cells[static_cast<size_t> (slot)]->repaint();
@@ -502,6 +708,7 @@ void CraftGridComponent::clearSlot (int slot)
         return;
     grid.cells[slot] = Material::none;
     grid.setCellWeight (slot, kCellWeightDefault);   // block gone, mix gone
+    mixOpen[slot] = false;                           // ...and the knob with it
     if (readoutSlot == slot)
         readoutSlot = -1;
     flashSlot (slot);
@@ -521,6 +728,12 @@ void CraftGridComponent::moveMaterial (int fromSlot, int toSlot)
     const float wFrom = grid.cellWeight (fromSlot);
     grid.setCellWeight (fromSlot, grid.cellWeight (toSlot));
     grid.setCellWeight (toSlot, wFrom);
+    // The expanded knob travels with its block too, and a cell left empty by
+    // the swap can never keep one.
+    std::swap (mixOpen[fromSlot], mixOpen[toSlot]);
+    for (int s : { fromSlot, toSlot })
+        if (grid.cells[s] == Material::none)
+            mixOpen[s] = false;
     flashSlot (toSlot);
     flashSlot (fromSlot);
     refreshCellTooltips();
@@ -646,7 +859,7 @@ bool CraftGridComponent::animationTick()
 {
     bool busy = false;
 
-    // Mix readout: held while the rail is being dragged, then a short linger
+    // Mix readout: held while the knob is being dragged, then a short linger
     // so a keyboard/wheel nudge is actually readable before it goes.
     if (readoutSlot >= 0 && ! readoutHeld && readoutTicks > 0)
     {
