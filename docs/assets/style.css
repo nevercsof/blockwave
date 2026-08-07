@@ -1,6 +1,26 @@
 /* BLOCKWAVE landing page
    GPLv3 — Copyright Kirill Boyko
-   Palette from docs/SPEC.md. No external fonts, no trackers, no third-party requests. */
+   Palette from docs/SPEC.md. No trackers, no third-party requests.
+
+   FONTS: self-hosted only. The pixel face below is served from our own
+   assets/fonts/ directory — deliberately NOT from the Google Fonts CDN, which
+   would be a third-party request on every page load and would leak every
+   visitor's IP and User-Agent to Google. Downloading the file once and
+   vendoring it keeps the page's promise that it talks to nobody. */
+
+/* Press Start 2P — SIL Open Font License 1.1, Copyright 2012 The Press Start
+   2P Project Authors. Licence text: assets/fonts/OFL.txt. Latin subset only
+   (4.7 KB); the page is English, and the pixel face is used for headings and
+   short labels, never for body copy. font-display: swap so the text is
+   readable immediately and simply re-renders when the face arrives — the
+   page is fully usable if the font never loads at all. */
+@font-face {
+  font-family: "Press Start 2P";
+  src: url("fonts/press-start-2p-latin.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 
 :root {
   --night:     #1c1c24;
@@ -19,6 +39,10 @@
   --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas,
           "DejaVu Sans Mono", monospace;
   --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* Accent face for headings only. Press Start 2P is an all-caps pixel font
+     with no lowercase and very wide advance widths — it is unreadable in
+     paragraphs and is never applied to body copy. */
+  --pixel: "Press Start 2P", var(--mono);
 
   --step: 8px;
 }
@@ -90,37 +114,59 @@ code, kbd, pre { font-family: var(--mono); }
 
 /* ---------- headings ---------- */
 
-h1, h2, h3, .kicker, .btn, .cell, .badge, .navname {
+/* Controls and small labels stay in the system mono: they have to fit fixed
+   boxes and stay legible at 10-12 px, which a pixel face does not. */
+.btn, .cell, .badge {
   font-family: var(--mono);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-weight: 700;
 }
 
-h1 {
-  font-size: clamp(2rem, 8vw, 3.6rem);
-  line-height: 1.1;
-  margin: 0 0 16px;
+/* Headings carry the pixel face — this is the brand, and the whole page is
+   selling a pixel-art instrument. Three adjustments the face demands:
+   font-weight 400 (it has no bold cut, so 700 makes the browser synthesise
+   one and smears the pixel grid); tighter letter-spacing (the glyphs are
+   already very widely advanced); and a much larger line-height (they are
+   square, so default leading collides). */
+h1, h2, h3, .kicker, .navname {
+  font-family: var(--pixel);
+  text-transform: uppercase;
+  font-weight: 400;
   letter-spacing: 0.02em;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+}
+
+h1 {
+  /* Roughly 0.6x the previous sizes: Press Start 2P has a much larger visual
+     size at the same font-size than a normal face. */
+  font-size: clamp(1.15rem, 4.4vw, 2.1rem);
+  line-height: 1.45;
+  margin: 0 0 20px;
+  letter-spacing: 0;
 }
 
 h2 {
-  font-size: clamp(1.15rem, 4vw, 1.5rem);
-  margin: 0 0 8px;
+  font-size: clamp(0.78rem, 2.3vw, 0.95rem);
+  line-height: 1.6;
+  margin: 0 0 12px;
   color: var(--lava);
 }
 
 h3 {
-  font-size: 0.95rem;
-  margin: 0 0 8px;
+  font-size: 0.68rem;
+  line-height: 1.7;
+  margin: 0 0 12px;
   color: var(--ink);
 }
 
 .kicker {
-  font-size: 0.72rem;
+  font-size: 0.52rem;
+  line-height: 1.8;
   color: var(--stone);
-  letter-spacing: 0.22em;
-  margin: 0 0 12px;
+  letter-spacing: 0.1em;
+  margin: 0 0 14px;
 }
 
 p { margin: 0 0 16px; }
@@ -143,7 +189,7 @@ p:last-child { margin-bottom: 0; }
 }
 
 .navname {
-  font-size: 1.05rem;
+  font-size: 0.68rem;
   letter-spacing: 0.18em;
 }
 .navname .b { color: var(--grass); }

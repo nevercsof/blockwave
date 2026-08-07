@@ -37,8 +37,15 @@ include(FetchContent)
 FetchContent_Declare(
     JUCE
     GIT_REPOSITORY https://github.com/juce-framework/JUCE.git
-    GIT_TAG        8.0.8
-    GIT_SHALLOW    TRUE
+    # Pinned to the COMMIT the 8.0.8 tag pointed at on 2026-08-07, not to the
+    # tag itself. A git tag is mutable: whoever controls the upstream repo can
+    # move it, and every clean build here and in CI would then silently fetch
+    # different dependency code. A commit hash cannot be repointed.
+    # To upgrade: resolve the new tag with
+    #   git ls-remote https://github.com/juce-framework/JUCE.git refs/tags/<tag>
+    # and replace the hash below, noting the tag it came from.
+    GIT_TAG        d6181bde38d858c283c3b7bf699ce6340c050b5d   # tag 8.0.8
+    GIT_SHALLOW    FALSE
 )
 FetchContent_MakeAvailable(JUCE)
 

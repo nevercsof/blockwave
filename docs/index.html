@@ -291,29 +291,31 @@ xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/Components/BLOCKWAVE.com
     <p class="notesig">No account is needed to download. The Watch button needs a GitHub account,
     which is why it is a suggestion and not a wall.</p>
 
-    <!-- ===== OPTIONAL EMAIL LIST — currently disabled, and the page is fine without it =====
-         1. Make a free list at buttondown.com (or Buttondown-compatible EmailOctopus / Listmonk)
-            and copy the form action URL it gives you, which looks like
-            https://buttondown.com/api/emails/embed-subscribe/YOURUSERNAME
-         2. Paste that URL into the action="" attribute below, replacing YOURUSERNAME.
-         3. Delete this comment's opening and closing markers so the form goes live.
-
+    <!-- EMAIL LIST — markup is live, the endpoint is NOT yet.
+         The action below still says YOURUSERNAME, so a submission would POST to
+         a 404 and the address would be lost silently. Until the real Buttondown
+         username is pasted in, the fieldset is disabled: the form renders, but
+         the input and the button cannot be used and the note says so. Replace
+         YOURUSERNAME below AND delete the `disabled` attribute on the fieldset
+         — those two edits together are what makes it live. -->
     <form class="panel" style="margin-top:24px"
           action="https://buttondown.com/api/emails/embed-subscribe/YOURUSERNAME"
           method="post" target="_blank">
-      <h3><label for="bd-email">Email me when there are new recipes</label></h3>
-      <p class="notesig">Releases and recipes only. Unsubscribe link in every message.</p>
-      <p>
-        <input id="bd-email" type="email" name="email" required
-               autocomplete="email" placeholder="you@example.com"
-               style="font:inherit;padding:12px;background:#1c1c24;color:#e8e8f0;
-                      border:2px solid #14141a;min-width:min(100%,280px)">
-        <button class="btn" type="submit" style="flex:0 0 auto;display:inline-block;margin-top:8px">
-          Subscribe
-        </button>
-      </p>
+      <fieldset disabled style="border:0;padding:0;margin:0">
+        <h3><label for="bd-email">Email me when there are new recipes</label></h3>
+        <p class="notesig">Releases and recipes only. Unsubscribe link in every message.
+          <strong>Not open for signups yet</strong> — use Watch → Releases above in the meantime.</p>
+        <p>
+          <input id="bd-email" type="email" name="email" required
+                 autocomplete="email" placeholder="you@example.com"
+                 style="font:inherit;padding:12px;background:#1c1c24;color:#e8e8f0;
+                        border:2px solid #14141a;min-width:min(100%,280px)">
+          <button class="btn" type="submit" style="flex:0 0 auto;display:inline-block;margin-top:8px">
+            Subscribe
+          </button>
+        </p>
+      </fieldset>
     </form>
-    ===== end optional email list ===== -->
   </div>
 </section>
 

@@ -7,6 +7,15 @@ on:
   pull_request:
   workflow_dispatch:
 
+# Least privilege. Without this block GITHUB_TOKEN is granted write across the
+# whole repo, so any compromised or malicious step — ours or a third-party
+# action's — could push commits, move tags or edit releases. This workflow only
+# ever reads the repository; artifact upload uses its own channel and needs no
+# repo scope. If a future job must write (a release step, say), give that job
+# its own narrower `permissions:` rather than widening this one.
+permissions:
+  contents: read
+
 jobs:
   build:
     strategy:
