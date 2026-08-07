@@ -81,13 +81,15 @@ Uncommented as instructed. Because the endpoint still says `YOURUSERNAME`, a sub
 | Push protection | — | **Already enabled** |
 | `GITHUB_TOKEN` permissions | none declared → **write across the whole repo** | **`permissions: contents: read`** at workflow level |
 | JUCE dependency pin | `GIT_TAG 8.0.8` — **a mutable tag** | **commit `d6181bde38d858c283c3b7bf699ce6340c050b5d`** |
-| Branch protection on `main` | none | **force-push blocked, deletion blocked**, both CI jobs required |
+| Branch protection on `main` | none | **force-push blocked, deletion blocked**; both CI jobs listed as required |
 | Release hashes | in a checkpoint only | **published in the release notes** |
 | 2FA | **cannot determine — see below** | your action |
 
 **Why the token permissions mattered.** Without a `permissions:` block, GitHub grants `GITHUB_TOKEN` write access across the repository. Our workflow only ever reads code — artifact upload uses its own channel — so any compromised step, ours or a third-party action's, had standing authority to push commits, move tags or edit releases. Now it has read and nothing else.
 
 **Why the JUCE pin mattered more.** A git tag is mutable: whoever controls the upstream repository can move `8.0.8` to point at different code, and every clean build here and in CI would silently fetch it. That is the classic supply-chain shape, and for an audio plugin the payload would ship straight into other people's DAWs. It is now pinned to an immutable commit, with `GIT_SHALLOW FALSE` because a shallow clone cannot fetch an arbitrary commit. Upgrade instructions are in the comment.
+
+**Branch protection does not get in your way.** `enforce_admins` is off, so as the repository owner you still push straight to `main` — git prints a note that the required checks "are expected" and the push goes through, which I confirmed with the commit for this checkpoint. What is genuinely blocked, for everyone including you, is **force-pushing and deleting the branch**: the two operations that rewrite history and are how a compromised account quietly swaps code under a tag people have already downloaded. That is the protection worth having on a solo repo; requiring a pull request for your own commits would only get switched off in a week.
 
 **The hashes are now public**, which is the point: an unsigned binary on a mirror is unverifiable unless the real hashes are somewhere a stranger can read them. They are in the release body with the `shasum` and `certutil` commands. I confirmed the end-to-end story works by downloading both zips fresh and matching them against the published values.
 
