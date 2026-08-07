@@ -218,3 +218,27 @@ target_link_libraries(blockwave_screenshots PRIVATE
     BlockwaveRecipeData
     juce::juce_audio_utils
     juce::juce_recommended_config_flags)
+
+# --- Press-kit image renderer -------------------------------------------------
+# blockwave_presskit [frames|logo] [outDir] — sibling of blockwave_screenshots.
+# "frames" renders a numbered PNG sequence of one real craft ending in a recipe
+# discovery (assembled into the launch GIF by tools/presskit/make_gif.py);
+# "logo" renders the wordmark / avatar pack from the product's own PixelFont.
+juce_add_console_app(blockwave_presskit PRODUCT_NAME "blockwave_presskit")
+set(BLOCKWAVE_PRESSKIT_SOURCES tools/presskit/PresskitMain.cpp)
+target_sources(blockwave_presskit PRIVATE
+    ${BLOCKWAVE_PRESSKIT_SOURCES}
+    ${BLOCKWAVE_PLUGIN_SOURCES})
+blockwave_strict_warnings(${BLOCKWAVE_PRESSKIT_SOURCES})
+target_include_directories(blockwave_presskit PRIVATE src plugin)
+target_compile_definitions(blockwave_presskit PRIVATE
+    JUCE_WEB_BROWSER=0
+    JUCE_USE_CURL=0
+    JUCE_MODAL_LOOPS_PERMITTED=1
+    JucePlugin_Name="BLOCKWAVE"
+    BLOCKWAVE_VERSION_STRING="${BLOCKWAVE_VERSION_STRING}")
+target_link_libraries(blockwave_presskit PRIVATE
+    BlockwaveFactoryPresets
+    BlockwaveRecipeData
+    juce::juce_audio_utils
+    juce::juce_recommended_config_flags)

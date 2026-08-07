@@ -166,6 +166,15 @@ public:
     {
         gridComp.setHoverForDisplay (slot, overCell, overLabel);
     }
+    // Same idea for the CRAFTING gestures themselves (tools/presskit renders a
+    // frame sequence of a real craft). Each forwards to the exact call the
+    // mouse handler makes, so the placement flash, the palette arming, the
+    // grid edit -> processor -> recipe match -> toast chain are all the
+    // production ones; nothing here is a mock.
+    void clickMaterialForDisplay (Material m)          { tileClicked (m); }
+    void clickCellForDisplay (int slot, bool rightBtn) { gridComp.cellClicked (slot, rightBtn); }
+    void cycleBaseForDisplay (int delta)               { gridComp.cycleBase (delta); }
+    void clearBenchForDisplay()                        { doClear(); }
 
     void paint (juce::Graphics&) override;
     void resized() override;

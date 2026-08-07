@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BLOCKWAVE — a square-wave synthesizer you craft</title>
+<meta name="description" content="A free, open-source square-wave synthesizer. You don't dial the sound in, you build it on a 3x3 bench of material blocks. macOS VST3/AU/Standalone and Windows VST3.">
+<meta name="color-scheme" content="dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="BLOCKWAVE — a square-wave synthesizer you craft">
+<meta property="og:description" content="Free and open source. Every sound is a square. Build it on a 3x3 bench of material blocks instead of dialling it in.">
+<meta property="og:image" content="https://nevercsof.github.io/blockwave/assets/craft-tab.png">
+<meta property="og:url" content="https://nevercsof.github.io/blockwave/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <span class="navname"><span class="b">BLOCK</span><span class="w">WAVE</span></span>
+    <span class="ver">v1.0.0 &middot; GPLv3 &middot; Free</span>
+  </div>
+</header>
+
+<main>
+
+<!-- 1. HERO -->
+<section class="hero">
+  <div class="wrap">
+    <h1>Every sound is a square.</h1>
+    <p class="lede">BLOCKWAVE is a synthesizer with one waveform and no knob you have to
+    find first. You build a sound on a 3&times;3 bench: a <strong>BASE</strong> block in the middle,
+    <strong>MATERIAL</strong> blocks around it &mdash; ICE, LAVA, OBSIDIAN, thirteen others.</p>
+    <p class="tagline">Same blocks, same sound, on every machine. There is a full 67-parameter
+    synth underneath if you want it, but you never have to open it.</p>
+    <p class="free">Free &middot; Open source &middot; No account &middot; No upsell</p>
+  </div>
+</section>
+
+<!-- 2. THE GIF -->
+<section>
+  <div class="wrap">
+    <figure>
+      <!-- Replace assets/craft-discovery.gif with the animation from launch/presskit/.
+           Same filename, same folder; nothing else on this page needs to change. -->
+      <img src="assets/craft-discovery.gif" width="832" height="456"
+           alt="Animation of the CRAFT bench: three ICE blocks are placed along the top row of the 3x3 grid around the PAD base block, and the plugin answers with a RECIPE DISCOVERED banner reading PERMAFROST.">
+      <figcaption>Placing blocks, and finding a recipe by accident.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- 3. DOWNLOAD -->
+<section id="download">
+  <div class="wrap">
+    <p class="kicker">Download</p>
+    <h2>BLOCKWAVE 1.0.0</h2>
+    <p class="notesig">macOS 10.15+ (Intel and Apple Silicon) &middot; Windows 10/11 64-bit.
+    Nothing to sign up for.</p>
+
+    <div class="btnrow">
+      <a class="btn" href="https://github.com/nevercsof/blockwave/releases/download/v1.0.0/BLOCKWAVE-1.0.0-macOS.zip">
+        Download for macOS
+        <span class="sub">VST3 + AU + Standalone &middot; 9.5 MB</span>
+      </a>
+      <a class="btn" href="https://github.com/nevercsof/blockwave/releases/download/v1.0.0/BLOCKWAVE-1.0.0-Windows.zip">
+        Download for Windows
+        <span class="sub">VST3 &middot; 1.5 MB</span>
+      </a>
+    </div>
+    <p class="notesig">Or browse the
+    <a href="https://github.com/nevercsof/blockwave/releases/tag/v1.0.0">release page</a>.</p>
+
+    <div class="panel unsigned">
+      <h3>Read this first: the builds are not code-signed</h3>
+      <p>Signing costs money every year, and this is free. So your operating system will
+      complain once, and then never again. This is the number one reason a free plug-in
+      appears to be broken.</p>
+
+      <div class="duo">
+        <div>
+          <h3>macOS &mdash; plug-ins</h3>
+          <p>After copying <code>BLOCKWAVE.vst3</code> to
+          <code>~/Library/Audio/Plug-Ins/VST3</code> and
+          <code>BLOCKWAVE.component</code> to
+          <code>~/Library/Audio/Plug-Ins/Components</code>, clear the quarantine flag,
+          or your DAW will silently refuse to load them:</p>
+<pre><code>xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/VST3/BLOCKWAVE.vst3
+xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/Components/BLOCKWAVE.component</code></pre>
+          <p>Then rescan plug-ins in your host.</p>
+        </div>
+        <div>
+          <h3>macOS &mdash; standalone app</h3>
+          <p>Right-click <code>BLOCKWAVE.app</code> and choose <strong>Open</strong> the first
+          time. Double-clicking it will only offer to move it to the Trash.</p>
+          <p>On macOS 15 and newer, right-click &rarr; Open may not be enough. Try to open it
+          once, then go to <strong>System Settings &rarr; Privacy &amp; Security</strong>, scroll
+          to the bottom, and press <strong>Open Anyway</strong> next to the BLOCKWAVE message.</p>
+        </div>
+        <div>
+          <h3>Windows</h3>
+          <p>Right-click the downloaded zip, choose <strong>Properties</strong>, tick
+          <strong>Unblock</strong> at the bottom, then extract it. Copy the whole
+          <code>BLOCKWAVE.vst3</code> <em>folder</em> into
+          <code>C:\Program Files\Common Files\VST3</code> and rescan in your host.</p>
+          <p>If SmartScreen still interrupts, choose <strong>More info &rarr; Run anyway</strong>.
+          If your antivirus quarantines it, add an exclusion for that folder.</p>
+        </div>
+        <div>
+          <h3>If it still does not show up</h3>
+          <p>Check that the host is scanning the folder you copied into, and that you copied the
+          <em>whole</em> <code>.vst3</code> bundle rather than a file from inside it. Every zip also
+          contains a plain-text <code>INSTALL.txt</code> with these same steps, offline.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4. CRAFT -->
+<section id="craft">
+  <div class="wrap">
+    <p class="kicker">The bench</p>
+    <h2>You craft the sound, you don't dial it in</h2>
+    <p>The centre cell holds one of eight BASE archetypes &mdash; LEAD, BASS, PAD, PLUCK, KEYS,
+    CHIP, PERC, DRONE. The eight cells around it hold materials, dragged in from the palette or
+    clicked in. Each material applies a fixed set of parameter changes; stacking the same one
+    intensifies it with diminishing returns. Every block also has its own MIX knob, hidden until
+    you hover the block, for when a material is simply too much.</p>
+    <p>For ordinary crafting, position does not matter &mdash; only which blocks are on the bench.
+    DICE fills the bench at random; MUTATE nudges the result somewhere the grid alone cannot
+    reach. And the whole thing is deterministic: the same blocks give the same sound on every
+    machine, which is what makes the next part work.</p>
+
+    <figure>
+      <img src="assets/craft-tab.png" width="832" height="456"
+           alt="The CRAFT tab: a 3x3 bench on the left with a LEAD base block in the centre and STONE and MOSS blocks placed beside it, the fourteen material blocks in a palette on the right, DICE and MUTATE buttons below them, and a playable keyboard strip along the bottom.">
+      <figcaption>The CRAFT tab at 100% scale.</figcaption>
+    </figure>
+
+    <h3>Sixteen exact patterns are recipes</h3>
+    <p>For recipes &mdash; and only for recipes &mdash; position matters. Land one of sixteen exact
+    block patterns and the plugin stops you with a jingle, a banner, and a hand-tuned sound that is
+    better than what the grid would have given you. A counter on the CRAFT tab tracks how many of
+    the sixteen you have found. Here are three of them, in full, so you can reproduce them right now.</p>
+
+    <div class="recipes">
+
+      <div class="panel recipe">
+        <h3>Permafrost</h3>
+        <p class="cat">Pad</p>
+        <figure>
+          <div class="grid3">
+            <div class="cell m-ice">ICE</div>
+            <div class="cell m-ice">ICE</div>
+            <div class="cell m-ice">ICE</div>
+            <div class="cell empty"><span class="vh">empty</span></div>
+            <div class="cell base"><span class="tag">Base</span>PAD</div>
+            <div class="cell empty"><span class="vh">empty</span></div>
+            <div class="cell empty"><span class="vh">empty</span></div>
+            <div class="cell empty"><span class="vh">empty</span></div>
+            <div class="cell empty"><span class="vh">empty</span></div>
+          </div>
+          <figcaption>BASE PAD in the middle. ICE in all three cells of the top row. Everything
+          else empty.</figcaption>
+        </figure>
+      </div>
+
+      <div class="panel recipe">
+        <h3>Magma Floor</h3>
+        <p class="cat">Bass</p>
+        <figure>
+          <div class="grid3">
+            <div class="cell empty"><span class="vh">empty</span></div>
+            <div class="cell empty"><span class="vh">empty</span></div>
+            <div class="cell empty"><span class="vh">empty</span></div>
+            <div class="cell m-obsidian">OBSIDIAN</div>
+            <div class="cell base"><span class="tag">Base</span>BASS</div>
+            <div class="cell m-obsidian">OBSIDIAN</div>
+            <div class="cell empty"><span class="vh">empty</span></div>
+            <div class="cell m-lava">LAVA</div>
+            <div class="cell empty"><span class="vh">empty</span></div>
+          </div>
+          <figcaption>BASE BASS in the middle. OBSIDIAN directly left and right of it, LAVA
+          directly below it.</figcaption>
+        </figure>
+      </div>
+
+      <div class="panel recipe">
+        <h3>Quarry Kick</h3>
+        <p class="cat">Perc</p>
+        <figure>
+          <div class="grid3">
+            <div class="cell empty"><span class="vh">empty</span></div>
+            <div class="cell m-tnt">TNT</div>
+            <div class="cell empty"><span class="vh">empty</span></div>
+            <div class="cell m-sand">SAND</div>
+            <div class="cell base"><span class="tag">Base</span>PERC</div>
+            <div class="cell empty"><span class="vh">empty</span></div>
+            <div class="cell empty"><span class="vh">empty</span></div>
+            <div class="cell m-tnt">TNT</div>
+            <div class="cell empty"><span class="vh">empty</span></div>
+          </div>
+          <figcaption>BASE PERC in the middle. TNT directly above and directly below it, SAND
+          directly to the left.</figcaption>
+        </figure>
+      </div>
+
+    </div>
+
+    <p class="thirteen">Thirteen more recipes exist. They are not published anywhere, they are
+    not in the manual, and the plugin gives no hints beyond the counter. Find them, or trade them.</p>
+
+    <figure style="margin-top:28px">
+      <img src="assets/discovery-toast.png" width="832" height="456"
+           alt="The CRAFT tab the moment a recipe is found: three ICE blocks sit along the top row around the PAD base, the patch name reads PERMAFROST with a star, the discoveries counter reads 1 of 16, and an orange banner at the bottom right says RECIPE DISCOVERED: PERMAFROST.">
+      <figcaption>One of sixteen, found.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- 5. UNDER THE HOOD -->
+<section id="under-the-hood">
+  <div class="wrap">
+    <p class="kicker">Under the hood</p>
+    <h2>What is actually in it</h2>
+
+    <ul class="spec">
+      <li><b>Oscillators</b><span>Two pulse oscillators with independent pulse width and hard sync,
+      a square sub, and NES-style LFSR noise. polyBLEP anti-aliasing, plus a global RAW switch that
+      turns it off when you want 8-bit dirt.</span></li>
+      <li><b>Filter</b><span>TPT state-variable filter: LP24, LP12, BP, HP, with envelope amount
+      and key tracking.</span></li>
+      <li><b>Modulation</b><span>Two ADSR envelopes with a pitch-envelope amount, two
+      tempo-syncable LFOs.</span></li>
+      <li><b>Voicing</b><span>Unison up to 8 with detune and stereo spread. Poly, mono and legato
+      modes with glide.</span></li>
+      <li><b>Effects</b><span>Bit-crusher, ping-pong delay, and a dark CAVE reverb &mdash; each with
+      its own high-pass and low-pass.</span></li>
+      <li><b>Automation</b><span>67 host-automatable parameters. Nothing is hidden from the host.</span></li>
+      <li><b>Presets</b><span>128 factory presets across LEAD, BASS, PLUCK, PAD, KEYS, CHIP, PERC
+      and FX. Every one of them is built from a bench you can open and inspect, so the browser
+      teaches you the system instead of hiding it.</span></li>
+      <li><b>Interface</b><span>Original pixel art, drawn procedurally with zero image files and an
+      original 3&times;5 bitmap font. A 100&ndash;200% scale slider that stays crisp instead of
+      blurry, and remembers where you left it.</span></li>
+      <li><b>Formats</b><span>macOS: VST3, Audio Unit and Standalone, 10.15 or newer, Intel and
+      Apple Silicon. Windows: VST3, 10/11 64-bit. 44.1&ndash;192 kHz, any buffer size, offline
+      rendering included.</span></li>
+      <li><b>Licence</b><span>GPLv3. The whole source tree is on GitHub, including the DSP.</span></li>
+    </ul>
+
+    <p class="engineering">
+      For the people who care about this sort of thing: 4947 automated tests;
+      <code>pluginval</code> at strictness level 10 passes on macOS VST3 and AU and on the Windows
+      VST3 built in CI; no known crashes; and about 3.5% of one core for 16 voices at 8-way unison
+      with every effect on, at 44.1&nbsp;kHz and a 128-sample buffer.
+    </p>
+
+    <figure style="margin-top:28px">
+      <img src="assets/tweak-tab.png" width="832" height="456"
+           alt="The TWEAK tab: chunky grey panels of pixel knobs grouped into OSC A, OSC B, SUB, NOISE, VOICE, FILTER, LFO1 PWM, ENV1 AMP, ENV2 MOD, LFO2, CRUSH, DELAY, CAVE and MASTER sections, each knob with a bitmap-font value readout beneath it.">
+      <figcaption>The TWEAK tab, for when the bench is not enough.</figcaption>
+    </figure>
+
+    <p style="margin-top:24px">BLOCKWAVE was written by Claude Code agents &mdash; a DSP engineer, a
+    UI engineer, a preset designer and a QA runner &mdash; driven by one human producer, over roughly
+    a week, from a written specification. A separate agent doing adversarial code review found real
+    defects that the normal QA pass had missed. Whether that is interesting or alarming probably
+    depends on who you ask; the test suite and the source are both public either way.</p>
+  </div>
+</section>
+
+<!-- 6. STAY POSTED -->
+<section id="stay-posted">
+  <div class="wrap">
+    <p class="kicker">Stay posted</p>
+    <h2>New recipes and updates</h2>
+    <p>There is no mailing list, and nothing here is gated &mdash; the download above is the whole
+    plugin. If you want to hear when recipes or updates land, GitHub will tell you:</p>
+    <ul>
+      <li>Open <a href="https://github.com/nevercsof/blockwave">the repository</a>, press
+      <strong>Watch</strong> at the top right, choose <strong>Custom</strong>, and tick
+      <strong>Releases</strong>. You get an email or a notification when there is a new version,
+      and nothing else.</li>
+      <li>Or, if you live in a feed reader, subscribe to the
+      <a href="https://github.com/nevercsof/blockwave/releases.atom">releases feed</a>
+      (<code>releases.atom</code>).</li>
+    </ul>
+    <p class="notesig">No account is needed to download. The Watch button needs a GitHub account,
+    which is why it is a suggestion and not a wall.</p>
+
+    <!-- ===== OPTIONAL EMAIL LIST — currently disabled, and the page is fine without it =====
+         1. Make a free list at buttondown.com (or Buttondown-compatible EmailOctopus / Listmonk)
+            and copy the form action URL it gives you, which looks like
+            https://buttondown.com/api/emails/embed-subscribe/YOURUSERNAME
+         2. Paste that URL into the action="" attribute below, replacing YOURUSERNAME.
+         3. Delete this comment's opening and closing markers so the form goes live.
+
+    <form class="panel" style="margin-top:24px"
+          action="https://buttondown.com/api/emails/embed-subscribe/YOURUSERNAME"
+          method="post" target="_blank">
+      <h3><label for="bd-email">Email me when there are new recipes</label></h3>
+      <p class="notesig">Releases and recipes only. Unsubscribe link in every message.</p>
+      <p>
+        <input id="bd-email" type="email" name="email" required
+               autocomplete="email" placeholder="you@example.com"
+               style="font:inherit;padding:12px;background:#1c1c24;color:#e8e8f0;
+                      border:2px solid #14141a;min-width:min(100%,280px)">
+        <button class="btn" type="submit" style="flex:0 0 auto;display:inline-block;margin-top:8px">
+          Subscribe
+        </button>
+      </p>
+    </form>
+    ===== end optional email list ===== -->
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <ul>
+      <li><a href="https://github.com/nevercsof/blockwave">Source on GitHub</a></li>
+      <li><a href="https://github.com/nevercsof/blockwave/blob/main/docs/MANUAL.md">Manual</a></li>
+      <li><a href="https://github.com/nevercsof/blockwave/releases/tag/v1.0.0">Release notes</a></li>
+      <li><a href="https://github.com/nevercsof/blockwave/blob/main/LICENSE">GPLv3 licence</a></li>
+    </ul>
+    <p>BLOCKWAVE &copy; Kirill Boyko. Free software under the GNU General Public License v3.
+    You may use it, study it, change it and pass it on.</p>
+    <p class="disclaimer">All artwork, fonts and sounds are original and drawn from scratch.
+    BLOCKWAVE is not affiliated with, endorsed by, or connected to any game or game publisher.</p>
+  </div>
+</footer>
+
+</body>
+</html>
