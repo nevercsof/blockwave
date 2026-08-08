@@ -72,10 +72,80 @@ enum class PId : int
     // wet-path LOW-pass cutoffs. Appended after the HP trio in the same
     // cave/dly/crush order — again append-only, no pre-existing index moved.
     cave_lp, dly_lp, crush_lp,
+    // FROZEN-TABLE ADDENDUM 3 (post-1.0.0 producer report: FL's "last tweaked"
+    // could not see the per-block MIX knob). The eight CRAFT cell weights,
+    // promoted from non-automatable grid state to real host parameters. Mapped
+    // to cells 0..7 in the frozen reading order  0 1 2 / 3 . 4 / 5 6 7.
+    // Appended after the LP trio — v1.0.0 is public, so this is append-only:
+    // indices 0..66 and their IDs/ranges/defaults/tapers are untouched, and a
+    // v1.0.0 project restores with these eight at their 100 % default, which
+    // is exactly the value that reproduces v1.0.0 behaviour.
+    //
+    // These are NOT engine parameters: they are consumed by the CRAFT layer on
+    // the message thread and never reach ParamSnapshot (see kNumEngineParams).
+    craft_mix_1, craft_mix_2, craft_mix_3, craft_mix_4,
+    craft_mix_5, craft_mix_6, craft_mix_7, craft_mix_8,
     count
 };
 
-constexpr int kNumParams = static_cast<int> (PId::count);   // 67
+constexpr int kNumParams = static_cast<int> (PId::count);   // 75
+
+// THE ENGINE/CRAFT SPLIT. Indices 0..kNumEngineParams-1 are engine parameters:
+// each one maps to a ParamSnapshot field and is read by the audio thread.
+// Indices kNumEngineParams..kNumParams-1 are the craft MIX weights, which have
+// no ParamSnapshot field at all — they are an INPUT to the craft that produces
+// the engine parameters, so feeding them into a snapshot would be circular.
+//
+// Every loop that translates between the APVTS and a ParamSnapshot must stop
+// at kNumEngineParams. Loops that address the host-visible parameter list
+// (layout creation, reset-to-defaults) run to kNumParams.
+constexpr int kNumEngineParams   = static_cast<int> (PId::craft_mix_1);   // 67
+constexpr int kNumCraftMixParams = kNumParams - kNumEngineParams;         // 8
+
+static_assert (kNumEngineParams == 67,
+               "the 67 v1.0.0 parameters are frozen: append only, never insert");
+
+inline bool isCraftMixParam (PId id) noexcept
+{
+    const int i = static_cast<int> (id);
+    return i >= kNumEngineParams && i < kNumParams;
+}
+
+// Cell 0..7 for a craft MIX id, -1 for anything else.
+inline int craftMixCellIndex (PId id) noexcept
+{
+    return isCraftMixParam (id) ? static_cast<int> (id) - kNumEngineParams : -1;
+}
+
+// The MIX parameter driving cell 0..7 (PId::count for an out-of-range cell).
+inline PId craftMixParamForCell (int cellIndex) noexcept
+{
+    return cellIndex >= 0 && cellIndex < kNumCraftMixParams
+               ? static_cast<PId> (kNumEngineParams + cellIndex)
+               : PId::count;
+}
+
+// ---- MIX percent <-> cell weight -------------------------------------------
+// The parameter is a percentage (0..100, default 100) because that is what the
+// knob, the readout and the host automation lane all show. The craft engine
+// works in 0..1. Both endpoints are pinned EXACTLY rather than left to
+// float arithmetic: 100 % must produce exactly 1.0f, because 1.0f is the
+// multiply-by-identity that keeps every pre-existing golden bit-identical.
+constexpr float kCraftMixPercentDefault = 100.0f;
+
+inline float cellWeightFromMixPercent (float percent) noexcept
+{
+    if (percent >= 100.0f) return 1.0f;
+    if (percent <= 0.0f)   return 0.0f;
+    return percent / 100.0f;          // IEEE division is correctly rounded
+}
+
+inline float mixPercentFromCellWeight (float weight01) noexcept
+{
+    if (weight01 >= 1.0f) return 100.0f;
+    if (weight01 <= 0.0f) return 0.0f;
+    return weight01 * 100.0f;
+}
 
 enum class PKind : int { boolean, integer, floating, choice };
 
@@ -178,6 +248,18 @@ inline const ParamDef& paramDef (PId id) noexcept
         { "cave_lp",       PKind::floating, 200.0f,  20000.0f, 20000.0f, 2000.0f, nullptr,        0 },
         { "dly_lp",        PKind::floating, 200.0f,  20000.0f, 20000.0f, 2000.0f, nullptr,        0 },
         { "crush_lp",      PKind::floating, 200.0f,  20000.0f, 20000.0f, 2000.0f, nullptr,        0 },
+        // Frozen-table addendum 3 (see PId): the eight CRAFT cell weights, in
+        // grid reading order. Linear percent, no taper — a mix knob has no
+        // natural log centre and a linear lane is what an automation curve
+        // should follow. 100 % default = the v1.0.0 sound.
+        { "craft_mix_1",   PKind::floating, 0.0f,    100.0f,  100.0f,  0.0f,  nullptr,            0 },
+        { "craft_mix_2",   PKind::floating, 0.0f,    100.0f,  100.0f,  0.0f,  nullptr,            0 },
+        { "craft_mix_3",   PKind::floating, 0.0f,    100.0f,  100.0f,  0.0f,  nullptr,            0 },
+        { "craft_mix_4",   PKind::floating, 0.0f,    100.0f,  100.0f,  0.0f,  nullptr,            0 },
+        { "craft_mix_5",   PKind::floating, 0.0f,    100.0f,  100.0f,  0.0f,  nullptr,            0 },
+        { "craft_mix_6",   PKind::floating, 0.0f,    100.0f,  100.0f,  0.0f,  nullptr,            0 },
+        { "craft_mix_7",   PKind::floating, 0.0f,    100.0f,  100.0f,  0.0f,  nullptr,            0 },
+        { "craft_mix_8",   PKind::floating, 0.0f,    100.0f,  100.0f,  0.0f,  nullptr,            0 },
     };
     return defs[static_cast<int> (id)];
 }
@@ -375,6 +457,16 @@ inline void applyToSnapshot (ParamSnapshot& p, PId id, float v) noexcept
         case PId::dly_lp:       p.dly_lp = v; break;
         case PId::crush_lp:     p.crush_lp = v; break;
 
+        // CRAFT MIX weights (frozen-table addendum 3): deliberately NOT mapped.
+        // A weight is an input to the craft that produces this snapshot, not a
+        // field of it. Listed explicitly so the switch stays exhaustive and a
+        // future reader cannot mistake the omission for an oversight.
+        case PId::craft_mix_1: case PId::craft_mix_2:
+        case PId::craft_mix_3: case PId::craft_mix_4:
+        case PId::craft_mix_5: case PId::craft_mix_6:
+        case PId::craft_mix_7: case PId::craft_mix_8:
+            break;
+
         case PId::count:
         default:
             break;
@@ -455,6 +547,16 @@ inline float snapshotToPlain (const ParamSnapshot& p, PId id) noexcept
         case PId::cave_lp:      return p.cave_lp;
         case PId::dly_lp:       return p.dly_lp;
         case PId::crush_lp:     return p.crush_lp;
+        // CRAFT MIX weights have no snapshot field (see applyToSnapshot). They
+        // must never reach here — every snapshot loop stops at
+        // kNumEngineParams — so this returns the 100 % DEFAULT rather than 0:
+        // if a future loop ever slips past the bound, the failure mode is
+        // "weights ignored", never "every material silenced".
+        case PId::craft_mix_1: case PId::craft_mix_2:
+        case PId::craft_mix_3: case PId::craft_mix_4:
+        case PId::craft_mix_5: case PId::craft_mix_6:
+        case PId::craft_mix_7: case PId::craft_mix_8:
+            return kCraftMixPercentDefault;
         case PId::count:
         default:                return 0.0f;
     }

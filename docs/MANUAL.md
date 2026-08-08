@@ -90,8 +90,9 @@ A **3×3 grid**. The centre cell holds the **BASE**; the eight cells around it h
   once — a second copy pushes further, a third further still, with diminishing
   returns, so eight ICE blocks are colder than one but not eight times colder.
 
-Below the bench, an info panel shows the current BASE, how many blocks are on the
-bench, and whether a recipe is active.
+Beside the bench, an info panel shows the current BASE, how many blocks are on the
+bench and whether a recipe is active, and carries the controls that act on the bench
+as a whole: **UNDO / REDO** and **KEEP** (both below).
 
 ### The materials
 
@@ -128,7 +129,8 @@ Fourteen, in the palette down the right side. Hover one for a three-word summary
 ### MIX (per-block weight)
 
 Every **filled** cell has a **weight** — how much of that material actually gets
-applied, from 0 % to 100 %, in 5 % steps. Default is 100 %.
+applied, from 0 % to 100 %. Default is 100 %. The knob moves in 5 % steps so the
+readouts stay round; an automation lane (see below) is continuous.
 
 Use it when a material is right but too much. Half an OBSIDIAN is a sound you cannot
 get any other way.
@@ -162,15 +164,121 @@ Empty cells have no MIX label and no knob. The knob is a view, not part of the s
 it is never saved into a preset, and it closes when you clear the cell, drop a new
 block on it, or load a preset.
 
+#### Automating MIX
+
+**Each block's mix is a host parameter, so you can automate it.** The eight are named
+`craft_mix_1` … `craft_mix_8` and they follow the grid in reading order — top row left
+to right, then the two middle cells, then the bottom row:
+
+```
+craft_mix_1  craft_mix_2  craft_mix_3
+craft_mix_4       ·       craft_mix_5
+craft_mix_6  craft_mix_7  craft_mix_8
+```
+
+Each runs 0–100 % with 100 % as the default. In FL Studio, open a block's knob, move
+it, then right-click the automation target and use **last tweaked** as usual — or find
+the parameter by name in the plugin's parameter list. Drawing a curve on `craft_mix_3`
+fades that one material in and out over a bar, which is a very different gesture from a
+filter sweep: you are not filtering the sound, you are removing an ingredient from it.
+
+Two things worth knowing before you draw a lane:
+
+- **Turning a mix is a macro.** A material's contribution is spread across many of the
+  synth's parameters, so moving a mix moves those parameters too — you will see them
+  respond in the host. That is the control working, not a glitch. It does mean a mix
+  lane and a hand-drawn lane on, say, CUTOFF will fight over the same value; pick one.
+- **The grid itself is not automatable**, and will not be. Which material sits in which
+  cell is a structural choice, not a continuous one — and recipes are matched on
+  placement, so a lane over it would make discoveries flicker in and out. Automate the
+  mixes; place the blocks by hand.
+
+Weights still never affect recipes or the auto-name, automated or not.
+
 ### The buttons
+
+Three sit in a row under the material palette and rewrite the bench:
 
 | Button | What it does |
 |---|---|
 | **DICE** | Fills random cells with random materials. The base is kept. This is the single best way to find sounds you would never have designed — roll it a dozen times and star the accidents. |
 | **MUTATE** | Leaves the bench alone and applies small random offsets to the underlying parameters. It moves the sound somewhere the grid alone cannot reach. Press it repeatedly to drift further. |
 | **CLEAR** | Empties every material cell. The base stays. |
+
+Three more live in the bench info panel beside the grid:
+
+| Button | What it does |
+|---|---|
 | **◀ / ▶ (base)** | Cycle the base archetype. |
-| **DISCOVERIES** | Opens the discoveries page. |
+| **UNDO / REDO** | Step back and forward through your bench edits. |
+| **KEEP** | Save the bench as a preset and star it, in one click. |
+| **DISCOVERIES** | Opens the discoveries page (top right). |
+
+### UNDO and REDO
+
+Crafting is meant to be poked at, so the bench remembers. **UNDO** steps back through
+what you did to it and **REDO** walks forward again. Both are greyed out and dead when
+there is nothing to step to, which is the only signpost you get and all you need.
+
+**What counts as a step:**
+
+- placing a block, clearing a cell, dragging a block between cells;
+- cycling the base;
+- moving a block's MIX knob;
+- DICE, MUTATE and CLEAR.
+
+A whole knob drag is **one** step, not one per pixel — and so is a run of wheel notches
+or arrow-key nudges on the same block. You get back the state you started the gesture
+from, not the value you passed through half a second ago.
+
+MUTATE undoes properly, which is worth spelling out: two MUTATEs and one UNDO lands you
+on the first mutation, not back on the plain crafted sound. Each step remembers the
+whole patch, not just the blocks.
+
+**What does not count:**
+
+- **loading a preset.** Loading one clears the history. Undo will never drag you back
+  into the parameters of the preset you were on before — if you load something and want
+  your bench back, load your bench back. (KEEP, below, is how you make sure you can.)
+- **anything on the TWEAK tab**, or a knob your host is automating. Both are already
+  outside the bench: note that *any* bench edit recomputes the whole patch from the
+  craft, so a hand tweak does not survive the next block you place either, with or
+  without undo.
+
+The stack holds **32 steps** and is per-session: it is never written into a preset or
+your project, and it starts empty each time you open the editor.
+
+There is a keyboard shortcut — **⌘Z / Ctrl+Z** to undo, **⌘⇧Z / Ctrl+Shift+Z** (or
+**Ctrl+Y**) to redo — but treat it as a bonus. Many hosts grab those keys for their own
+undo before a plugin ever sees them, so the buttons are the real control. Nothing else
+on the bench changed: `M`, `F`, `DELETE` and the arrow keys all still do exactly what
+they did.
+
+### KEEP — starring a sound you just made
+
+The star in the top bar and the stars in the browser work on **presets**. A sound you
+just crafted, or that DICE handed you, is not a preset yet — so there is nothing to
+star. **KEEP** is the bridge: one click saves the bench as a user preset *and* stars
+it, and a gold `KEPT + STARRED` plate tells you what it was called.
+
+- **The name** is whatever the bench is already showing: the recipe name if one is
+  active, otherwise the auto-generated patch name ("FROZEN GOLDEN SLIMY BASS").
+- **Collisions are handled silently.** DICE will hand you the same adjective pair
+  again sooner than you would think, so a repeat is saved as `... 2`, `... 3` and so
+  on rather than stopping to ask you a question or overwriting the earlier one. Names
+  are made unique against the whole library, factory bank included.
+- **The category comes from the base**: `LEAD → LEAD`, `BASS → BASS`, `PAD → PAD`,
+  `PLUCK → PLUCK`, `KEYS → KEYS`, `CHIP → CHIP`, `PERC → PERC`, and `DRONE → FX`
+  (there is no DRONE category, and the factory drones are filed under FX too).
+- It shows up in the browser immediately, under **USER** and under **FAVORITES**, and
+  it is on disk — it survives a restart like any other user preset.
+- After a **MUTATE** the recipe name is gone on purpose, because the sound has left the
+  recipe. KEEP follows that: a mutated patch is saved under its material name and never
+  claims a recipe it no longer matches.
+
+KEEP is greyed out until there is something on the bench. For everything else — naming
+a sound yourself, saving a patch you built on the TWEAK tab — use **SAVE** in the top
+bar as before.
 
 ### The patch name
 
@@ -178,7 +286,7 @@ Above the bench, in large letters, sits an automatically generated name built fr
 materials you placed and the base — "Frozen Golden Lead", "Volatile Mossy Bass". It
 changes as you build and it reads as a description, not a label. An empty bench reads
 `UNCRAFTED`. It is a description of the bench, not the preset name — when you SAVE you
-type whatever name you want.
+type whatever name you want, and when you press KEEP this is the name it uses.
 
 ### The keyboard strip
 
@@ -455,6 +563,9 @@ Only the search field takes plain letters, and only while it is the active area 
 - The **★** in the top bar stars whatever is currently loaded.
 - Stars survive restarts, re-scans and re-saves, and work for factory and user presets
   alike.
+- To star a sound you just **crafted** — one that is not a preset yet, because you
+  built it or DICE handed it to you — use **KEEP** on the CRAFT tab. It saves and
+  stars in one click, and the result lands here.
 
 ### Navigating
 
@@ -473,6 +584,10 @@ currently loaded is offered as a starting point — clear it and type your own),
 category, confirm. Your preset is written
 to your user folder as a small readable JSON file — the bench, the weights, and the
 parameters. It appears in USER immediately, and you can star it like any other.
+
+For a sound you just crafted and want to keep *now*, **KEEP** on the CRAFT tab does the
+same thing in one click: it names the preset after the bench, files it by base, saves
+it and stars it. SAVE is for when you want to choose the name yourself.
 
 ---
 
@@ -559,6 +674,10 @@ or rescale something. Uninstalling BLOCKWAVE never touches this folder.
 | M | Open / hide the mix knob on the focused block |
 | ↑ / ↓ | Adjust the mix when that block's knob is open (**Shift** = 25 % jumps), otherwise move a row |
 | ← / → | Walk the whole bench in reading order, wrapping around |
+| Delete / Backspace | Clear the focused cell |
+| Return / Space | Place the armed material, select the cell, or cycle the base |
+| Ctrl/Cmd + Z | Undo the last bench edit *(if your host lets the key through)* |
+| Ctrl/Cmd + Shift + Z, Ctrl/Cmd + Y | Redo *(same caveat)* |
 
 **Preset browser**
 

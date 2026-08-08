@@ -186,6 +186,17 @@ public:
     // the processor's setCraftCellWeight() path, which re-crafts WITHOUT
     // registering a discovery and without touching the recipe/auto name.
     std::function<void (int, float)> onCellWeightEdited;
+    // Knob-drag FRAMING, fired on the mouse-down and mouse-up of a MIX knob
+    // drag and on nothing else. Two jobs, both of which need the whole drag
+    // rather than its individual steps:
+    //   - the owner wraps the run of onCellWeightEdited calls in ONE host
+    //     parameter gesture (begin/endCraftCellWeightGesture), which is what
+    //     a host records cleanly and what makes automation-write behave;
+    //   - the undo stack records ONE step for the drag instead of one per
+    //     pixel of travel.
+    // Fired even when the drag never moved, so a gesture can never be left
+    // open; the owner is expected to notice that nothing changed.
+    std::function<void (int)> onCellWeightGestureStart, onCellWeightGestureEnd;
 
     const CraftGrid& getGrid() const noexcept { return grid; }
     void setGrid (const CraftGrid&);              // external sync, no callback
@@ -210,10 +221,13 @@ public:
 
     // ---- per-cell WEIGHT / MIX --------------------------------------------
     float cellWeight (int slot) const;
-    // Knob drag: snaps to kMixStep and HOLDS the big readout up until
-    // endMixDrag(). No-op on an empty cell.
+    // Knob drag: beginMixDrag() on mouse-down, any number of
+    // setCellWeightFromDrag() (snaps to kMixStep and HOLDS the big readout
+    // up), endMixDrag() on mouse-up. No-op on an empty cell.
+    void beginMixDrag (int slot);
     void setCellWeightFromDrag (int slot, float weight01);
     void endMixDrag();
+    bool isMixDragging() const noexcept { return mixDragSlot >= 0; }
     // Keyboard / wheel: +-steps * kMixStep, readout shown for a moment.
     void nudgeCellWeight (int slot, int steps);
     // Which cell shows the big % readout right now (-1 = none).
@@ -262,6 +276,7 @@ private:
     int readoutSlot = -1;                           // big % badge owner
     int readoutTicks = 0;                           // 0 while a drag holds it
     bool readoutHeld = false;
+    int mixDragSlot = -1;                           // cell owning the live drag
     bool mixOpen[kNumCells] = {};                   // expanded knobs (UI only)
     juce::Image knobStrip;                          // built on first use
 

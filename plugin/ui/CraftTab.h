@@ -21,9 +21,17 @@
 // The CRAFT tab — BLOCKWAVE's home screen (docs/CRAFT_GRID.md, SPEC §UI).
 //
 //   [ auto-generated patch name .................. ][ n/16 discoveries ]
-//   [ 3x3 bench ][ bench info ][ material palette (7x2)               ]
-//   [ hint line ][            ][ DICE ][ MUTATE ][ discovery toast    ]
+//   [ 3x3 bench ][ bench info    ][ material palette (7x2)            ]
+//   [          ][ UNDO ][ REDO ] [                                    ]
+//   [          ][ KEEP         ] [                                    ]
+//   [ hint line ]               [ DICE ][ MUTATE ][ CLEAR ] / toast    ]
 //   [ ................ 1.5-octave keyboard strip ...................  ]
+//
+// The bench INFO panel carries the controls that act on the bench's history
+// and identity (UNDO / REDO / KEEP), and the action row under the palette
+// carries the three that rewrite it (DICE / MUTATE / CLEAR). CLEAR moved out
+// of the info panel to make room and to sit with its peers; nothing else on
+// the tab moved, and the whole layout still fits the fixed 832x456 canvas.
 //
 // Threading: everything here is message thread. Grid edits go to the
 // processor through setCraftGrid()/diceCraft()/mutateCraft(), which
@@ -39,17 +47,27 @@
 
 #include "../PluginProcessor.h"
 #include "CraftBlocks.h"
+#include "CraftHistory.h"
 #include "KeyStrip.h"
 
 namespace blockwave::ui
 {
 
+// Preset category a crafted sound is filed under, from its BASE archetype.
+// Seven of the eight bases are also category names; DRONE has no category of
+// its own and lands in FX, which is where the factory bank already files its
+// DRONE-based atmospheres.
+const char* presetCategoryForBase (blockwave::CraftBase) noexcept;
+
 // Chunky block button with an original pixel glyph and a frame counter for
-// its 4-frame press animation.
+// its 4-frame press animation. A DISABLED button paints itself flat and
+// greyed and takes neither clicks nor keyboard focus — which is how UNDO and
+// REDO teach what they are for.
 class PixelIconButton final : public juce::Button
 {
 public:
-    enum class Glyph { none, dice, mutate, star, arrowLeft, arrowRight, broom };
+    enum class Glyph { none, dice, mutate, star, arrowLeft, arrowRight, broom,
+                       undo, redo };
 
     PixelIconButton (const juce::String& text, Glyph glyph, int textScale = 2);
 
@@ -65,7 +83,7 @@ public:
     int getFrame() const noexcept { return frame; }
 
 private:
-    void drawGlyph (juce::Graphics&, int x, int y, int scale) const;
+    void drawGlyph (juce::Graphics&, int x, int y, int scale, bool dim) const;
 
     juce::String text, subText;
     Glyph glyph;
@@ -76,20 +94,35 @@ private:
 };
 
 // "★ RECIPE DISCOVERED: <NAME>" — 3-frame slide in, hold, 3-frame slide out.
+// Also the CRAFT tab's general "that worked" plate: KEEP raises the same
+// slab, in the same place, with its own headline and accent, because a
+// preset that appears silently in a folder you are not looking at feels like
+// nothing happened.
 class DiscoveryToast final : public juce::Component
 {
 public:
     DiscoveryToast();
 
     void show (const juce::String& recipeName);
+    void showSaved (const juce::String& presetName);
+    void showProblem (const juce::String& headlineText, const juce::String& detail);
     void hideNow();
     bool animationTick();                       // true while visible
     void paint (juce::Graphics&) override;
 
+    // What the plate is saying right now (component tests, tools).
+    const juce::String& getHeadline() const noexcept { return headline; }
+    const juce::String& getBody() const noexcept { return name; }
+
 private:
     enum class Phase { hidden, entering, holding, leaving };
 
-    juce::String name;
+    void raise (const juce::String& headlineText, const juce::String& body,
+                juce::Colour accentColour, bool withStar);
+
+    juce::String headline { "RECIPE DISCOVERED" }, name;
+    juce::Colour accent { colours::lava };
+    bool starred = true;
     Phase phase = Phase::hidden;
     int frame = 0, holdTicks = 0, sparkle = 0;
 
@@ -131,12 +164,23 @@ class CraftTab final : public juce::Component,
                        private juce::Timer
 {
 public:
+    // componentIDs, so the tests can ask the BUTTON whether it is greyed out
+    // rather than trusting a parallel accessor to agree with what is painted.
+    static constexpr const char* kIdUndo = "craft_undo";
+    static constexpr const char* kIdRedo = "craft_redo";
+    static constexpr const char* kIdKeep = "craft_keep";
+
     explicit CraftTab (BlockwaveAudioProcessor&);
     ~CraftTab() override;
 
-    // Pull grid / name / counter back from the processor (preset load, host
-    // state restore, tab shown).
+    // Pull grid / name / counter back from the processor (host state restore,
+    // tab shown). History-neutral: the undo stack is left exactly as it was.
     void refreshFromProcessor();
+
+    // A PRESET WAS LOADED. Same resync, plus the undo stack is thrown away —
+    // new context, clean slate. Undo deliberately does not reach back across
+    // a preset load (rationale in CraftHistory.h).
+    void presetLoaded();
 
     // Hands the keyboard strip to the processor's lock-free MIDI inbox
     // (BlockwaveAudioProcessor::uiNoteOn/uiNoteOff). Until this is called the
@@ -148,8 +192,33 @@ public:
     // editor uses it to kick BlockwaveAudioProcessor::triggerDiscoveryJingle().
     std::function<void (const juce::String&)> onDiscovery;
 
+    // Fired after KEEP has written a user preset and starred it, so the owner
+    // can refresh the top bar (name / star) and the preset browser.
+    std::function<void()> onPresetSaved;
+
     void showDiscoveries (bool shouldShow);
     bool isShowingDiscoveries() const;
+
+    // ---- undo / redo (producer request) ------------------------------------
+    // Bench edits only; see CraftHistory.h for the scope decision. Every
+    // restore goes back out through setCraftGrid() — the processor's single
+    // write path — so the APVTS-authoritative cell weights and the grid
+    // mirror can never drift apart.
+    bool canUndo() const noexcept { return history.canUndo(); }
+    bool canRedo() const noexcept { return history.canRedo(); }
+    int getUndoDepth() const noexcept { return history.getNumUndoSteps(); }
+    int getRedoDepth() const noexcept { return history.getNumRedoSteps(); }
+    bool undo();                                 // false when there is nothing
+    bool redo();
+
+    // ---- KEEP: save the bench as a user preset AND star it ------------------
+    // One click. Names it after the active recipe, else the auto-generated
+    // patch name, uniquified against the whole library; files it under the
+    // category its BASE maps to; stars it; raises the toast. Returns false
+    // when there is no bench to keep or the write failed.
+    bool keepCurrentSound();
+    const juce::String& getLastKeptName() const noexcept { return lastKeptName; }
+    const juce::String& getLastKeptCategory() const noexcept { return lastKeptCategory; }
 
     // Tool hooks (tools/screenshots, component tests): each drives the SAME
     // code path the mouse and keyboard drive, so a rendered MIX state is the
@@ -175,10 +244,23 @@ public:
     void clickCellForDisplay (int slot, bool rightBtn) { gridComp.cellClicked (slot, rightBtn); }
     void cycleBaseForDisplay (int delta)               { gridComp.cycleBase (delta); }
     void clearBenchForDisplay()                        { doClear(); }
+    void diceForDisplay()                              { doDice(); }
+    void mutateForDisplay()                            { doMutate(); }
+    // A whole MIX-KNOB DRAG, framed exactly as the mouse frames it: one host
+    // gesture, one undo step, however many values pass through the middle.
+    void dragCellWeightForDisplay (int slot, const float* weights01, int count);
+    // Steps the 15 Hz timer by hand. The toast and every button animation are
+    // 2-4 discrete frames driven from there, so this is how an offscreen
+    // renderer gets a settled frame without waiting on real time.
+    void tickForDisplay (int frames);
+    const DiscoveryToast& getToast() const noexcept { return toast; }
+    bool isToastVisible() const noexcept { return toast.isVisible(); }
+    juce::Rectangle<int> getUndoRedoBounds() const;
 
     void paint (juce::Graphics&) override;
     void resized() override;
     void visibilityChanged() override;
+    bool keyPressed (const juce::KeyPress&) override;
 
 private:
     void timerCallback() override;
@@ -191,6 +273,12 @@ private:
     void refreshLabels();
     juce::String hintText() const;
 
+    // Undo plumbing. commitEdit() snapshots the patch AFTER an edit lands;
+    // restore() puts one back and re-reads everything from the processor.
+    void commitEdit (CraftHistory::Edit kind, int slot = -1);
+    void restore (const CraftState&);
+    void refreshHistoryButtons();
+
     BlockwaveAudioProcessor& proc;
     BlockImageCache imageCache;
 
@@ -202,10 +290,20 @@ private:
 
     PixelIconButton diceBtn { "DICE", PixelIconButton::Glyph::dice };
     PixelIconButton mutateBtn { "MUTATE", PixelIconButton::Glyph::mutate };
-    PixelIconButton clearBtn { "CLEAR", PixelIconButton::Glyph::broom, 1 };
+    PixelIconButton clearBtn { "CLEAR", PixelIconButton::Glyph::broom };
     PixelIconButton basePrev { "", PixelIconButton::Glyph::arrowLeft, 1 };
     PixelIconButton baseNext { "", PixelIconButton::Glyph::arrowRight, 1 };
     PixelIconButton discoveriesBtn { "", PixelIconButton::Glyph::star, 1 };
+    PixelIconButton undoBtn { "UNDO", PixelIconButton::Glyph::undo, 1 };
+    PixelIconButton redoBtn { "REDO", PixelIconButton::Glyph::redo, 1 };
+    PixelIconButton keepBtn { "KEEP", PixelIconButton::Glyph::star, 1 };
+
+    // Pure UI/session state: never serialised, gone when the editor closes.
+    CraftHistory history;
+    // Did the knob drag currently in flight actually change anything? A press
+    // and release that never moved is not an edit and gets no undo step.
+    bool weightDragMoved = false;
+    juce::String lastKeptName, lastKeptCategory;
 
     juce::String patchName, recipeName;
     bool hasGrid = false;

@@ -202,31 +202,266 @@ static const char* const kFrozenIds[] =
     "cave_lp", "dly_lp", "crush_lp",        // frozen-table addendum 2 (Phase 6)
 };
 
+// Frozen-table addendum 3 (post-1.0.0): the eight automatable CRAFT cell
+// weights. A SEPARATE list, so kFrozenIds above stays exactly the 67 IDs that
+// v1.0.0 shipped and the append-only rule is visible in the test's shape.
+static const char* const kFrozenCraftMixIds[] =
+{
+    "craft_mix_1", "craft_mix_2", "craft_mix_3", "craft_mix_4",
+    "craft_mix_5", "craft_mix_6", "craft_mix_7", "craft_mix_8",
+};
+
+// The v1.0.0 parameter table as SHIPPED — an independent copy of every field
+// that a host stores or a preset depends on. v1.0.0 is public: a project saved
+// against it stores NORMALISED values, so moving any range, taper or default
+// silently re-tunes somebody's finished track. This is the assertion that says
+// "the first 67 are untouched in every respect", not just in name and order.
+struct FrozenParamDef
+{
+    const char* id;
+    int   kind;              // matches PKind
+    float minValue, maxValue, defaultValue, skewCentre;
+    int   numChoices;
+};
+
+static const FrozenParamDef kFrozenTable[] =
+{
+    { "oscA_on",       0, 0.0f, 1.0f, 1.0f, 0.0f, 0 },
+    { "oscB_on",       0, 0.0f, 1.0f, 0.0f, 0.0f, 0 },
+    { "sub_on",        0, 0.0f, 1.0f, 0.0f, 0.0f, 0 },
+    { "noise_on",      0, 0.0f, 1.0f, 0.0f, 0.0f, 0 },
+    { "oscA_oct",      1, -2.0f, 2.0f, 0.0f, 0.0f, 0 },
+    { "oscB_oct",      1, -2.0f, 2.0f, 0.0f, 0.0f, 0 },
+    { "oscA_semi",     1, -12.0f, 12.0f, 0.0f, 0.0f, 0 },
+    { "oscB_semi",     1, -12.0f, 12.0f, 0.0f, 0.0f, 0 },
+    { "oscA_fine",     2, -100.0f, 100.0f, 0.0f, 0.0f, 0 },
+    { "oscB_fine",     2, -100.0f, 100.0f, 0.0f, 0.0f, 0 },
+    { "oscA_pw",       2, 1.0f, 99.0f, 50.0f, 0.0f, 0 },
+    { "oscB_pw",       2, 1.0f, 99.0f, 50.0f, 0.0f, 0 },
+    { "oscA_level",    2, 0.0f, 1.0f, 0.8f, 0.0f, 0 },
+    { "oscB_level",    2, 0.0f, 1.0f, 0.8f, 0.0f, 0 },
+    { "oscB_sync",     0, 0.0f, 1.0f, 0.0f, 0.0f, 0 },
+    { "sub_oct",       3, 0.0f, 1.0f, 0.0f, 0.0f, 2 },
+    { "sub_level",     2, 0.0f, 1.0f, 0.7f, 0.0f, 0 },
+    { "noise_mode",    3, 0.0f, 1.0f, 0.0f, 0.0f, 2 },
+    { "noise_level",   2, 0.0f, 1.0f, 0.5f, 0.0f, 0 },
+    { "uni_count",     1, 1.0f, 8.0f, 1.0f, 0.0f, 0 },
+    { "uni_detune",    2, 0.0f, 100.0f, 15.0f, 0.0f, 0 },
+    { "uni_spread",    2, 0.0f, 1.0f, 0.5f, 0.0f, 0 },
+    { "voice_mode",    3, 0.0f, 2.0f, 0.0f, 0.0f, 3 },
+    { "poly_count",    1, 1.0f, 16.0f, 8.0f, 0.0f, 0 },
+    { "glide_time",    2, 0.0f, 2.0f, 0.0f, 0.3f, 0 },
+    { "glide_mode",    3, 0.0f, 1.0f, 1.0f, 0.0f, 2 },
+    { "filt_type",     3, 0.0f, 3.0f, 0.0f, 0.0f, 4 },
+    { "filt_cutoff",   2, 20.0f, 20000.0f, 20000.0f, 632.456f, 0 },
+    { "filt_res",      2, 0.0f, 1.0f, 0.1f, 0.0f, 0 },
+    { "filt_env",      2, -1.0f, 1.0f, 0.0f, 0.0f, 0 },
+    { "filt_keytrack", 2, 0.0f, 1.0f, 0.0f, 0.0f, 0 },
+    { "env1_a",        2, 0.0f, 5.0f, 0.003f, 0.5f, 0 },
+    { "env1_d",        2, 0.0f, 5.0f, 0.120f, 0.5f, 0 },
+    { "env1_s",        2, 0.0f, 1.0f, 0.8f, 0.0f, 0 },
+    { "env1_r",        2, 0.0f, 5.0f, 0.080f, 0.5f, 0 },
+    { "env2_a",        2, 0.0f, 5.0f, 0.003f, 0.5f, 0 },
+    { "env2_d",        2, 0.0f, 5.0f, 0.200f, 0.5f, 0 },
+    { "env2_s",        2, 0.0f, 1.0f, 0.0f, 0.0f, 0 },
+    { "env2_r",        2, 0.0f, 5.0f, 0.100f, 0.5f, 0 },
+    { "env2_pitch",    2, -48.0f, 48.0f, 0.0f, 0.0f, 0 },
+    { "lfo1_rate",     2, 0.01f, 40.0f, 1.0f, 0.6325f, 0 },
+    { "lfo1_sync",     0, 0.0f, 1.0f, 1.0f, 0.0f, 0 },
+    { "lfo1_pwm",      2, 0.0f, 1.0f, 0.0f, 0.0f, 0 },
+    { "lfo2_rate",     2, 0.01f, 40.0f, 0.25f, 0.6325f, 0 },
+    { "lfo2_sync",     0, 0.0f, 1.0f, 1.0f, 0.0f, 0 },
+    { "lfo2_shape",    3, 0.0f, 2.0f, 1.0f, 0.0f, 3 },
+    { "lfo2_amt",      2, -1.0f, 1.0f, 0.0f, 0.0f, 0 },
+    { "lfo2_dest",     3, 0.0f, 3.0f, 1.0f, 0.0f, 4 },
+    { "crush_bits",    1, 1.0f, 16.0f, 16.0f, 0.0f, 0 },
+    { "crush_down",    1, 1.0f, 64.0f, 1.0f, 0.0f, 0 },
+    { "crush_mix",     2, 0.0f, 1.0f, 0.0f, 0.0f, 0 },
+    { "dly_time",      3, 0.0f, 10.0f, 4.0f, 0.0f, 11 },
+    { "dly_fb",        2, 0.0f, 0.9f, 0.35f, 0.0f, 0 },
+    { "dly_pingpong",  0, 0.0f, 1.0f, 1.0f, 0.0f, 0 },
+    { "dly_mix",       2, 0.0f, 1.0f, 0.0f, 0.0f, 0 },
+    { "cave_size",     2, 0.0f, 1.0f, 0.5f, 0.0f, 0 },
+    { "cave_damp",     2, 0.0f, 1.0f, 0.5f, 0.0f, 0 },
+    { "cave_mix",      2, 0.0f, 1.0f, 0.0f, 0.0f, 0 },
+    { "vel_amp",       2, 0.0f, 1.0f, 0.5f, 0.0f, 0 },
+    { "raw",           0, 0.0f, 1.0f, 0.0f, 0.0f, 0 },
+    { "master_gain",   2, -60.0f, 6.0f, 0.0f, 0.0f, 0 },
+    { "cave_hp",       2, 20.0f, 2000.0f, 20.0f, 200.0f, 0 },
+    { "dly_hp",        2, 20.0f, 2000.0f, 20.0f, 200.0f, 0 },
+    { "crush_hp",      2, 20.0f, 2000.0f, 20.0f, 200.0f, 0 },
+    { "cave_lp",       2, 200.0f, 20000.0f, 20000.0f, 2000.0f, 0 },
+    { "dly_lp",        2, 200.0f, 20000.0f, 20000.0f, 2000.0f, 0 },
+    { "crush_lp",      2, 200.0f, 20000.0f, 20000.0f, 2000.0f, 0 },
+};
+
 static void test_frozen_parameter_ids (BlockwaveAudioProcessor& proc)
 {
     std::printf ("[frozen_parameter_ids]\n");
-    constexpr int expected = static_cast<int> (std::size (kFrozenIds));
-    CHECK_MSG (expected == 67, "frozen list itself must have 67 entries (has %d)", expected);
-    CHECK_MSG (kNumParams == expected, "ParamSpec has %d params, frozen list %d",
-               kNumParams, expected);
+    constexpr int frozen67 = static_cast<int> (std::size (kFrozenIds));
+    constexpr int mix8     = static_cast<int> (std::size (kFrozenCraftMixIds));
+    CHECK_MSG (frozen67 == 67, "frozen list itself must have 67 entries (has %d)", frozen67);
+    CHECK_MSG (mix8 == 8, "craft mix list must have 8 entries (has %d)", mix8);
+    CHECK_MSG (static_cast<int> (std::size (kFrozenTable)) == frozen67,
+               "the frozen definition table must cover all 67 v1.0.0 parameters");
+
+    // The append-only rule, as arithmetic: the 67 v1.0.0 parameters keep
+    // indices 0..66 and the 8 new ones occupy 67..74.
+    CHECK_MSG (kNumEngineParams == frozen67, "kNumEngineParams is %d, expected %d",
+               kNumEngineParams, frozen67);
+    CHECK_MSG (kNumCraftMixParams == mix8, "kNumCraftMixParams is %d, expected %d",
+               kNumCraftMixParams, mix8);
+    CHECK_MSG (kNumParams == frozen67 + mix8, "ParamSpec has %d params, expected %d",
+               kNumParams, frozen67 + mix8);
 
     const auto& params = proc.getParameters();
-    CHECK_MSG (params.size() == expected, "processor exposes %d params, expected %d",
-               params.size(), expected);
+    CHECK_MSG (params.size() == frozen67 + mix8,
+               "processor exposes %d params, expected %d",
+               params.size(), frozen67 + mix8);
     int matched = 0;
-    for (int i = 0; i < juce::jmin (params.size(), expected); ++i)
+    for (int i = 0; i < juce::jmin (params.size(), frozen67 + mix8); ++i)
     {
+        const char* want = i < frozen67 ? kFrozenIds[i] : kFrozenCraftMixIds[i - frozen67];
         auto* wid = dynamic_cast<juce::AudioProcessorParameterWithID*> (params[i]);
         CHECK_MSG (wid != nullptr, "param %d has no ID", i);
-        if (wid != nullptr && wid->paramID == kFrozenIds[i])
+        if (wid != nullptr && wid->paramID == want)
             ++matched;
         else if (wid != nullptr)
             std::printf ("    ID MISMATCH at %d: layout '%s' vs frozen '%s'\n",
-                         i, wid->paramID.toRawUTF8(), kFrozenIds[i]);
+                         i, wid->paramID.toRawUTF8(), want);
     }
-    CHECK_MSG (matched == expected, "only %d/%d parameter IDs match the frozen list",
-               matched, expected);
-    std::printf ("  %d parameter IDs verified against the frozen list\n", matched);
+    CHECK_MSG (matched == frozen67 + mix8,
+               "only %d/%d parameter IDs match the frozen list",
+               matched, frozen67 + mix8);
+
+    // ---- every field of the 67, against the independently written copy ----
+    int drifted = 0;
+    for (int i = 0; i < frozen67 && i < kNumParams; ++i)
+    {
+        const auto& live = paramDef (static_cast<PId> (i));
+        const auto& want = kFrozenTable[i];
+        const bool same = juce::String (live.id) == want.id
+                       && static_cast<int> (live.kind) == want.kind
+                       && live.minValue     == want.minValue
+                       && live.maxValue     == want.maxValue
+                       && live.defaultValue == want.defaultValue
+                       && live.skewCentre   == want.skewCentre
+                       && live.numChoices   == want.numChoices;
+        if (! same)
+        {
+            ++drifted;
+            std::printf ("    FROZEN DRIFT at %d (%s): kind %d/%d min %g/%g max %g/%g "
+                         "def %g/%g skew %g/%g choices %d/%d\n",
+                         i, live.id, static_cast<int> (live.kind), want.kind,
+                         static_cast<double> (live.minValue), static_cast<double> (want.minValue),
+                         static_cast<double> (live.maxValue), static_cast<double> (want.maxValue),
+                         static_cast<double> (live.defaultValue), static_cast<double> (want.defaultValue),
+                         static_cast<double> (live.skewCentre), static_cast<double> (want.skewCentre),
+                         live.numChoices, want.numChoices);
+        }
+    }
+    CHECK_MSG (drifted == 0,
+               "%d of the 67 released parameters changed definition — v1.0.0 "
+               "projects store NORMALISED values, so this re-tunes saved work",
+               drifted);
+
+    // And the live NormalisableRange the host actually sees, for the same 67.
+    int rangeDrift = 0;
+    for (int i = 0; i < frozen67 && i < kNumParams; ++i)
+    {
+        const auto& want = kFrozenTable[i];
+        const auto r = proc.apvts.getParameterRange (want.id);
+        if (r.start != want.minValue || r.end != want.maxValue)
+        {
+            ++rangeDrift;
+            std::printf ("    RANGE DRIFT at %d (%s): %g..%g, expected %g..%g\n",
+                         i, want.id, static_cast<double> (r.start),
+                         static_cast<double> (r.end),
+                         static_cast<double> (want.minValue),
+                         static_cast<double> (want.maxValue));
+        }
+    }
+    CHECK_MSG (rangeDrift == 0, "%d released parameter ranges drifted", rangeDrift);
+
+    std::printf ("  %d parameter IDs verified (%d frozen + %d appended), "
+                 "all %d v1.0.0 definitions byte-identical\n",
+                 matched, frozen67, mix8, frozen67);
+}
+
+// ---------------------------------------------------------------------------
+// Addendum 3: the eight craft MIX parameters as the host sees them.
+static void test_craft_mix_parameter_table (BlockwaveAudioProcessor& proc)
+{
+    std::printf ("[craft_mix_parameter_table]\n");
+    for (int c = 0; c < kNumCells; ++c)
+    {
+        const auto pid = craftMixParamForCell (c);
+        CHECK_MSG (pid != PId::count, "no craft mix parameter for cell %d", c);
+        CHECK_MSG (isCraftMixParam (pid), "cell %d parameter not flagged as craft mix", c);
+        CHECK_MSG (craftMixCellIndex (pid) == c, "cell index round trip broke at %d", c);
+
+        const auto& d = paramDef (pid);
+        CHECK_MSG (juce::String (d.id) == kFrozenCraftMixIds[c],
+                   "cell %d maps to '%s', expected '%s'", c, d.id, kFrozenCraftMixIds[c]);
+        CHECK_MSG (d.kind == PKind::floating, "%s must be a float parameter", d.id);
+        CHECK_MSG (d.minValue == 0.0f && d.maxValue == 100.0f,
+                   "%s range is %g..%g, expected 0..100", d.id,
+                   static_cast<double> (d.minValue), static_cast<double> (d.maxValue));
+        CHECK_MSG (d.defaultValue == 100.0f, "%s default is %g, expected 100", d.id,
+                   static_cast<double> (d.defaultValue));
+        CHECK_MSG (d.skewCentre == 0.0f, "%s must be linear (no taper)", d.id);
+
+        const auto r = proc.apvts.getParameterRange (d.id);
+        CHECK_MSG (r.start == 0.0f && r.end == 100.0f, "%s live range wrong", d.id);
+        CHECK_MSG (r.skew == 1.0f, "%s live taper must be linear", d.id);
+
+        // The default must land EXACTLY on 100 % after the APVTS round trip,
+        // and 100 % must convert to EXACTLY 1.0f — that exact 1.0f is the
+        // multiply-by-identity that keeps every pre-existing golden bit-exact.
+        const float stored = proc.apvts.getRawParameterValue (d.id)->load();
+        CHECK_MSG (stored == 100.0f, "%s default stored as %g, not exactly 100", d.id,
+                   static_cast<double> (stored));
+        CHECK_MSG (cellWeightFromMixPercent (stored) == 1.0f,
+                   "%s default does not convert to exactly 1.0f", d.id);
+
+        // The parameter must be automatable and must NOT be marked as
+        // meta/bypass — this is the whole point of the change.
+        auto* p = proc.getCraftCellWeightParameter (c);
+        CHECK_MSG (p != nullptr, "no RangedAudioParameter for cell %d", c);
+        if (p != nullptr)
+        {
+            CHECK_MSG (p->isAutomatable(), "%s is not automatable", d.id);
+            CHECK_MSG (p->paramID == juce::String (d.id), "cell %d parameter ID mismatch", c);
+        }
+    }
+    CHECK_MSG (proc.getCraftCellWeightParameter (-1) == nullptr,
+               "negative cell index must return nullptr");
+    CHECK_MSG (proc.getCraftCellWeightParameter (kNumCells) == nullptr,
+               "out-of-range cell index must return nullptr");
+
+    // Percent <-> weight, both endpoints pinned exactly.
+    CHECK_MSG (cellWeightFromMixPercent (100.0f) == 1.0f, "100%% must be exactly 1.0");
+    CHECK_MSG (cellWeightFromMixPercent (0.0f) == 0.0f, "0%% must be exactly 0.0");
+    CHECK_MSG (cellWeightFromMixPercent (50.0f) == 0.5f, "50%% must be exactly 0.5");
+    CHECK_MSG (cellWeightFromMixPercent (150.0f) == 1.0f, "over 100%% must clamp");
+    CHECK_MSG (cellWeightFromMixPercent (-10.0f) == 0.0f, "below 0%% must clamp");
+    CHECK_MSG (mixPercentFromCellWeight (1.0f) == 100.0f, "1.0 must be exactly 100%%");
+    CHECK_MSG (mixPercentFromCellWeight (0.0f) == 0.0f, "0.0 must be exactly 0%%");
+    CHECK_MSG (mixPercentFromCellWeight (0.25f) == 25.0f, "0.25 must be exactly 25%%");
+
+    // A craft MIX id has no ParamSnapshot field: applying one must not move a
+    // single byte of the snapshot (the engine never sees a weight).
+    ParamSnapshot before, after;
+    for (int c = 0; c < kNumCells; ++c)
+        applyToSnapshot (after, craftMixParamForCell (c), 0.0f);
+    CHECK_MSG (compareSnapshots (after, before, 0.0, "craft_mix_to_snapshot") == 0,
+               "a craft MIX id reached a ParamSnapshot field");
+    // ...and the defensive inverse returns the 100 % default, never 0 %.
+    for (int c = 0; c < kNumCells; ++c)
+        CHECK_MSG (snapshotToPlain (before, craftMixParamForCell (c)) == 100.0f,
+                   "snapshotToPlain for cell %d must fall back to 100%%, not 0%%", c);
+    std::printf ("  8 craft MIX parameters: 0..100%%, default 100, linear, "
+                 "automatable, snapshot-isolated\n");
 }
 
 // ---------------------------------------------------------------------------
@@ -1732,6 +1967,561 @@ static void test_ui_audio_path_no_allocation()
 }
 
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// FROZEN-TABLE ADDENDUM 3: host-automatable CRAFT MIX weights.
+//
+// The producer could not automate the per-block MIX knob in FL because the
+// weight was not a parameter at all. It is one now, which makes the APVTS the
+// AUTHORITY and CraftGrid::weights a mirror of it. These tests pin the two
+// things that decision can get wrong: a v1.0.0 project must still restore
+// exactly, and the mirror must never disagree with the parameter.
+// ---------------------------------------------------------------------------
+
+static juce::File mixTempDiscoveries (const char* leaf)
+{
+    return juce::File::getSpecialLocation (juce::File::tempDirectory)
+               .getChildFile (leaf).getChildFile ("Discoveries.json");
+}
+
+// True when every cell's mirror equals its parameter. THE invariant.
+static bool mirrorMatchesParams (BlockwaveAudioProcessor& p, int& firstBadCell)
+{
+    firstBadCell = -1;
+    for (int c = 0; c < kNumCells; ++c)
+    {
+        const auto* raw = p.apvts.getRawParameterValue (paramDef (craftMixParamForCell (c)).id);
+        const float fromParam = cellWeightFromMixPercent (raw->load());
+        if (p.getCraftCellWeight (c) != fromParam)
+        {
+            firstBadCell = c;
+            return false;
+        }
+    }
+    return true;
+}
+
+// Moves a parameter the way a HOST does: straight at the parameter object,
+// bypassing every processor API. This is what an automation lane looks like.
+static void hostAutomate (BlockwaveAudioProcessor& p, int cell, float percent)
+{
+    auto* param = p.getCraftCellWeightParameter (cell);
+    param->setValueNotifyingHost (param->convertTo0to1 (percent));
+}
+
+// Rewrites a session blob as v1.0.0 would have written it: the eight craft_mix
+// PARAM children never existed, so they are removed. Everything else — the 67
+// engine parameters and the craft JSON, weights included — is left untouched.
+static juce::MemoryBlock stripCraftMixParams (const juce::MemoryBlock& blob, int& removed)
+{
+    removed = 0;
+    auto root = juce::ValueTree::readFromData (blob.getData(), blob.getSize());
+    for (int c = 0; c < root.getNumChildren(); ++c)
+    {
+        auto params = root.getChild (c);
+        for (int i = params.getNumChildren(); --i >= 0;)
+        {
+            if (params.getChild (i).getProperty ("id").toString().startsWith ("craft_mix_"))
+            {
+                params.removeChild (i, nullptr);
+                ++removed;
+            }
+        }
+    }
+    juce::MemoryBlock out;
+    juce::MemoryOutputStream os (out, false);
+    root.writeToStream (os);
+    return out;
+}
+
+static void test_craft_mix_v100_project_compat()
+{
+    std::printf ("[craft_mix_v100_project_compat]\n");
+
+    // ---- (a) a v1.0.0 project that USED the mix knob -----------------------
+    juce::MemoryBlock v100;
+    ParamSnapshot soundAtSave;
+    CraftGrid savedGrid;
+    ProcRender audioAtSave;
+    constexpr double kSr = 48000.0;
+    constexpr int kBlock = 256, kBlocks = 40;
+    const auto playC3 = [] (int i, juce::MidiBuffer& m)
+    {
+        if (i == 0)  m.addEvent (juce::MidiMessage::noteOn (1, 60, 0.9f), 0);
+        if (i == 24) m.addEvent (juce::MidiMessage::noteOff (1, 60), 0);
+    };
+
+    {
+        BlockwaveAudioProcessor a;
+        a.getDiscoveries().setFile (mixTempDiscoveries ("blockwave_mix_v100"));
+        CraftGrid g;
+        g.base = CraftBase::PAD;
+        g.cells[0] = Material::ICE;
+        g.cells[3] = Material::CLOUD;
+        g.cells[6] = Material::GOLD;
+        a.setCraftGrid (g);
+        a.setCraftCellWeight (0, 0.5f);
+        a.setCraftCellWeight (3, 0.25f);
+        a.getCraftGrid (savedGrid);
+
+        RawParams raw;
+        raw.attach (a.apvts);
+        raw.toSnapshot (soundAtSave);
+        audioAtSave = renderProcessor (a, kSr, kBlock, kBlocks, playC3);
+
+        juce::MemoryBlock full;
+        a.getStateInformation (full);
+        int removed = 0;
+        v100 = stripCraftMixParams (full, removed);
+        CHECK_MSG (removed == kNumCells,
+                   "expected to strip %d craft_mix params to fake a v1.0.0 state, stripped %d",
+                   kNumCells, removed);
+        // The faked state must still carry the weights where v1.0.0 kept
+        // them — inside the craft JSON — or the test proves nothing.
+        const auto rootTree = juce::ValueTree::readFromData (v100.getData(), v100.getSize());
+        const auto craftText = rootTree.getProperty ("craft").toString();
+        CHECK_MSG (craftText.contains ("weights"),
+                   "the faked v1.0.0 state lost the craft JSON weights");
+    }
+
+    // Restored into a FRESH instance.
+    {
+        BlockwaveAudioProcessor b;
+        b.getDiscoveries().setFile (mixTempDiscoveries ("blockwave_mix_v100"));
+        b.setStateInformation (v100.getData(), static_cast<int> (v100.getSize()));
+
+        RawParams raw;
+        raw.attach (b.apvts);
+        ParamSnapshot restored;
+        raw.toSnapshot (restored);
+        CHECK_MSG (compareSnapshots (restored, soundAtSave, 0.0, "v100_restore") == 0,
+                   "a v1.0.0 project did not restore its 67 parameters bit-identically");
+
+        CraftGrid gb;
+        CHECK_MSG (b.getCraftGrid (gb), "a v1.0.0 project lost its grid");
+        CHECK_MSG (gb.equalsWithWeights (savedGrid),
+                   "a v1.0.0 project lost its weights (%.3f / %.3f)",
+                   static_cast<double> (gb.cellWeight (0)),
+                   static_cast<double> (gb.cellWeight (3)));
+
+        // The migration: the legacy JSON weights were written INTO the lanes,
+        // so the knob, the block art and the sound now agree.
+        CHECK_MSG (b.getCraftCellWeight (0) == 0.5f && b.getCraftCellWeight (3) == 0.25f,
+                   "v1.0.0 weights did not reach the parameters (%.3f / %.3f)",
+                   static_cast<double> (b.getCraftCellWeight (0)),
+                   static_cast<double> (b.getCraftCellWeight (3)));
+        int bad = -1;
+        CHECK_MSG (mirrorMatchesParams (b, bad),
+                   "mirror/parameter mismatch at cell %d after a v1.0.0 restore", bad);
+
+        // Nothing re-crafted behind our back: the restored session parameters
+        // stay authoritative, so a poll finds nothing to do.
+        CHECK_MSG (! b.syncCellWeightsFromApvts(),
+                   "restoring a v1.0.0 project left the weights out of sync");
+        ParamSnapshot afterPoll;
+        raw.toSnapshot (afterPoll);
+        CHECK_MSG (compareSnapshots (afterPoll, soundAtSave, 0.0, "v100_poll") == 0,
+                   "the weight poll re-crafted a restored v1.0.0 project");
+
+        // The real proof: same samples out.
+        const auto audioRestored = renderProcessor (b, kSr, kBlock, kBlocks, playC3);
+        CHECK_MSG (audioRestored.l.size() == audioAtSave.l.size(), "render length changed");
+        size_t diffs = 0;
+        double worst = 0.0;
+        for (size_t i = 0; i < audioAtSave.l.size() && i < audioRestored.l.size(); ++i)
+        {
+            if (audioAtSave.l[i] != audioRestored.l[i] || audioAtSave.r[i] != audioRestored.r[i])
+                ++diffs;
+            worst = std::max (worst, std::abs (static_cast<double> (audioAtSave.l[i])
+                                             - static_cast<double> (audioRestored.l[i])));
+        }
+        CHECK_MSG (diffs == 0,
+                   "a v1.0.0 project rendered differently after restore: %zu samples differ, "
+                   "worst %.3g", diffs, worst);
+    }
+
+    // Restored into a DIRTY instance whose lanes were already somewhere else.
+    // JUCE does NOT reset a parameter that is missing from the incoming state
+    // — it keeps whatever the instance holds — so this is the case that would
+    // silently corrupt a re-used instance if the migration were implicit.
+    {
+        BlockwaveAudioProcessor c;
+        c.getDiscoveries().setFile (mixTempDiscoveries ("blockwave_mix_v100"));
+        CraftGrid junk;
+        junk.base = CraftBase::LEAD;
+        junk.cells[0] = Material::TNT;
+        c.setCraftGrid (junk);
+        for (int i = 0; i < kNumCells; ++i)
+            hostAutomate (c, i, 7.0f);           // every lane parked at 7 %
+        c.setStateInformation (v100.getData(), static_cast<int> (v100.getSize()));
+
+        CHECK_MSG (c.getCraftCellWeight (0) == 0.5f && c.getCraftCellWeight (3) == 0.25f,
+                   "a re-used instance kept its stale weights (%.3f / %.3f)",
+                   static_cast<double> (c.getCraftCellWeight (0)),
+                   static_cast<double> (c.getCraftCellWeight (3)));
+        for (int i : { 1, 2, 4, 5, 6, 7 })
+            CHECK_MSG (c.getCraftCellWeight (i) == 1.0f,
+                       "cell %d kept a stale 7%% instead of the 100%% default", i);
+        RawParams raw;
+        raw.attach (c.apvts);
+        ParamSnapshot restored;
+        raw.toSnapshot (restored);
+        CHECK_MSG (compareSnapshots (restored, soundAtSave, 0.0, "v100_dirty") == 0,
+                   "a v1.0.0 project restored differently into a re-used instance");
+    }
+
+    // ---- (b) a v1.0.0 project that never touched the knob ------------------
+    // The common case: no "weights" key anywhere, and every lane must come up
+    // at 100 % — the value that reproduces v1.0.0 exactly.
+    {
+        juce::MemoryBlock plain;
+        ParamSnapshot plainSound;
+        {
+            BlockwaveAudioProcessor a;
+            a.getDiscoveries().setFile (mixTempDiscoveries ("blockwave_mix_v100"));
+            CraftGrid g;
+            g.base = CraftBase::LEAD;
+            g.cells[1] = Material::LAVA;
+            g.cells[4] = Material::STONE;
+            a.setCraftGrid (g);
+            RawParams raw;
+            raw.attach (a.apvts);
+            raw.toSnapshot (plainSound);
+            juce::MemoryBlock full;
+            a.getStateInformation (full);
+            int removed = 0;
+            plain = stripCraftMixParams (full, removed);
+            const auto rootTree = juce::ValueTree::readFromData (plain.getData(), plain.getSize());
+            CHECK_MSG (! rootTree.getProperty ("craft").toString().contains ("weights"),
+                       "an untouched bench must not write a weights key");
+        }
+        BlockwaveAudioProcessor d;
+        d.getDiscoveries().setFile (mixTempDiscoveries ("blockwave_mix_v100"));
+        for (int i = 0; i < kNumCells; ++i)
+            hostAutomate (d, i, 3.0f);           // dirty again, on purpose
+        d.setStateInformation (plain.getData(), static_cast<int> (plain.getSize()));
+        for (int i = 0; i < kNumCells; ++i)
+            CHECK_MSG (d.getCraftCellWeight (i) == 1.0f,
+                       "an unweighted v1.0.0 project came back with cell %d at %.3f",
+                       i, static_cast<double> (d.getCraftCellWeight (i)));
+        RawParams raw;
+        raw.attach (d.apvts);
+        ParamSnapshot restored;
+        raw.toSnapshot (restored);
+        CHECK_MSG (compareSnapshots (restored, plainSound, 0.0, "v100_plain") == 0,
+                   "an unweighted v1.0.0 project did not restore bit-identically");
+    }
+
+    mixTempDiscoveries ("blockwave_mix_v100").getParentDirectory().deleteRecursively();
+    std::printf ("  v1.0.0 sessions restore bit-identically (fresh + re-used "
+                 "instance), weights migrated into the lanes\n");
+}
+
+// ---------------------------------------------------------------------------
+static void test_craft_mix_automation()
+{
+    std::printf ("[craft_mix_automation]\n");
+    BlockwaveAudioProcessor p;
+    p.getDiscoveries().setFile (mixTempDiscoveries ("blockwave_mix_automation"));
+
+    CraftGrid g;
+    g.base = CraftBase::PAD;
+    g.cells[0] = Material::ICE;
+    g.cells[3] = Material::CLOUD;
+    p.setCraftGrid (g);
+
+    const float fullDetune = p.apvts.getRawParameterValue ("uni_detune")->load();
+
+    // A host moves the lane. Nothing else happens until the message thread
+    // polls — the audio thread does no craft work, by design.
+    hostAutomate (p, 0, 40.0f);
+    CHECK_MSG (p.syncCellWeightsFromApvts(), "the poll did not notice a host weight move");
+    CHECK_MSG (p.getCraftCellWeight (0) == 0.4f,
+               "host automation did not reach the mirror (%.3f)",
+               static_cast<double> (p.getCraftCellWeight (0)));
+    const float automatedDetune = p.apvts.getRawParameterValue ("uni_detune")->load();
+    CHECK_MSG (automatedDetune < fullDetune,
+               "host automation did not re-craft the engine parameters (%.3f -> %.3f)",
+               static_cast<double> (fullDetune), static_cast<double> (automatedDetune));
+
+    // Idempotent: a second poll with nothing moved must not re-craft.
+    CHECK_MSG (! p.syncCellWeightsFromApvts(), "the poll re-crafted with nothing to do");
+    int bad = -1;
+    CHECK_MSG (mirrorMatchesParams (p, bad), "mirror/parameter mismatch at cell %d", bad);
+
+    // Automation and the knob must be interchangeable: the same value through
+    // either door has to land on the same sound.
+    ParamSnapshot viaHost;
+    { RawParams r; r.attach (p.apvts); r.toSnapshot (viaHost); }
+    p.setCraftCellWeight (0, 1.0f);
+    p.setCraftCellWeight (0, 0.4f);
+    ParamSnapshot viaKnob;
+    { RawParams r; r.attach (p.apvts); r.toSnapshot (viaKnob); }
+    CHECK_MSG (compareSnapshots (viaKnob, viaHost, 0.0, "knob_vs_host") == 0,
+               "the knob and an automation lane disagree at the same weight");
+
+    // The knob path must write the parameter, or FL's "last tweaked" is blind
+    // to it again — which is the bug this whole change exists to fix.
+    p.setCraftCellWeight (3, 0.6f);
+    const float lane3 = p.apvts.getRawParameterValue ("craft_mix_4")->load();
+    // 0.6 is not exactly representable, so the PERCENT lands a float ulp off
+    // 60; what must be exact is the weight the craft then runs on.
+    CHECK_MSG (std::abs (lane3 - 60.0f) < 1.0e-3f,
+               "the knob did not write craft_mix_4 (%.6f)", static_cast<double> (lane3));
+    CHECK_MSG (cellWeightFromMixPercent (lane3) == 0.6f,
+               "craft_mix_4 did not round-trip back to the weight the knob set");
+    CHECK_MSG (p.getCraftCellWeight (3) == 0.6f,
+               "the mirror did not round-trip the knob value (%.6f)",
+               static_cast<double> (p.getCraftCellWeight (3)));
+
+    // Gesture framing: begin/end must be balanced and must suppress the
+    // per-call gesture in between (verified through the public API contract —
+    // an unbalanced end would assert inside JUCE).
+    p.beginCraftCellWeightGesture (3);
+    p.beginCraftCellWeightGesture (3);          // idempotent
+    p.setCraftCellWeight (3, 0.55f);
+    p.setCraftCellWeight (3, 0.50f);
+    p.endCraftCellWeightGesture (3);
+    p.endCraftCellWeightGesture (3);            // idempotent
+    CHECK_MSG (p.getCraftCellWeight (3) == 0.5f, "a framed drag lost its value");
+    p.beginCraftCellWeightGesture (-1);         // must not crash
+    p.endCraftCellWeightGesture (kNumCells);    // must not crash
+
+    // RECIPE DETECTION IGNORES WEIGHTS — including automated ones. The whole
+    // hunt depends on it, so it is asserted again from the automation door.
+    int n = 0;
+    const auto* pats = specRecipePatterns (n);
+    p.setCraftGrid (pats[0].grid);
+    juce::String discovered;
+    p.consumeRecipeDiscovery (discovered);
+    const auto nameBefore = p.getCraftAutoName();
+    for (int c = 0; c < kNumCells; ++c)
+        hostAutomate (p, c, 0.0f);              // every lane automated to ZERO
+    CHECK_MSG (p.syncCellWeightsFromApvts(), "the poll missed a full-bench automation move");
+    CHECK_MSG (p.getActiveRecipeName() == "PERMAFROST",
+               "automating the weights to 0 dropped the recipe: '%s'",
+               p.getActiveRecipeName().toRawUTF8());
+    CHECK_MSG (p.getCraftAutoName() == nameBefore,
+               "automating the weights changed the auto-name");
+    CHECK_MSG (! p.consumeRecipeDiscovery (discovered),
+               "automating a weight fired a discovery");
+
+    mixTempDiscoveries ("blockwave_mix_automation").getParentDirectory().deleteRecursively();
+    std::printf ("  host automation re-crafts, matches the knob, and never "
+                 "touches recipe identity\n");
+}
+
+// ---------------------------------------------------------------------------
+// One authority, one write path: after EVERY operation that can move a weight,
+// the mirror and the parameter must still agree.
+static void test_craft_mix_single_write_path()
+{
+    std::printf ("[craft_mix_single_write_path]\n");
+    BlockwaveAudioProcessor p;
+    p.getDiscoveries().setFile (mixTempDiscoveries ("blockwave_mix_writepath"));
+
+    const auto coherent = [&p] (const char* what)
+    {
+        int bad = -1;
+        CHECK_MSG (mirrorMatchesParams (p, bad),
+                   "%s left the mirror and craft_mix_%d disagreeing", what, bad + 1);
+        CHECK_MSG (! p.syncCellWeightsFromApvts(),
+                   "%s left a weight the poll still wanted to apply", what);
+    };
+
+    CraftGrid g;
+    g.base = CraftBase::KEYS;
+    g.cells[0] = Material::WOOD;
+    g.cells[2] = Material::GLASS;
+    g.cells[5] = Material::VOLT;
+    p.setCraftGrid (g);                              coherent ("setCraftGrid");
+
+    p.setCraftCellWeight (2, 0.45f);                 coherent ("setCraftCellWeight");
+    const float bulk[kNumCells] = { 0.9f, 1.0f, 0.3f, 1.0f, 1.0f, 0.6f, 1.0f, 1.0f };
+    p.setCraftCellWeights (bulk, kNumCells);         coherent ("setCraftCellWeights");
+
+    hostAutomate (p, 5, 12.0f);
+    p.syncCellWeightsFromApvts();                    coherent ("host automation");
+
+    // DICE keeps the weights (documented) and stays coherent.
+    const float beforeDice = p.getCraftCellWeight (0);
+    p.diceCraft (0xD1CEu);                           coherent ("DICE");
+    CHECK_MSG (p.getCraftCellWeight (0) == beforeDice,
+               "DICE moved a weight (%.3f -> %.3f)",
+               static_cast<double> (beforeDice),
+               static_cast<double> (p.getCraftCellWeight (0)));
+
+    // MUTATE works on the engine parameters only — it must not touch a lane.
+    float lanesBefore[kNumCells];
+    for (int c = 0; c < kNumCells; ++c)
+        lanesBefore[c] = p.getCraftCellWeight (c);
+    p.mutateCraft (0x51EEDu);                        coherent ("MUTATE");
+    for (int c = 0; c < kNumCells; ++c)
+        CHECK_MSG (p.getCraftCellWeight (c) == lanesBefore[c],
+                   "MUTATE moved the weight of cell %d", c);
+
+    // CLEAR, as the UI does it: an empty bench states 100 % for every cell,
+    // and that statement must travel through to the lanes.
+    CraftGrid cleared;
+    p.getCraftGrid (cleared);
+    for (int i = 0; i < kNumCells; ++i)
+    {
+        cleared.cells[i] = Material::none;
+        cleared.setCellWeight (i, kCellWeightDefault);
+    }
+    p.setCraftGrid (cleared);                        coherent ("CLEAR");
+    for (int c = 0; c < kNumCells; ++c)
+    {
+        CHECK_MSG (p.getCraftCellWeight (c) == 1.0f,
+                   "CLEAR left cell %d at %.3f instead of 100%%", c,
+                   static_cast<double> (p.getCraftCellWeight (c)));
+        const float lane = p.apvts.getRawParameterValue (
+            paramDef (craftMixParamForCell (c)).id)->load();
+        CHECK_MSG (lane == 100.0f, "CLEAR did not reset lane craft_mix_%d (%.3f)",
+                   c + 1, static_cast<double> (lane));
+    }
+
+    // A single-cell clear ("block gone, mix gone") does the same for its cell.
+    p.setCraftGrid (g);
+    p.setCraftCellWeight (2, 0.2f);
+    CraftGrid one;
+    p.getCraftGrid (one);
+    one.cells[2] = Material::none;
+    one.setCellWeight (2, kCellWeightDefault);
+    p.setCraftGrid (one);                            coherent ("clearSlot");
+    CHECK_MSG (p.getCraftCellWeight (2) == 1.0f, "clearing a block left its mix behind");
+
+    // Preset load: weights come from "craft".weights and nowhere else.
+    p.setCraftGrid (g);
+    p.setCraftCellWeight (0, 0.375f);
+    p.setCraftCellWeight (5, 0.125f);
+    const auto preset = p.buildCurrentPresetVar ("MIXED", "KEYS", "tests");
+    {
+        BlockwaveAudioProcessor q;
+        q.getDiscoveries().setFile (mixTempDiscoveries ("blockwave_mix_writepath"));
+        for (int c = 0; c < kNumCells; ++c)
+            hostAutomate (q, c, 88.0f);              // dirty lanes before loading
+        juce::String err;
+        CHECK_MSG (q.loadPresetVar (preset, err), "preset load failed: %s", err.toRawUTF8());
+        int bad = -1;
+        CHECK_MSG (mirrorMatchesParams (q, bad),
+                   "preset load left the mirror and craft_mix_%d disagreeing", bad + 1);
+        CHECK_MSG (q.getCraftCellWeight (0) == 0.375f && q.getCraftCellWeight (5) == 0.125f,
+                   "preset load lost the weights (%.3f / %.3f)",
+                   static_cast<double> (q.getCraftCellWeight (0)),
+                   static_cast<double> (q.getCraftCellWeight (5)));
+        for (int c : { 1, 2, 3, 4, 6, 7 })
+            CHECK_MSG (q.getCraftCellWeight (c) == 1.0f,
+                       "preset load left cell %d at %.3f instead of the 100%% default",
+                       c, static_cast<double> (q.getCraftCellWeight (c)));
+        CHECK_MSG (! q.syncCellWeightsFromApvts(), "preset load left the poll work to do");
+    }
+
+    // A weight is never written into "params" — "craft".weights is its only
+    // home on disk, so v1.0.0 readers still understand the file.
+    auto* presetObj = preset.getDynamicObject();
+    auto* paramsObj = presetObj->getProperty ("params").getDynamicObject();
+    CHECK_MSG (paramsObj != nullptr, "preset has no params object");
+    if (paramsObj != nullptr)
+        for (const auto& prop : paramsObj->getProperties())
+            CHECK_MSG (! prop.name.toString().startsWith ("craft_mix_"),
+                       "a weight leaked into the preset params object as '%s'",
+                       prop.name.toString().toRawUTF8());
+    const auto craftObj = presetObj->getProperty ("craft");
+    CHECK_MSG (craftObj.getDynamicObject() != nullptr
+                   && craftObj.getDynamicObject()->hasProperty ("weights"),
+               "the preset craft object lost its weights array");
+
+    // A preset that DOES carry craft_mix in "params" must be ignored there —
+    // one home, no ordering ambiguity.
+    {
+        auto* obj = presetObj->getProperty ("params").getDynamicObject();
+        obj->setProperty ("craft_mix_1", 5.0);
+        BlockwaveAudioProcessor q;
+        q.getDiscoveries().setFile (mixTempDiscoveries ("blockwave_mix_writepath"));
+        juce::String err;
+        CHECK_MSG (q.loadPresetVar (preset, err), "preset load failed: %s", err.toRawUTF8());
+        CHECK_MSG (q.getCraftCellWeight (0) == 0.375f,
+                   "params.craft_mix_1 overrode craft.weights (%.3f)",
+                   static_cast<double> (q.getCraftCellWeight (0)));
+        obj->removeProperty ("craft_mix_1");
+    }
+
+    // Session round trip from THIS build: the saved lanes win, and the poll
+    // still has nothing to do afterwards.
+    {
+        juce::MemoryBlock blob;
+        p.getStateInformation (blob);
+        BlockwaveAudioProcessor r;
+        r.getDiscoveries().setFile (mixTempDiscoveries ("blockwave_mix_writepath"));
+        r.setStateInformation (blob.getData(), static_cast<int> (blob.getSize()));
+        CHECK_MSG (r.getCraftCellWeight (0) == 0.375f && r.getCraftCellWeight (5) == 0.125f,
+                   "session restore lost the weights");
+        int bad = -1;
+        CHECK_MSG (mirrorMatchesParams (r, bad),
+                   "session restore left the mirror and craft_mix_%d disagreeing", bad + 1);
+        CHECK_MSG (! r.syncCellWeightsFromApvts(), "session restore left the poll work to do");
+    }
+
+    // No grid, no meaning: a lane can move but nothing crafts.
+    {
+        BlockwaveAudioProcessor s;
+        s.getDiscoveries().setFile (mixTempDiscoveries ("blockwave_mix_writepath"));
+        hostAutomate (s, 0, 20.0f);
+        CHECK_MSG (! s.syncCellWeightsFromApvts(), "a weight crafted without a bench");
+        CraftGrid empty;
+        CHECK_MSG (! s.getCraftGrid (empty), "the poll invented a grid");
+    }
+
+    mixTempDiscoveries ("blockwave_mix_writepath").getParentDirectory().deleteRecursively();
+    std::printf ("  DICE / MUTATE / CLEAR / knob / host / preset / session all "
+                 "leave one coherent weight\n");
+}
+
+// ---------------------------------------------------------------------------
+// The bit-identity claim: at the 100 % default the new parameters must change
+// NOTHING. Same craft, same parameters, same samples as a bench that never
+// heard of a weight.
+static void test_craft_mix_default_is_identity()
+{
+    std::printf ("[craft_mix_default_is_identity]\n");
+    // Its own instance: this test crafts, which moves the parameters off their
+    // defaults, and the shared processor is used by tests that require pristine
+    // defaults.
+    BlockwaveAudioProcessor proc;
+    proc.getDiscoveries().setFile (mixTempDiscoveries ("blockwave_mix_identity"));
+    int n = 0;
+    const auto* pats = specRecipePatterns (n);
+    int compared = 0, drifted = 0;
+    for (int i = 0; i < n; ++i)
+    {
+        // The pure engine, driven by a grid whose weights are the 1.0 default.
+        const auto direct = craftSnapshotWithRecipes (pats[i].grid, &proc.getRecipeBook());
+        // The same grid through the processor, i.e. through the parameters.
+        proc.setCraftGrid (pats[i].grid);
+        RawParams raw;
+        raw.attach (proc.apvts);
+        ParamSnapshot viaApvts;
+        raw.toSnapshot (viaApvts);
+        // 1e-5 is the project's standing APVTS tolerance (see
+        // test_defaults_match_engine): every float that goes through the
+        // parameter store takes one normalise/denormalise round trip, which
+        // costs ~1e-6 on a wide range like master_gain. That predates this
+        // change and applies to all 67 engine parameters equally. The
+        // bit-exactness claim is carried by the 843 render goldens and by the
+        // sample-for-sample null test in test_craft_mix_v100_project_compat.
+        if (compareSnapshots (viaApvts, direct, 1.0e-5, "mix_identity") != 0)
+            ++drifted;
+        ++compared;
+    }
+    CHECK_MSG (drifted == 0,
+               "%d of %d recipe grids crafted differently through the new "
+               "parameter path", drifted, compared);
+    CHECK_MSG (compared > 0, "no recipe patterns to compare");
+    mixTempDiscoveries ("blockwave_mix_identity").getParentDirectory().deleteRecursively();
+    std::printf ("  %d recipe grids identical through the parameter path at 100%%\n",
+                 compared);
+}
+
 int main()
 {
     juce::ScopedJuceInitialiser_GUI juceInit;
@@ -1739,6 +2529,7 @@ int main()
     {
         BlockwaveAudioProcessor proc;
         test_frozen_parameter_ids (proc);
+        test_craft_mix_parameter_table (proc);      // read-only: keeps proc pristine
         test_defaults_match_engine (proc);
         test_render_plugin_agreement (proc);
         test_preset_save_round_trip (proc);
@@ -1762,6 +2553,12 @@ int main()
     test_processor_craft_api();
     test_craft_save_and_session();
     test_craft_cell_weight_state();
+
+    // Frozen-table addendum 3: host-automatable CRAFT MIX weights.
+    test_craft_mix_default_is_identity();
+    test_craft_mix_v100_project_compat();
+    test_craft_mix_automation();
+    test_craft_mix_single_write_path();
 
     // Phase 4: UI audition keyboard + discovery jingle.
     test_ui_keyboard_path();

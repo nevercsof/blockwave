@@ -102,7 +102,7 @@ int main (int argc, char* argv[])
     outDir.createDirectory();
 
     bool ok = true;
-    juce::File discoveryFile, favoritesFile, settingsFile;
+    juce::File discoveryFile, favoritesFile, settingsFile, userPresetFolder;
 
     // Machine-wide settings: redirect the DEFAULT location before anything
     // constructs an editor, so the run neither reads nor writes the real
@@ -124,6 +124,12 @@ int main (int argc, char* argv[])
         favoritesFile = juce::File::createTempFile ("blockwave_favorites.json");
         favoritesFile.deleteFile();
         proc.getPresetLibrary().setFavoritesFile (favoritesFile);
+
+        // ...and for the USER PRESET BANK, which the CRAFT tab's KEEP button
+        // actually writes to. Never ~/Documents/BLOCKWAVE/Presets.
+        userPresetFolder = juce::File::createTempFile ("blockwave_user_presets");
+        userPresetFolder.deleteFile();
+        proc.getPresetLibrary().setUserFolder (userPresetFolder);
 
         // Load the first factory preset so the top bar shows a real name.
         juce::String err;
@@ -222,6 +228,97 @@ int main (int argc, char* argv[])
                 { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
             proc.setCraftCellWeights (full, blockwave::kNumCells);
             editor->getCraftTab().refreshFromProcessor();
+            pump (60);
+        }
+
+        // 2b-undo) UNDO / REDO and KEEP (producer requests). Every state
+        //     below is produced by the REAL entry points — the same calls the
+        //     buttons' onClick lambdas make — so the greyed-out states are
+        //     genuinely "there is nothing to undo" and not a painted mock.
+        //     Bench info panel in EDITOR pixels: canvas (240,56,152,208) sits
+        //     at content y = 64, so (240,120) with an 8 px review margin.
+        {
+            auto& craft = editor->getCraftTab();
+            const juce::Rectangle<int> infoPanel (232, 112, 168, 224);
+
+            // (i) NOTHING TO UNDO. presetLoaded() is the production path that
+            //     clears the stack, so this is the state a fresh editor and a
+            //     just-loaded preset are both in: both buttons inert.
+            craft.presetLoaded();
+            pump (60);
+            ok = shoot (*editor, infoPanel,
+                        outDir.getChildFile ("craft_history_disabled_1x.png")) && ok;
+            ok = savePng (zoomed (editor->createComponentSnapshot (infoPanel, true, 1.0f), 2),
+                          outDir.getChildFile ("craft_history_disabled_2x.png")) && ok;
+
+            // (ii) TWO EDITS DEEP: UNDO lit, REDO still inert (no future yet).
+            //      A cleared cell and a base cycle, both through the mouse
+            //      handlers' own calls — and the base is visible in this very
+            //      crop, so the undo below is checkable by eye.
+            craft.clickCellForDisplay (3, true);          // right-click clears
+            craft.cycleBaseForDisplay (1);                // LEAD -> BASS
+            craft.tickForDisplay (4);                     // past the press frames
+            pump (60);
+            ok = shoot (*editor, infoPanel,
+                        outDir.getChildFile ("craft_history_undo_ready_1x.png")) && ok;
+
+            // (iii) AFTER AN UNDO: the base is back to LEAD and both buttons
+            //       are lit, because there is now a future to walk into.
+            craft.undo();
+            craft.tickForDisplay (4);
+            pump (60);
+            ok = shoot (*editor, infoPanel,
+                        outDir.getChildFile ("craft_history_both_1x.png")) && ok;
+            ok = savePng (zoomed (editor->createComponentSnapshot (infoPanel, true, 1.0f), 2),
+                          outDir.getChildFile ("craft_history_both_2x.png")) && ok;
+            ok = shoot (*editor, editor->getLocalBounds(),
+                        outDir.getChildFile ("craft_history_tab_1x.png")) && ok;
+
+            // (iv) KEEP: one click writes the user preset, stars it and
+            //      raises the plate. tickForDisplay steps the tab's own 15 Hz
+            //      timer, which is what drives the 3-frame slide, so the
+            //      frame below is the settled one rather than a mid-slide.
+            craft.redo();
+            craft.tickForDisplay (4);
+            const bool kept = craft.keepCurrentSound();
+            std::cout << (kept ? "KEEP wrote " : "KEEP FAILED ")
+                      << craft.getLastKeptName() << " / "
+                      << craft.getLastKeptCategory() << "\n";
+            ok = kept && ok;
+            craft.tickForDisplay (4);
+            pump (60);
+            ok = shoot (*editor, editor->getLocalBounds(),
+                        outDir.getChildFile ("craft_keep_toast_1x.png")) && ok;
+            ok = savePng (zoomed (editor->createComponentSnapshot (
+                              { 400, 308, 424, 68 }, true, 1.0f), 2),
+                          outDir.getChildFile ("craft_keep_toast_2x.png")) && ok;
+
+            // (v) ...and it is really in the browser, under FAVORITES, right
+            //     now — the point of the feature, not just a toast.
+            editor->showPresetBrowser (true);
+            editor->getBrowser().selectFolder (
+                blockwave::ui::PresetBrowser::kFavoritesBank, {});
+            pump (60);
+            ok = shoot (*editor, editor->getLocalBounds(),
+                        outDir.getChildFile ("craft_keep_in_favorites_1x.png")) && ok;
+            editor->getBrowser().selectFolder (1, {});     // USER bank
+            pump (60);
+            ok = shoot (*editor, editor->getLocalBounds(),
+                        outDir.getChildFile ("craft_keep_in_user_bank_1x.png")) && ok;
+            editor->getBrowser().selectFolder (-1, {});    // ALL, for the shots
+            editor->showPresetBrowser (false);             // that come later
+            pump (60);
+
+            // Hand the run back the way we found it: section 7b below shoots
+            // an EMPTY favorites folder and this one just put a star in it.
+            // The saved USER preset stays — a user bank with something in it
+            // is exactly what the browser shots should show, and it is now
+            // deterministic instead of whatever is in the developer's own
+            // ~/Documents/BLOCKWAVE/Presets.
+            auto& keptLib = proc.getPresetLibrary();
+            keptLib.setFavorite (keptLib.indexOfName (craft.getLastKeptName()), false);
+            editor->getTopBar().refresh();
+            editor->getBrowser().refresh();
             pump (60);
         }
 
@@ -536,6 +633,7 @@ int main (int argc, char* argv[])
     discoveryFile.deleteFile();
     favoritesFile.deleteFile();
     settingsFile.deleteFile();
+    userPresetFolder.deleteRecursively();
     blockwave::GlobalSettings::setDefaultFile ({});
     std::cout << (ok ? "all screenshots written\n" : "SOME SCREENSHOTS FAILED\n");
     return ok ? 0 : 1;

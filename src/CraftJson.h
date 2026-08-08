@@ -39,6 +39,11 @@
 namespace blockwave
 {
 
+// The eight craft_mix_N parameters (src/ParamSpec.h) map 1:1 onto the eight
+// grid cells. This is the one place both counts are visible together.
+static_assert (kNumCraftMixParams == kNumCells,
+               "one craft_mix parameter per grid cell, in reading order");
+
 // ---- CraftGrid <-> juce::var ------------------------------------------------
 
 // CRAFT JSON SHAPE (SPEC §Preset format):

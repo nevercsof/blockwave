@@ -379,6 +379,7 @@ void CraftCell::mouseDown (const juce::MouseEvent& e)
             mixDragging = true;
             mixDragStartY = e.getPosition().y;
             mixDragStartWeight = grid.cellWeight (slot);
+            grid.beginMixDrag (slot);             // one framed host gesture
             repaint();
             return;
         }
@@ -768,6 +769,15 @@ void CraftGridComponent::applyCellWeight (int slot, float w, bool hold)
     cells[static_cast<size_t> (slot)]->repaint();
 }
 
+void CraftGridComponent::beginMixDrag (int slot)
+{
+    if (slot < 0 || slot >= kNumCells)
+        return;
+    mixDragSlot = slot;
+    if (onCellWeightGestureStart)
+        onCellWeightGestureStart (slot);
+}
+
 void CraftGridComponent::setCellWeightFromDrag (int slot, float w)
 {
     applyCellWeight (slot, w, true);
@@ -775,10 +785,20 @@ void CraftGridComponent::setCellWeightFromDrag (int slot, float w)
 
 void CraftGridComponent::endMixDrag()
 {
-    if (! readoutHeld)
-        return;
-    readoutHeld = false;
-    readoutTicks = kMixReadoutTicks;              // lingers, then fades out
+    // Keyed on the DRAG, not on the readout: a press-and-release that never
+    // travelled sets no readout at all, and closing its gesture still matters
+    // — an unclosed begin/endChangeGesture pair leaves the host recording.
+    const int slot = mixDragSlot;
+    mixDragSlot = -1;
+
+    if (readoutHeld)
+    {
+        readoutHeld = false;
+        readoutTicks = kMixReadoutTicks;          // lingers, then fades out
+    }
+
+    if (slot >= 0 && onCellWeightGestureEnd)
+        onCellWeightGestureEnd (slot);
 }
 
 void CraftGridComponent::nudgeCellWeight (int slot, int steps)

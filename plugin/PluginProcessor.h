@@ -26,11 +26,12 @@
 #include "UiMidiQueue.h"
 #include "DiscoveryJingle.h"
 
-class BlockwaveAudioProcessor final : public juce::AudioProcessor
+class BlockwaveAudioProcessor final : public juce::AudioProcessor,
+                                      private juce::Timer
 {
 public:
     BlockwaveAudioProcessor();
-    ~BlockwaveAudioProcessor() override = default;
+    ~BlockwaveAudioProcessor() override;
 
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
@@ -98,26 +99,78 @@ public:
 
     // ---- per-cell WEIGHT / MIX (message thread only) -----------------------
     // The on-block slider's back end. Weight is 0..1 (1.0 = 100%, the
-    // default); the UI displays it as a percentage. Semantics are documented
-    // in full in src/CraftEngine.h (CELL WEIGHT block) — the two that matter
-    // for the UI:
+    // default); the UI and the host display it as a percentage. Semantics are
+    // documented in full in src/CraftEngine.h (CELL WEIGHT block) — the two
+    // that matter for the UI:
     //   - a weight change NEVER affects recipe detection, the active recipe
     //     name or the auto-name, and never registers a discovery;
     //   - it re-crafts through the same atomic APVTS path as any other grid
     //     edit, so the engine glides it over ~25 ms (click-free mid-note).
+    //
+    // ---- WHO OWNS A WEIGHT (addendum 3, post-1.0.0) ------------------------
+    // THE APVTS PARAMETER craft_mix_1..8 IS THE AUTHORITY. CraftGrid::weights
+    // is a MIRROR of it and never a second store. The reason is the report
+    // this work came from: a weight has to be a real host parameter for FL's
+    // "last tweaked" to see it, and once a host can move a value, anything
+    // else that also stores it will drift the moment automation and a preset
+    // load disagree.
+    //
+    // The invariant, maintained by applyCraftGrid() and asserted by the state
+    // tests, is:  craftGrid.weights[c] == craft_mix_(c+1), always.
+    //
+    // There is ONE write path. Whatever states a weight — the knob, the host,
+    // DICE, MUTATE, CLEAR, a preset, a session, tools/render — ends up here:
+    //
+    //   grid-shaped edits (setCraftGrid / DICE / CLEAR / preset load)
+    //       -> writeCellWeightsToApvts()   the grid's weights go THROUGH the
+    //                                      parameters, so the host sees them
+    //       -> readCellWeightsFromApvts()  the mirror is refreshed FROM the
+    //                                      parameters, never from the caller
+    //       -> craft + 67 engine parameters
+    //
+    //   host automation / any external parameter move
+    //       -> syncCellWeightsFromApvts()  (message-thread poll)
+    //       -> same craft path
+    //
+    // Because the mirror is always re-read from the parameters, the poll is a
+    // no-op unless something outside actually moved a lane.
 
     // Current weight of a cell. Returns 1.0 for an out-of-range index or when
-    // no grid is set.
+    // no grid is set. Reads the mirror, which equals the parameter.
     float getCraftCellWeight (int cellIndex) const;
 
     // Sets one cell's weight (clamped to 0..1) and re-applies the craft.
     // No-op without a grid, for an out-of-range index, or when the weight is
     // already that value (so a slider drag that lands back on its start does
     // not re-write 67 parameters).
+    //
+    // THIS IS THE CALL THE MIX KNOB SHOULD MAKE. It writes through the
+    // craft_mix_N parameter, so the host sees a normal parameter edit. When no
+    // gesture is open (see below) it wraps the write in its own
+    // begin/endChangeGesture pair, which is what makes FL's "last tweaked"
+    // latch onto the knob.
     void setCraftCellWeight (int cellIndex, float weight01);
 
     // Sets every placed cell at once (nullptr-safe count = kNumCells).
     void setCraftCellWeights (const float* weights01, int count);
+
+    // Drag framing for the knob. Call begin on mouseDown and end on mouseUp
+    // around a run of setCraftCellWeight() calls: the host then records one
+    // gesture for the whole drag instead of one per pixel. Optional — without
+    // them each set is its own self-contained gesture.
+    void beginCraftCellWeightGesture (int cellIndex);
+    void endCraftCellWeightGesture (int cellIndex);
+
+    // The parameter behind a cell, for a direct attachment (nullptr if the
+    // index is out of range). Note the parameter is a PERCENT (0..100) while
+    // every weight in this API is 0..1.
+    juce::RangedAudioParameter* getCraftCellWeightParameter (int cellIndex) const;
+
+    // Picks up weight moves that did NOT come through this API — i.e. host
+    // automation — and re-crafts if any lane actually moved. Returns true when
+    // it re-crafted. Called by an internal message-thread timer; exposed so
+    // tests and tools can drive it deterministically instead of waiting.
+    bool syncCellWeightsFromApvts();
 
     // DICE: random materials into the outer cells, base kept. No-op without
     // a grid. The seeded variants are deterministic (tests/tools).
@@ -179,7 +232,20 @@ private:
     // The one place a grid becomes parameters + stored state. setCraftGrid()
     // is the user-edit entry point (registerDiscovery = true); weight edits
     // go through it with registerDiscovery = false.
+    //
+    // `grid`'s weights are treated as a STATEMENT OF INTENT, not as storage:
+    // they are written through to craft_mix_1..8 and then read straight back,
+    // so the craft always runs on exactly what the parameters hold.
     void applyCraftGrid (const blockwave::CraftGrid& grid, bool registerDiscovery);
+
+    // Message-thread poll for host-driven weight moves (see the header comment
+    // on the WEIGHT / MIX block). ~60 Hz: well inside the engine's ~25 ms
+    // parameter smoothing, so an automation ramp arrives as a continuous glide.
+    void timerCallback() override;
+    static constexpr int kWeightPollHz = 60;
+
+    // Open knob gestures, one flag per cell. Message thread only.
+    bool weightGestureOpen[blockwave::kNumCells] = {};
 
     // Audio thread only.
     void drainUiMidi() noexcept;
@@ -201,8 +267,10 @@ private:
     blockwave::DiscoveryStore discoveries { blockwave::DiscoveryStore::defaultFile() };
 
     // Non-automatable state (SPEC): preset identity + craft grid contents.
-    // Guarded because hosts may call get/setStateInformation off the message
-    // thread; never touched by the audio thread.
+    // craftGrid.weights is the exception — it is the MIRROR of the automatable
+    // craft_mix_1..8 parameters, not state in its own right (see the WEIGHT /
+    // MIX block above). Guarded because hosts may call get/setStateInformation
+    // off the message thread; never touched by the audio thread.
     mutable juce::CriticalSection metaLock;
     juce::String presetName { "INIT" }, presetCategory, presetAuthor;
     juce::String craftJson;                          // compact JSON, "" = none

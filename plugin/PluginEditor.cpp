@@ -196,7 +196,9 @@ BlockwaveAudioProcessorEditor::BlockwaveAudioProcessorEditor (BlockwaveAudioProc
     topBar.onPresetChanged = [this]
     {
         browser.refresh();
-        craftTab.refreshFromProcessor();          // preset carries a craft grid
+        // presetLoaded, not refreshFromProcessor: a preset load is a new
+        // context and CLEARS the bench's undo stack (see ui/CraftHistory.h).
+        craftTab.presetLoaded();                  // preset carries a craft grid
     };
     // The ONLY path that can arm the settle shield. The restore-on-open call
     // and the screenshot tool go straight to setUiScale: no cursor gesture is
@@ -210,7 +212,7 @@ BlockwaveAudioProcessorEditor::BlockwaveAudioProcessorEditor (BlockwaveAudioProc
         proc.loadPresetAtIndex (index, err);
         topBar.refresh();
         browser.refresh();
-        craftTab.refreshFromProcessor();
+        craftTab.presetLoaded();                  // new context, clean history
     };
     browser.onClose = [this] { showPresetBrowser (false); };
     browser.onFavoritesChanged = [this] { topBar.refresh(); };
@@ -228,6 +230,15 @@ BlockwaveAudioProcessorEditor::BlockwaveAudioProcessorEditor (BlockwaveAudioProc
         browser.refresh();
     };
     savePanel.onCancel = [this] { showSavePanel (false); };
+
+    // CRAFT tab KEEP: the bench has already written the user preset and
+    // starred it; the top bar (name + star) and the browser (USER and
+    // FAVORITES) have to catch up so the feedback is not just the toast.
+    craftTab.onPresetSaved = [this]
+    {
+        topBar.refresh();
+        browser.refresh();
+    };
 
     // The discovery toast + pixel flourish fire inside CraftTab; the jingle is
     // synthesized by the processor after its master stage

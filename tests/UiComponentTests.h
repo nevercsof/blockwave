@@ -1473,6 +1473,470 @@ static void test_preset_browser_search (BlockwaveAudioProcessor& proc)
 }
 
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// UNDO / REDO on the crafting bench (producer request). The contracts that
+// matter and that only a test can hold down:
+//   - scope: bench edits, and a preset load CLEARS the stack;
+//   - a knob DRAG is ONE step, not one per pixel of travel, and a run of
+//     wheel/arrow nudges on one cell is one step too;
+//   - the ring is bounded — 32 steps, whatever you do to it;
+//   - MUTATE is undoable to the RIGHT place: two mutations then one undo
+//     lands on the first mutation, not back on the plain craft, and a state
+//     the sound had departed from does not resurrect its recipe name;
+//   - every restore lands through the processor's single write path, so the
+//     APVTS-authoritative craft_mix weights and the grid mirror still agree.
+static void test_craft_undo_redo (BlockwaveAudioProcessor& proc)
+{
+    std::printf ("[ui_craft_undo_redo]\n");
+    using History = blockwave::ui::CraftHistory;
+
+    Material ice {}, gold {};
+    CHECK_MSG (materialFromName ("ICE", ice), "ICE material missing");
+    CHECK_MSG (materialFromName ("GOLD", gold), "GOLD material missing");
+
+    CraftGrid start;
+    start.base = CraftBase::LEAD;
+    start.cells[0] = ice;
+    proc.setCraftGrid (start);
+
+    blockwave::ui::CraftTab craft (proc);
+    craft.setBounds (0, 0, blockwave::ui::kCanvasW, blockwave::ui::kContentH);
+
+    auto* undoBtn = craft.findChildWithID (blockwave::ui::CraftTab::kIdUndo);
+    auto* redoBtn = craft.findChildWithID (blockwave::ui::CraftTab::kIdRedo);
+    auto* keepBtn = craft.findChildWithID (blockwave::ui::CraftTab::kIdKeep);
+    CHECK_MSG (undoBtn != nullptr && redoBtn != nullptr && keepBtn != nullptr,
+               "UNDO / REDO / KEEP are not on the tab");
+    if (undoBtn == nullptr || redoBtn == nullptr || keepBtn == nullptr)
+        return;
+
+    // ---- a fresh bench has no history, and says so ------------------------
+    CHECK_MSG (! craft.canUndo() && ! craft.canRedo(),
+               "a fresh tab came up with %d undo / %d redo steps",
+               craft.getUndoDepth(), craft.getRedoDepth());
+    CHECK_MSG (! undoBtn->isEnabled(),
+               "UNDO is live with nothing to undo — that is the whole hint");
+    CHECK_MSG (! redoBtn->isEnabled(), "REDO is live with nothing to redo");
+    CHECK_MSG (keepBtn->isEnabled(), "KEEP is greyed out on a real bench");
+
+    // ---- one edit, one step, and it goes both ways ------------------------
+    craft.clickMaterialForDisplay (gold);            // arm
+    craft.clickCellForDisplay (1, false);            // place
+    CHECK_MSG (craft.getShownGrid().cells[1] == gold, "GOLD was not placed");
+    CHECK_MSG (craft.getUndoDepth() == 1, "one placement made %d steps",
+               craft.getUndoDepth());
+    CHECK_MSG (undoBtn->isEnabled(), "UNDO stayed grey after an edit");
+    CHECK_MSG (! redoBtn->isEnabled(), "REDO lit up with no future to walk to");
+
+    CHECK_MSG (craft.undo(), "undo refused with a step on the stack");
+    CHECK_MSG (craft.getShownGrid().cells[1] == Material::none,
+               "undo did not take the block back off the bench");
+    CHECK_MSG (redoBtn->isEnabled(), "REDO stayed grey after an undo");
+    CHECK_MSG (craft.redo(), "redo refused with a future on the stack");
+    CHECK_MSG (craft.getShownGrid().cells[1] == gold, "redo did not put it back");
+    CHECK_MSG (! craft.canRedo(), "the future outlived the redo that consumed it");
+
+    // ---- restores land through the SINGLE write path ----------------------
+    // Not "the weights look right" but the invariant dsp-engineer's addendum
+    // is built on: craft_mix_N (the authority) == the grid mirror == what the
+    // bench is drawing. A restore that poked state directly would split these.
+    auto checkWritePath = [&proc, &craft] (const char* when)
+    {
+        float fromApvts[kNumCells];
+        blockwave::readCellWeightsFromApvts (proc.apvts, fromApvts);
+        for (int i = 0; i < kNumCells; ++i)
+        {
+            CHECK_MSG (proc.getCraftCellWeight (i) == fromApvts[i],
+                       "%s: cell %d mirror %.4f != craft_mix parameter %.4f",
+                       when, i, proc.getCraftCellWeight (i), fromApvts[i]);
+            CHECK_MSG (craft.getShownGrid().cellWeight (i) == fromApvts[i],
+                       "%s: cell %d bench %.4f != craft_mix parameter %.4f",
+                       when, i, craft.getShownGrid().cellWeight (i), fromApvts[i]);
+        }
+    };
+    checkWritePath ("after redo");
+
+    // ---- A KNOB DRAG IS ONE STEP ------------------------------------------
+    // Eight values pass through setCraftCellWeight on the way down; the user
+    // did one thing, so the stack grows by one.
+    {
+        const int before = craft.getUndoDepth();
+        const float startW = proc.getCraftCellWeight (1);
+        const float ramp[8] = { 0.95f, 0.90f, 0.85f, 0.80f,
+                                0.75f, 0.70f, 0.65f, 0.60f };
+        craft.dragCellWeightForDisplay (1, ramp, 8);
+        CHECK_MSG (std::abs (proc.getCraftCellWeight (1) - 0.60f) < 1.0e-4f,
+                   "the drag ended at %.3f, not 0.600", proc.getCraftCellWeight (1));
+        CHECK_MSG (craft.getUndoDepth() == before + 1,
+                   "an 8-value knob drag made %d undo steps, not 1",
+                   craft.getUndoDepth() - before);
+        CHECK_MSG (craft.undo(), "the drag left nothing to undo");
+        CHECK_MSG (std::abs (proc.getCraftCellWeight (1) - startW) < 1.0e-4f,
+                   "undo of the drag gave %.3f, expected the pre-drag %.3f",
+                   proc.getCraftCellWeight (1), startW);
+        checkWritePath ("after undoing a drag");
+        craft.redo();
+        CHECK_MSG (std::abs (proc.getCraftCellWeight (1) - 0.60f) < 1.0e-4f,
+                   "redo of the drag gave %.3f", proc.getCraftCellWeight (1));
+
+        // A press-and-release that never travelled is not an edit at all.
+        const int settled = craft.getUndoDepth();
+        craft.dragCellWeightForDisplay (1, nullptr, 0);
+        CHECK_MSG (craft.getUndoDepth() == settled,
+                   "a knob press that never moved still pushed an undo step");
+    }
+
+    // ---- ONE FRAMED HOST GESTURE PER DRAG (task 0) ------------------------
+    // Without begin/endCraftCellWeightGesture around the drag, every one of
+    // those values is its own self-contained gesture and the host records a
+    // stream of them. The knob has to look like one move of one control.
+    {
+        struct GestureCounter final : juce::AudioProcessorParameter::Listener
+        {
+            void parameterValueChanged (int, float) override { ++values; }
+            void parameterGestureChanged (int, bool starting) override
+            {
+                if (starting) ++starts; else ++ends;
+            }
+            int starts = 0, ends = 0, values = 0;
+        } counter;
+
+        auto* mixParam = proc.getCraftCellWeightParameter (1);
+        CHECK_MSG (mixParam != nullptr, "cell 1 has no craft_mix parameter");
+        if (mixParam != nullptr)
+        {
+            mixParam->addListener (&counter);
+            const float ramp[6] = { 0.90f, 0.85f, 0.80f, 0.75f, 0.70f, 0.65f };
+            craft.dragCellWeightForDisplay (1, ramp, 6);
+            mixParam->removeListener (&counter);
+
+            CHECK_MSG (counter.starts == 1,
+                       "a 6-value drag opened %d host gestures, not 1",
+                       counter.starts);
+            CHECK_MSG (counter.ends == 1,
+                       "a 6-value drag closed %d host gestures, not 1",
+                       counter.ends);
+            CHECK_MSG (counter.values > 1,
+                       "the drag wrote %d values — it is not being framed, it "
+                       "is not happening", counter.values);
+        }
+
+        // ...and a wheel/arrow nudge, which has no drag around it, still
+        // frames itself: setCraftCellWeight opens its own pair.
+        GestureCounter single;
+        if (mixParam != nullptr)
+        {
+            mixParam->addListener (&single);
+            craft.nudgeCellWeight (1, -1);
+            mixParam->removeListener (&single);
+            CHECK_MSG (single.starts == 1 && single.ends == 1,
+                       "an unframed nudge produced %d/%d gestures, not 1/1",
+                       single.starts, single.ends);
+        }
+    }
+
+    // ---- a RUN of nudges on one cell is one step, per cell ----------------
+    {
+        craft.cycleBaseForDisplay (1);           // break any run still in flight
+        const int before = craft.getUndoDepth();
+        craft.nudgeCellWeight (1, -1);
+        craft.nudgeCellWeight (1, -1);
+        craft.nudgeCellWeight (1, -1);
+        CHECK_MSG (craft.getUndoDepth() == before + 1,
+                   "three nudges on one cell made %d steps, not 1",
+                   craft.getUndoDepth() - before);
+        craft.nudgeCellWeight (0, -1);               // a DIFFERENT cell
+        CHECK_MSG (craft.getUndoDepth() == before + 2,
+                   "a nudge on another cell coalesced into the previous run");
+    }
+
+    // ---- the ring is bounded ----------------------------------------------
+    {
+        for (int i = 0; i < History::kMaxUndoSteps + 8; ++i)
+            craft.cycleBaseForDisplay (1);
+        CHECK_MSG (craft.getUndoDepth() == History::kMaxUndoSteps,
+                   "%d edits left %d undo steps; the ring is not capped at %d",
+                   History::kMaxUndoSteps + 8, craft.getUndoDepth(),
+                   History::kMaxUndoSteps);
+        int walked = 0;
+        while (craft.undo())
+            ++walked;
+        CHECK_MSG (walked == History::kMaxUndoSteps,
+                   "walked %d steps back, expected %d", walked,
+                   History::kMaxUndoSteps);
+        CHECK_MSG (! undoBtn->isEnabled(),
+                   "UNDO stayed live at the bottom of the stack");
+        checkWritePath ("at the bottom of the ring");
+    }
+
+    // ---- a new edit drops the redo tail -----------------------------------
+    CHECK_MSG (craft.canRedo(), "nothing to redo after walking all the way back");
+    craft.cycleBaseForDisplay (1);
+    CHECK_MSG (! craft.canRedo(), "a new edit did not drop the redo tail");
+    CHECK_MSG (! redoBtn->isEnabled(), "REDO stayed live over a dropped tail");
+
+    // ---- MUTATE: undoable to the RIGHT place ------------------------------
+    auto engineParams = [&proc]
+    {
+        std::vector<float> v;
+        for (int i = 0; i < blockwave::kNumEngineParams; ++i)
+            v.push_back (proc.apvts.getRawParameterValue (
+                blockwave::paramDef (static_cast<blockwave::PId> (i)).id)->load());
+        return v;
+    };
+    auto sameParams = [] (const std::vector<float>& a, const std::vector<float>& b)
+    {
+        if (a.size() != b.size())
+            return false;
+        for (size_t i = 0; i < a.size(); ++i)
+            if (std::abs (a[i] - b[i]) > 1.0e-3f * juce::jmax (1.0f, std::abs (a[i])))
+                return false;
+        return true;
+    };
+    {
+        const auto crafted = engineParams();
+        craft.mutateForDisplay();
+        const auto firstMutation = engineParams();
+        CHECK_MSG (! sameParams (crafted, firstMutation),
+                   "MUTATE moved nothing — this test proves nothing");
+        craft.mutateForDisplay();
+        const auto secondMutation = engineParams();
+        CHECK_MSG (! sameParams (firstMutation, secondMutation),
+                   "the second MUTATE moved nothing");
+
+        CHECK_MSG (craft.undo(), "MUTATE was not undoable");
+        const auto afterUndo = engineParams();
+        CHECK_MSG (sameParams (afterUndo, firstMutation),
+                   "undoing the second MUTATE did not land on the first one");
+        CHECK_MSG (! sameParams (afterUndo, crafted),
+                   "undoing ONE mutation threw away the previous one too — a "
+                   "grid-only undo would do exactly this");
+        CHECK_MSG (craft.redo() && sameParams (engineParams(), secondMutation),
+                   "redo did not reproduce the second mutation");
+    }
+
+    // ---- a mutated recipe patch does not resurrect its recipe name --------
+    {
+        const auto& book = proc.getRecipeBook();
+        if (book.getNumRecipes() > 0)
+        {
+            const auto& rec = book.getRecipe (0);
+            proc.setCraftGrid (rec.pattern);
+            craft.presetLoaded();                 // treat it as a fresh context
+            CHECK_MSG (proc.getActiveRecipeName() == rec.name,
+                       "the recipe pattern did not activate its recipe");
+
+            craft.mutateForDisplay();
+            CHECK_MSG (proc.getActiveRecipeName().isEmpty(),
+                       "MUTATE left the recipe name standing");
+            const auto mutated = engineParams();
+
+            craft.cycleBaseForDisplay (1);        // any later bench edit
+            CHECK_MSG (craft.undo(), "could not step back into the mutated state");
+            CHECK_MSG (proc.getActiveRecipeName().isEmpty(),
+                       "undo resurrected recipe \"%s\" on a sound that had "
+                       "left it", proc.getActiveRecipeName().toRawUTF8());
+            CHECK_MSG (sameParams (engineParams(), mutated),
+                       "undo into a mutated state did not restore its parameters");
+            checkWritePath ("after undoing into a mutated state");
+        }
+    }
+
+    // ---- A PRESET LOAD CLEARS THE STACK -----------------------------------
+    craft.cycleBaseForDisplay (1);
+    CHECK_MSG (craft.canUndo(), "no history to clear — this test proves nothing");
+    craft.presetLoaded();
+    CHECK_MSG (! craft.canUndo() && ! craft.canRedo(),
+               "a preset load left %d undo / %d redo steps standing; undo "
+               "would step back across it into the previous preset",
+               craft.getUndoDepth(), craft.getRedoDepth());
+    CHECK_MSG (! undoBtn->isEnabled() && ! redoBtn->isEnabled(),
+               "the buttons did not follow the cleared stack");
+
+    // ---- the keyboard bonus does not eat the bench's own keys -------------
+    {
+        const auto cmd = juce::ModifierKeys (juce::ModifierKeys::commandModifier);
+        const auto cmdShift = juce::ModifierKeys (juce::ModifierKeys::commandModifier
+                                                  | juce::ModifierKeys::shiftModifier);
+        craft.cycleBaseForDisplay (1);
+        CHECK_MSG (craft.keyPressed (juce::KeyPress ('Z', cmd, 'z')),
+                   "CMD+Z was not consumed");
+        CHECK_MSG (! craft.canUndo(), "CMD+Z did not undo");
+        CHECK_MSG (craft.keyPressed (juce::KeyPress ('Z', cmdShift, 'Z')),
+                   "CMD+SHIFT+Z was not consumed");
+        CHECK_MSG (craft.canUndo(), "CMD+SHIFT+Z did not redo");
+        CHECK_MSG (craft.keyPressed (juce::KeyPress ('Z', cmd, 'z')),
+                   "the second CMD+Z was not consumed");
+        CHECK_MSG (craft.canRedo(), "there is nothing for CMD+Y to redo");
+        CHECK_MSG (craft.keyPressed (juce::KeyPress ('Y', cmd, 'y')),
+                   "CMD+Y (the Windows habit) was not consumed");
+        CHECK_MSG (! craft.canRedo(), "CMD+Y did not redo");
+
+        for (const auto& k : { juce::KeyPress ('m', juce::ModifierKeys(), 'm'),
+                               juce::KeyPress ('f', juce::ModifierKeys(), 'f'),
+                               juce::KeyPress (juce::KeyPress::deleteKey),
+                               juce::KeyPress (juce::KeyPress::leftKey),
+                               juce::KeyPress (juce::KeyPress::upKey) })
+            CHECK_MSG (! craft.keyPressed (k),
+                       "the tab swallowed a bare key the bench and the browser "
+                       "still need (code %d)", k.getKeyCode());
+    }
+
+    std::printf ("  bench-only scope, drags coalesce, ring capped at %d\n",
+                 History::kMaxUndoSteps);
+}
+
+// ---------------------------------------------------------------------------
+// KEEP: one click saves the bench as a user preset AND stars it. Never the
+// real ~/Documents/BLOCKWAVE — both the user bank and the favorites file are
+// redirected first, through the same injection seams the screenshot tool uses.
+static void test_craft_keep_and_star (BlockwaveAudioProcessor& proc)
+{
+    std::printf ("[ui_craft_keep_and_star]\n");
+
+    const auto userFolder = juce::File::createTempFile ("blockwave_keep_presets");
+    userFolder.deleteFile();
+    const auto favFile = juce::File::createTempFile ("blockwave_keep_favs.json");
+    favFile.deleteFile();
+
+    auto& lib = proc.getPresetLibrary();
+    lib.setFavoritesFile (favFile);
+    lib.setUserFolder (userFolder);
+    CHECK_MSG (! userFolder.exists(),
+               "the user preset folder was created before anything was saved");
+
+    // ---- the base -> category map, every base -------------------------------
+    struct { CraftBase base; const char* category; } expected[] = {
+        { CraftBase::LEAD,  "LEAD"  }, { CraftBase::BASS,  "BASS"  },
+        { CraftBase::PAD,   "PAD"   }, { CraftBase::PLUCK, "PLUCK" },
+        { CraftBase::KEYS,  "KEYS"  }, { CraftBase::CHIP,  "CHIP"  },
+        { CraftBase::PERC,  "PERC"  }, { CraftBase::DRONE, "FX"    },
+    };
+    for (const auto& e : expected)
+        CHECK_MSG (juce::String (blockwave::ui::presetCategoryForBase (e.base))
+                       == e.category,
+                   "base %s files under %s, expected %s", baseName (e.base),
+                   blockwave::ui::presetCategoryForBase (e.base), e.category);
+
+    Material ice {}, gold {};
+    materialFromName ("ICE", ice);
+    materialFromName ("GOLD", gold);
+
+    CraftGrid g;
+    g.base = CraftBase::PLUCK;
+    g.cells[0] = ice;
+    g.cells[4] = gold;
+    proc.setCraftGrid (g);
+
+    blockwave::ui::CraftTab craft (proc);
+    craft.setBounds (0, 0, blockwave::ui::kCanvasW, blockwave::ui::kContentH);
+    craft.presetLoaded();
+
+    auto* keepBtn = craft.findChildWithID (blockwave::ui::CraftTab::kIdKeep);
+    CHECK_MSG (keepBtn != nullptr, "KEEP is not on the tab");
+
+    const auto autoName = proc.getCraftAutoName().toUpperCase();
+    CHECK_MSG (autoName.isNotEmpty(), "the bench has no auto-generated name");
+
+    // ---- one click: saved, named, filed and starred ------------------------
+    CHECK_MSG (craft.keepCurrentSound(), "KEEP refused a real bench");
+    CHECK_MSG (craft.getLastKeptName() == autoName,
+               "KEEP named it \"%s\", expected the bench's own \"%s\"",
+               craft.getLastKeptName().toRawUTF8(), autoName.toRawUTF8());
+    CHECK_MSG (craft.getLastKeptCategory() == "PLUCK",
+               "a PLUCK base was filed under %s",
+               craft.getLastKeptCategory().toRawUTF8());
+
+    const int idx = lib.indexOfName (autoName);
+    CHECK_MSG (idx >= 0, "the kept sound is not in the library");
+    if (idx >= 0)
+    {
+        CHECK_MSG (! lib.getPreset (idx).isFactory, "it landed in the FACTORY bank");
+        CHECK_MSG (lib.isFavorite (idx), "the kept sound was not starred");
+        CHECK_MSG (lib.getPreset (idx).category == "PLUCK",
+                   "the saved JSON says category %s",
+                   lib.getPreset (idx).category.toRawUTF8());
+    }
+    CHECK_MSG (lib.getNumFavorites() >= 1, "FAVORITES is still empty");
+
+    // ---- the same bench again: uniquified, both survive, both starred ------
+    CHECK_MSG (craft.keepCurrentSound(), "the second KEEP failed");
+    CHECK_MSG (craft.getLastKeptName() == autoName + " 2",
+               "the collision produced \"%s\", expected \"%s 2\"",
+               craft.getLastKeptName().toRawUTF8(), autoName.toRawUTF8());
+    CHECK_MSG (lib.indexOfName (autoName) >= 0,
+               "the second KEEP overwrote the first — that is data loss");
+    const int idx2 = lib.indexOfName (autoName + " 2");
+    CHECK_MSG (idx2 >= 0 && lib.isFavorite (idx2),
+               "the uniquified copy is missing or unstarred");
+    CHECK_MSG (lib.getNumFavorites() >= 2, "only one of the two is starred");
+
+    // ---- it survives a restart --------------------------------------------
+    {
+        blockwave::PresetLibrary fresh (userFolder);
+        fresh.setFavoritesFile (favFile);
+        fresh.rescanUserPresets();
+        const int i = fresh.indexOfName (autoName);
+        CHECK_MSG (i >= 0, "the kept preset did not come back from disk");
+        CHECK_MSG (i >= 0 && fresh.isFavorite (i),
+                   "the star did not come back from disk");
+        CHECK_MSG (fresh.getNumFavorites() >= 2,
+                   "%d favorites survived the reload, expected 2",
+                   fresh.getNumFavorites());
+    }
+
+    // ---- MUTATE cleared the recipe: the saved name must not claim one ------
+    {
+        const auto& book = proc.getRecipeBook();
+        if (book.getNumRecipes() > 0)
+        {
+            const auto& rec = book.getRecipe (0);
+            proc.setCraftGrid (rec.pattern);
+            craft.presetLoaded();
+            CHECK_MSG (craft.keepCurrentSound(), "KEEP failed on a recipe patch");
+            // An ACTIVE recipe names the preset after itself — uniquified,
+            // because the factory bank ships that recipe as a preset already.
+            // That uniquifying is load-bearing rather than cosmetic: a user
+            // preset shadowing a factory name in the same category would
+            // share ONE "CATEGORY/NAME" favorite key with it.
+            CHECK_MSG (craft.getLastKeptName().startsWithIgnoreCase (rec.name),
+                       "an ACTIVE recipe was saved as \"%s\", which does not "
+                       "come from \"%s\"", craft.getLastKeptName().toRawUTF8(),
+                       rec.name.toRawUTF8());
+            const int recIdx = lib.indexOfName (rec.name);
+            CHECK_MSG (recIdx >= 0 && lib.getPreset (recIdx).isFactory,
+                       "the factory \"%s\" was overwritten by the user copy",
+                       rec.name.toRawUTF8());
+            const int keptIdx = lib.indexOfName (craft.getLastKeptName());
+            CHECK_MSG (keptIdx >= 0 && ! lib.getPreset (keptIdx).isFactory
+                           && lib.isFavorite (keptIdx),
+                       "the kept recipe patch is missing, factory or unstarred");
+
+            craft.mutateForDisplay();
+            CHECK_MSG (proc.getActiveRecipeName().isEmpty(),
+                       "MUTATE did not clear the recipe");
+            CHECK_MSG (craft.keepCurrentSound(), "KEEP failed after a MUTATE");
+            CHECK_MSG (! craft.getLastKeptName().startsWithIgnoreCase (rec.name),
+                       "a mutated patch was saved as \"%s\" — it is claiming a "
+                       "recipe it no longer matches",
+                       craft.getLastKeptName().toRawUTF8());
+        }
+    }
+
+    // ---- nothing on the bench, nothing to keep ------------------------------
+    proc.clearCraftGrid();
+    craft.presetLoaded();
+    CHECK_MSG (keepBtn == nullptr || ! keepBtn->isEnabled(),
+               "KEEP is live with an empty bench");
+    CHECK_MSG (! craft.keepCurrentSound(), "KEEP saved a bench that is not there");
+
+    userFolder.deleteRecursively();
+    favFile.deleteFile();
+
+    std::printf ("  kept + starred, collisions uniquified, survives a reload\n");
+}
+
+// ---------------------------------------------------------------------------
 inline void runAll (BlockwaveAudioProcessor& proc)
 {
     test_scale_slider_defers_to_mouse_up();
@@ -1482,6 +1946,11 @@ inline void runAll (BlockwaveAudioProcessor& proc)
     test_craft_hidden_mix_control();
     test_craft_bench_resyncs_to_a_no_craft_preset (proc);
     test_preset_browser_search (proc);
+    // LAST: these two redirect the shared library's user bank and favorites
+    // file at temporary locations and leave them there. The shared processor
+    // goes out of scope immediately after runAll, so nothing sees the change.
+    test_craft_undo_redo (proc);
+    test_craft_keep_and_star (proc);
 }
 
 } // namespace uicomponents

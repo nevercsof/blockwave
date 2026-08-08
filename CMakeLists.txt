@@ -94,6 +94,7 @@ set(BLOCKWAVE_UI_SOURCES
     plugin/ui/PresetBrowser.cpp
     plugin/ui/MaterialArt.cpp
     plugin/ui/CraftBlocks.cpp
+    plugin/ui/CraftHistory.cpp
     plugin/ui/CraftTab.cpp
     plugin/ui/KeyStrip.cpp
 )

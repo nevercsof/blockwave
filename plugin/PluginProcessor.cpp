@@ -29,6 +29,18 @@ BlockwaveAudioProcessor::BlockwaveAudioProcessor()
     loadFactoryBank();
     loadRecipeBook();
     presetLibrary.rescanUserPresets();      // lists only; never creates the folder
+
+    // Host-driven craft MIX moves are picked up on the message thread. A poll
+    // rather than an APVTS listener on purpose: a listener fires on the AUDIO
+    // thread for host automation, and the only useful thing it could do there
+    // — triggerAsyncUpdate() — posts to the message queue behind a lock, which
+    // CLAUDE.md rule 2 forbids. Polling costs the audio thread exactly nothing.
+    startTimerHz (kWeightPollHz);
+}
+
+BlockwaveAudioProcessor::~BlockwaveAudioProcessor()
+{
+    stopTimer();
 }
 
 void BlockwaveAudioProcessor::loadRecipeBook()
@@ -336,10 +348,20 @@ bool BlockwaveAudioProcessor::loadPresetVar (const juce::var& presetRoot, juce::
     const bool gridValid = blockwave::craftGridFromVar (craft, grid);
     juce::String recipeName;
 
+    // resetParamsToDefaults covers the craft MIX weights too, so a preset with
+    // no "weights" key — every factory preset and every v1.0.0 user preset —
+    // starts every cell at 100 %. That IS the migration rule.
     blockwave::resetParamsToDefaults (apvts);
     if (gridValid)
+    {
+        // Same one write path as any grid edit: the preset's weights go
+        // through the parameters, then come back, and the craft runs on what
+        // the parameters actually hold.
+        blockwave::writeCellWeightsToApvts (apvts, grid.weights);
+        blockwave::readCellWeightsFromApvts (apvts, grid.weights);
         blockwave::applySnapshotToApvts (
             blockwave::craftSnapshotWithRecipes (grid, &recipeBook, &recipeName), apvts);
+    }
     if (! blockwave::applyPresetVarToApvts (presetRoot, apvts, error))
         return false;
 
@@ -448,10 +470,18 @@ bool BlockwaveAudioProcessor::getCraftGrid (blockwave::CraftGrid& out) const
 void BlockwaveAudioProcessor::applyCraftGrid (const blockwave::CraftGrid& grid,
                                               bool registerDiscovery)
 {
+    // THE ONE WRITE PATH for a cell weight (see PluginProcessor.h). The
+    // incoming grid states the weights it wants; they go through the
+    // craft_mix parameters and come straight back, so what we craft with is
+    // exactly what the host holds and the mirror cannot drift.
+    blockwave::CraftGrid g = grid;
+    blockwave::writeCellWeightsToApvts (apvts, g.weights);
+    blockwave::readCellWeightsFromApvts (apvts, g.weights);
+
     // Recompute the full parameter set on the message thread; the APVTS
     // write path is atomic and the engine smooths audible params (~25 ms).
     juce::String recipeName;
-    const auto snap = blockwave::craftSnapshotWithRecipes (grid, &recipeBook, &recipeName);
+    const auto snap = blockwave::craftSnapshotWithRecipes (g, &recipeBook, &recipeName);
     blockwave::applySnapshotToApvts (snap, apvts);
 
     const bool newDiscovery = registerDiscovery && recipeName.isNotEmpty()
@@ -459,8 +489,8 @@ void BlockwaveAudioProcessor::applyCraftGrid (const blockwave::CraftGrid& grid,
 
     const juce::ScopedLock sl (metaLock);
     craftValid = true;
-    craftGrid = grid;
-    craftJson = juce::JSON::toString (blockwave::craftGridToVar (grid), true);
+    craftGrid = g;                           // mirror == parameters, by construction
+    craftJson = juce::JSON::toString (blockwave::craftGridToVar (g), true);
     activeRecipeName = recipeName;
     if (newDiscovery)
         pendingDiscovery = recipeName;
@@ -481,6 +511,39 @@ float BlockwaveAudioProcessor::getCraftCellWeight (int cellIndex) const
     return craftGrid.cellWeight (cellIndex);
 }
 
+juce::RangedAudioParameter*
+BlockwaveAudioProcessor::getCraftCellWeightParameter (int cellIndex) const
+{
+    const auto pid = blockwave::craftMixParamForCell (cellIndex);
+    if (pid == blockwave::PId::count)
+        return nullptr;
+    return apvts.getParameter (blockwave::paramDef (pid).id);
+}
+
+void BlockwaveAudioProcessor::beginCraftCellWeightGesture (int cellIndex)
+{
+    if (cellIndex < 0 || cellIndex >= blockwave::kNumCells)
+        return;
+    if (weightGestureOpen[cellIndex])
+        return;
+    if (auto* p = getCraftCellWeightParameter (cellIndex))
+    {
+        p->beginChangeGesture();
+        weightGestureOpen[cellIndex] = true;
+    }
+}
+
+void BlockwaveAudioProcessor::endCraftCellWeightGesture (int cellIndex)
+{
+    if (cellIndex < 0 || cellIndex >= blockwave::kNumCells)
+        return;
+    if (! weightGestureOpen[cellIndex])
+        return;
+    weightGestureOpen[cellIndex] = false;
+    if (auto* p = getCraftCellWeightParameter (cellIndex))
+        p->endChangeGesture();
+}
+
 void BlockwaveAudioProcessor::setCraftCellWeight (int cellIndex, float weight01)
 {
     if (cellIndex < 0 || cellIndex >= blockwave::kNumCells)
@@ -492,9 +555,22 @@ void BlockwaveAudioProcessor::setCraftCellWeight (int cellIndex, float weight01)
     if (grid.cellWeight (cellIndex) == w)
         return;                              // nothing to re-craft
     grid.setCellWeight (cellIndex, w);
+
+    // Frame the write as a host gesture unless the caller already opened one
+    // for a drag. Without this FL never registers the knob as "last tweaked",
+    // which is the whole reason these parameters exist.
+    const bool ownGesture = ! weightGestureOpen[cellIndex];
+    auto* p = getCraftCellWeightParameter (cellIndex);
+    if (ownGesture && p != nullptr)
+        p->beginChangeGesture();
+
     // Weights can neither create nor destroy a recipe match, so a weight edit
     // never registers a discovery (the blocks were already placed to get one).
+    // applyCraftGrid writes the weight through the parameter for us.
     applyCraftGrid (grid, false);
+
+    if (ownGesture && p != nullptr)
+        p->endChangeGesture();
 }
 
 void BlockwaveAudioProcessor::setCraftCellWeights (const float* weights01, int count)
@@ -516,6 +592,37 @@ void BlockwaveAudioProcessor::setCraftCellWeights (const float* weights01, int c
     }
     if (changed)
         applyCraftGrid (grid, false);
+}
+
+bool BlockwaveAudioProcessor::syncCellWeightsFromApvts()
+{
+    // Host automation (or anything else that moved a craft_mix lane without
+    // going through this API) lands here. The mirror is compared against the
+    // parameters; when they agree there is nothing to do, which is why our own
+    // write-through never causes a second, redundant craft.
+    blockwave::CraftGrid grid;
+    if (! getCraftGrid (grid))
+        return false;                        // no bench: a weight means nothing
+
+    float fromHost[blockwave::kNumCells];
+    blockwave::readCellWeightsFromApvts (apvts, fromHost);
+
+    bool moved = false;
+    for (int i = 0; i < blockwave::kNumCells; ++i)
+        if (grid.weights[i] != fromHost[i])
+            moved = true;
+    if (! moved)
+        return false;
+
+    for (int i = 0; i < blockwave::kNumCells; ++i)
+        grid.weights[i] = fromHost[i];
+    applyCraftGrid (grid, false);            // never a discovery, never a rename
+    return true;
+}
+
+void BlockwaveAudioProcessor::timerCallback()
+{
+    syncCellWeightsFromApvts();
 }
 
 void BlockwaveAudioProcessor::clearCraftGrid()
@@ -610,28 +717,88 @@ void BlockwaveAudioProcessor::setStateInformation (const void* data, int sizeInB
     // formatVersion 0 (Phase-1 shell) carried no parameters; anything >= 1
     // is read best-effort so future minor additions stay backward compatible.
     const auto params = root.getChildWithName (apvts.state.getType());
+
+    // Did this project come from a build that HAD the craft MIX parameters?
+    // v1.0.0 states carry the 67 engine parameters and nothing else, and their
+    // weights live only in the "craft" JSON. Decided before replaceState,
+    // because afterwards the two cases look identical: JUCE creates a child
+    // for every missing parameter and fills it with whatever THIS INSTANCE
+    // currently holds — it does NOT reset it to the default. So a stale
+    // instance re-used for an old project would otherwise inherit stale
+    // weights. Both branches below write all eight explicitly.
+    bool stateHasMixParams = false;
+    if (params.isValid())
+    {
+        const auto* firstMixId =
+            blockwave::paramDef (blockwave::craftMixParamForCell (0)).id;
+        for (const auto& child : params)
+        {
+            if (child.getProperty ("id").toString() == firstMixId)
+            {
+                stateHasMixParams = true;
+                break;
+            }
+        }
+    }
+
     if (params.isValid())
         apvts.replaceState (params.createCopy());
 
-    const juce::ScopedLock sl (metaLock);
-    presetName     = root.getProperty ("presetName", "INIT").toString();
-    presetCategory = root.getProperty ("presetCategory", juce::String()).toString();
-    presetAuthor   = root.getProperty ("presetAuthor", juce::String()).toString();
-    craftJson      = root.getProperty ("craft", juce::String()).toString();
+    // Weights that the restored grid asked for, before reconciliation. A grid
+    // with no "weights" key (and the no-grid case) reads as all 100 %.
+    float restoredWeights[blockwave::kNumCells];
+    for (auto& w : restoredWeights)
+        w = blockwave::kCellWeightDefault;
 
-    // Session params are authoritative (they include any tweaks made after
-    // crafting) — the grid is restored for the UI but NOT re-applied, and no
-    // discovery is registered. The recipe name is recomputed for display.
-    craftValid = craftJson.isNotEmpty()
-              && blockwave::craftGridFromVar (juce::JSON::parse (craftJson), craftGrid);
-    if (craftValid)
     {
-        const auto* r = recipeBook.match (craftGrid);
-        activeRecipeName = r != nullptr ? r->name : juce::String();
+        const juce::ScopedLock sl (metaLock);
+        presetName     = root.getProperty ("presetName", "INIT").toString();
+        presetCategory = root.getProperty ("presetCategory", juce::String()).toString();
+        presetAuthor   = root.getProperty ("presetAuthor", juce::String()).toString();
+        craftJson      = root.getProperty ("craft", juce::String()).toString();
+
+        // Session params are authoritative (they include any tweaks made after
+        // crafting) — the grid is restored for the UI but NOT re-applied, and
+        // no discovery is registered. The recipe name is recomputed for display.
+        craftValid = craftJson.isNotEmpty()
+                  && blockwave::craftGridFromVar (juce::JSON::parse (craftJson), craftGrid);
+        if (craftValid)
+        {
+            for (int i = 0; i < blockwave::kNumCells; ++i)
+                restoredWeights[i] = craftGrid.weights[i];
+            const auto* r = recipeBook.match (craftGrid);
+            activeRecipeName = r != nullptr ? r->name : juce::String();
+        }
+        else
+        {
+            activeRecipeName.clear();
+        }
     }
-    else
+
+    // ---- reconcile the weight authority with the restored project ----------
+    // Two cases, and in BOTH the parameters end up holding the truth and the
+    // mirror is re-read from them. The 67 engine parameters are never touched
+    // here, so the restored sound is bit-identical either way — this only
+    // decides what the eight lanes and the knob read.
+    //
+    //  - project from THIS build: the parameters were saved, so they win and
+    //    the mirror follows them (a lane the user automated beats the copy
+    //    that happened to be written into the craft JSON).
+    //
+    //  - project from v1.0.0: the parameters did not exist, so the craft
+    //    JSON's weights are the only record of what the user set. They are
+    //    written into the lanes, which is what keeps the knob, the dimmed
+    //    block art and the restored sound telling the same story.
+    if (! stateHasMixParams)
+        blockwave::writeCellWeightsToApvts (apvts, restoredWeights);
+
     {
-        activeRecipeName.clear();
+        const juce::ScopedLock sl (metaLock);
+        if (craftValid)
+        {
+            blockwave::readCellWeightsFromApvts (apvts, craftGrid.weights);
+            craftJson = juce::JSON::toString (blockwave::craftGridToVar (craftGrid), true);
+        }
     }
 }
 

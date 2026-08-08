@@ -69,6 +69,16 @@ public:
 
     juce::File getUserFolder() const { return userFolder; }
 
+    // Test/tool injection, twin of setFavoritesFile(). Points the user bank at
+    // another folder and re-lists it, so tests and tools/screenshots can save
+    // real presets without ever writing to ~/Documents/BLOCKWAVE. Does NOT
+    // create the folder — saveUserPreset() is still the only place that does.
+    void setUserFolder (const juce::File& f)
+    {
+        userFolder = f;
+        rescanUserPresets();
+    }
+
     // Factory bank (BinaryData JSON, fed by the owner at construction time).
     // Invalid JSON is skipped and reported via return value.
     bool addFactoryPresetJson (const juce::String& jsonText)
@@ -164,6 +174,27 @@ public:
         return index >= 0 && index < getNumPresets() && getPreset (index).isFavorite;
     }
 
+    // STATES the favorite flag instead of flipping it, and persists. Returns
+    // the new state (false for a bad index).
+    //
+    // Why this exists next to toggleFavorite(): favorite keys of DELETED
+    // presets deliberately stay on file (see FavoritesStore.h), so a brand new
+    // preset can be born already carrying a stale key — and a toggle would
+    // then UNSTAR the thing it was asked to star. Every "make sure this is
+    // starred" caller (the CRAFT tab's KEEP button) must use this.
+    bool setFavorite (int index, bool shouldBeFavorite)
+    {
+        if (index < 0 || index >= getNumPresets())
+            return false;
+        const auto key = favoriteKey (*sorted[static_cast<size_t> (index)]);
+        if (shouldBeFavorite)
+            favorites.add (key);
+        else
+            favorites.remove (key);
+        applyFavoriteFlags();
+        return shouldBeFavorite;
+    }
+
     // Flips the favorite state of a listed preset and persists it (the file
     // is created lazily on the first add). Returns the NEW state.
     bool toggleFavorite (int index)
@@ -188,6 +219,31 @@ public:
     }
 
     // ---- saving ------------------------------------------------------------
+
+    // "NAME", else "NAME 2", "NAME 3"... — the first form no LISTED preset is
+    // already using, case-insensitively and across BOTH banks.
+    //
+    // Both halves of that matter. Auto-generated craft names repeat readily
+    // (DICE will hand you the same adjective pair again), and saving over the
+    // previous one silently is data loss; and because a favorite is keyed
+    // "CATEGORY/NAME", a user preset that shadows a factory name in the same
+    // category would share ONE star with it. Uniqueness against the whole
+    // library closes both. Returns "" for an empty request.
+    juce::String makeUniqueName (const juce::String& wanted) const
+    {
+        const auto base = wanted.trim();
+        if (base.isEmpty())
+            return {};
+        if (indexOfName (base) < 0)
+            return base;
+        for (int n = 2; n < 1000; ++n)
+        {
+            const auto candidate = base + " " + juce::String (n);
+            if (indexOfName (candidate) < 0)
+                return candidate;
+        }
+        return base;                             // 999 of the same name: give up
+    }
 
     // Writes a user preset JSON (name/category read from the var). Creates
     // the user folder lazily here — the only place it is ever created.

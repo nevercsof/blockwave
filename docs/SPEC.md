@@ -79,6 +79,14 @@ All oscillators are square/pulse. NOISE is an NES-style **LFSR** (1-bit linear f
 | cave_lp | 200..20000 Hz | 20000 | *(addendum 2, Phase-6 feedback)* LP on the CAVE wet input; 20000 = bit-exact off; log taper (centre 2 kHz), smoothed |
 | dly_lp | 200..20000 Hz | 20000 | *(addendum 2)* LP on the DELAY line input (echoes filtered once, not per repeat); 20000 = off |
 | crush_lp | 200..20000 Hz | 20000 | *(addendum 2)* LP into the CRUSH quantizer (pre-quantize, wet path only); 20000 = off |
+| craft_mix_1 | 0..100 % | 100 | *(addendum 3)* MIX weight of CRAFT cell 0 (grid reading order `0 1 2 / 3 · 4 / 5 6 7`) |
+| craft_mix_2 | 0..100 % | 100 | *(addendum 3)* MIX weight of CRAFT cell 1 |
+| craft_mix_3 | 0..100 % | 100 | *(addendum 3)* MIX weight of CRAFT cell 2 |
+| craft_mix_4 | 0..100 % | 100 | *(addendum 3)* MIX weight of CRAFT cell 3 |
+| craft_mix_5 | 0..100 % | 100 | *(addendum 3)* MIX weight of CRAFT cell 4 |
+| craft_mix_6 | 0..100 % | 100 | *(addendum 3)* MIX weight of CRAFT cell 5 |
+| craft_mix_7 | 0..100 % | 100 | *(addendum 3)* MIX weight of CRAFT cell 6 |
+| craft_mix_8 | 0..100 % | 100 | *(addendum 3)* MIX weight of CRAFT cell 7 |
 
 *Addendum note: the three `*_hp` parameters were appended to the frozen table
 (append-only rule — no existing ID, order, range or taper changed) after the
@@ -98,7 +106,37 @@ LP's wet contribution is faded in linearly from 0 at 20 kHz to fully wet at
 out is click-free at both ends. The `*_lp` cells are not on the TWEAK panel
 yet; they are reachable through host automation and presets meanwhile.*
 
-Non-automatable state: craft grid contents (base + 8 cells + 8 cell weights), preset name/category, UI scale (session copy; see §UI for the global copy).
+*Addendum 3 note (post-1.0.0, producer report: the per-block MIX knob could not
+be automated in FL — "last tweaked" never saw it). The eight cell weights move
+from non-automatable grid state to real parameters `craft_mix_1..8`, appended
+after the `*_lp` trio under the same append-only rule (table 67 → 75; no
+pre-existing index, ID, range, default or taper moved). Cell order is the
+frozen grid reading order `0 1 2 / 3 · 4 / 5 6 7`. The default of 100 % is
+exactly the value that reproduces v1.0.0, so a v1.0.0 project — whose saved
+state has no `craft_mix_*` at all — restores bit-identically, and the weights
+it kept in its craft JSON are migrated into the lanes on load.*
+
+*Addendum 3, authority: **the parameter is the single store for a weight** and
+`CraftGrid::weights` is a mirror of it. Anything that states a weight — the
+knob, the host, DICE, CLEAR, a preset, a session — writes THROUGH the
+parameter, and the craft is then computed from what the parameter holds. Two
+consequences worth knowing: a weight move recomputes the 67 engine parameters
+(the MIX knob has always been a macro over the whole patch, which is why the
+host sees those parameters move too), and that recompute happens on the
+message thread at ~60 Hz — comfortably inside the engine's ~25 ms parameter
+smoothing for realtime use, but coarser than sample-accurate during a
+faster-than-realtime bounce. See open questions in the checkpoint.*
+
+Non-automatable state: craft grid contents (base + 8 cells), preset
+name/category, UI scale (session copy; see §UI for the global copy). The 8 cell
+weights were on this list until addendum 3 and are now automatable parameters.
+The **grid itself stays non-automatable on purpose**: which material sits in
+which cell is discrete, structural state — an automation lane over it would be
+a lane over an enum, it would make recipe identity (and therefore discovery)
+change under automation, and there is no meaningful value *between* STONE and
+LAVA to interpolate. A weight is the opposite: a continuous 0–100 % control
+that looks, feels and is drawn exactly like every other automatable knob in the
+plugin, so it had no business being the one that silently was not.
 
 ## UI
 

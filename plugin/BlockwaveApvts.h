@@ -79,11 +79,14 @@ struct RawParams
             v[i] = s.getRawParameterValue (paramDef (static_cast<PId> (i)).id);
     }
 
-    // Audio thread: 61 relaxed atomic loads + a switch per field. No locks,
-    // no allocation, no strings.
+    // Audio thread: one relaxed atomic load per ENGINE parameter + a switch per
+    // field. No locks, no allocation, no strings. The loop stops at
+    // kNumEngineParams: the craft MIX weights are a message-thread craft input
+    // with no snapshot field, so the audio thread never reads them and its cost
+    // is unchanged by addendum 3.
     void toSnapshot (ParamSnapshot& p) const noexcept
     {
-        for (int i = 0; i < kNumParams; ++i)
+        for (int i = 0; i < kNumEngineParams; ++i)
             applyToSnapshot (p, static_cast<PId> (i),
                              v[i]->load (std::memory_order_relaxed));
     }
@@ -91,6 +94,8 @@ struct RawParams
 
 // ---- preset JSON -> APVTS (message thread only) ----------------------------
 
+// Resets ALL parameters, craft MIX weights included — the 100 % default is
+// what makes a preset with no "weights" key read as an untouched bench.
 inline void resetParamsToDefaults (juce::AudioProcessorValueTreeState& s)
 {
     for (int i = 0; i < kNumParams; ++i)
@@ -98,6 +103,49 @@ inline void resetParamsToDefaults (juce::AudioProcessorValueTreeState& s)
         if (auto* p = s.getParameter (paramDef (static_cast<PId> (i)).id))
             p->setValueNotifyingHost (p->getDefaultValue());
     }
+}
+
+// ---- craft MIX weights <-> APVTS (message thread only) ---------------------
+// The APVTS is the AUTHORITY for cell weights; CraftGrid::weights is a mirror
+// (see plugin/PluginProcessor.h). These two functions are the only places a
+// weight crosses that boundary.
+
+// Reads the eight weights as 0..1, in cell order. `out` must hold 8 floats.
+inline void readCellWeightsFromApvts (const juce::AudioProcessorValueTreeState& s,
+                                      float* out)
+{
+    for (int c = 0; c < kNumCraftMixParams; ++c)
+    {
+        const auto id = paramDef (craftMixParamForCell (c)).id;
+        const auto* raw = s.getRawParameterValue (id);
+        out[c] = raw != nullptr ? cellWeightFromMixPercent (raw->load())
+                                : 1.0f;      // no such parameter: full weight
+    }
+}
+
+// Writes the eight weights (0..1, in cell order) through to the parameters.
+// Only genuinely changed values are written, so a craft that leaves the mix
+// alone produces no host parameter traffic at all. Returns the number written.
+inline int writeCellWeightsToApvts (juce::AudioProcessorValueTreeState& s,
+                                    const float* weights01)
+{
+    int written = 0;
+    for (int c = 0; c < kNumCraftMixParams; ++c)
+    {
+        const auto id = paramDef (craftMixParamForCell (c)).id;
+        auto* p = s.getParameter (id);
+        const auto* raw = s.getRawParameterValue (id);
+        if (p == nullptr || raw == nullptr)
+            continue;
+        const float w = weights01[c] < 0.0f ? 0.0f
+                      : (weights01[c] > 1.0f ? 1.0f : weights01[c]);
+        const float percent = mixPercentFromCellWeight (w);
+        if (raw->load() == percent)
+            continue;                        // already there — stay quiet
+        p->setValueNotifyingHost (p->convertTo0to1 (percent));
+        ++written;
+    }
+    return written;
 }
 
 // Applies the "params" object of a preset var on top of whatever the APVTS
@@ -121,6 +169,12 @@ inline bool applyPresetVarToApvts (const juce::var& presetRoot,
         PId id {};
         if (! findParam (prop.name.toString(), id))
             continue;
+        // A preset states a cell weight in exactly ONE place: "craft".weights.
+        // Honouring craft_mix_N here too would give the file two homes for the
+        // same value and an unresolvable ordering (weights are an INPUT to the
+        // craft, "params" are overrides applied AFTER it). Ignored on purpose.
+        if (isCraftMixParam (id))
+            continue;
         if (auto* p = s.getParameter (paramDef (id).id))
         {
             const float plain = plainFromVar (id, prop.value);
@@ -135,10 +189,13 @@ inline bool applyPresetVarToApvts (const juce::var& presetRoot,
 // Writes every field of a (crafted) ParamSnapshot into the APVTS through
 // setValueNotifyingHost — the same atomic path host automation uses, so the
 // audio thread picks the change up lock-free and smooths it (~25 ms).
+// Engine parameters only. The craft MIX weights are the INPUT that produced
+// `snap`, so writing them from it would be circular — and would clobber a live
+// automation lane on every craft. They are excluded by the loop bound.
 inline void applySnapshotToApvts (const ParamSnapshot& snap,
                                   juce::AudioProcessorValueTreeState& s)
 {
-    for (int i = 0; i < kNumParams; ++i)
+    for (int i = 0; i < kNumEngineParams; ++i)
     {
         const auto id = static_cast<PId> (i);
         if (auto* p = s.getParameter (paramDef (id).id))
@@ -154,11 +211,14 @@ inline void applySnapshotToApvts (const ParamSnapshot& snap,
 // snapshot when a craft grid is set (SPEC: craft first, then params on top —
 // so overrides must be a diff against the craft result, and a factory recipe
 // preset saves near-zero overrides).
+// Engine parameters only: a cell weight is saved under "craft".weights, never
+// as a params override — that keeps the on-disk preset format byte-for-byte
+// what v1.0.0 wrote and leaves exactly one home for a weight in the file.
 inline juce::var presetParamsVarFromApvts (juce::AudioProcessorValueTreeState& s,
                                            const ParamSnapshot* baseline = nullptr)
 {
     auto* obj = new juce::DynamicObject();
-    for (int i = 0; i < kNumParams; ++i)
+    for (int i = 0; i < kNumEngineParams; ++i)
     {
         const auto id = static_cast<PId> (i);
         const auto& d = paramDef (id);
